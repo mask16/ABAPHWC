@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPPF02_MES_MESPP_RV_003</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZPPF02_MES_MESPP_RV_003</h2>
+<h3> Description: [PP] 코일 투입정보 전송(정상) MES ==> SAP</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZPPF02_MES_MESPP_RV_003.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  EXPORTING<br />
+*"     VALUE(E_RET) TYPE  ZERETURN<br />
+*"     VALUE(E_MSG) TYPE  ZEMESSAGE<br />
+*"  TABLES<br />
+*"      T_TAB STRUCTURE  ZPPS0061<br />
+*"----------------------------------------------------------------------<br />
+*-----------------------------------------------------------------------<br />
+* PROGRAM         : ZPPF02_MES_MESPP_RV_003<br />
+* DESCRIPTION     : [생산계획]코일 투입정보 전송 MES ==&gt SAP<br />
+* DEVELOPER       : AB01<br />
+* CREATED DATE    : 2012.12.07<br />
+*-----------------------------------------------------------------------<br />
+* HISTORY :<br />
+* DEVELOPER       DATE          DESCRIPTION<br />
+* AB01            2012.12.07    CREATION<br />
+*<br />
+*-----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zppf02_mes_mespp_rv_003.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_T112&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;ZPPT0112&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;T_TAB[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;T_TAB&nbsp;TO&nbsp;LT_T112.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;T_TAB-PLNUM&nbsp;&nbsp;&nbsp;TO&nbsp;LT_T112-ZPLNUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-LOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;LT_T112-LOTNO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;LT_T112-STATUS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;=&nbsp;LT_T112-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUTPUT&nbsp;=&nbsp;LT_T112-MATNR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   생성로그<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LT_T112-CREATED_DATE&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_T112-CREATED_TIME&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_T112-CREATED_BY&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LT_T112.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LT_T112[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;ZPPT0112&nbsp;FROM&nbsp;TABLE&nbsp;LT_T112.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;TEXT-001.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Text elements<br />
+*----------------------------------------------------------<br />
+* 001 DB Update error<br />
+* 002 DB Insert error<br />
+* 003 DB Delete error<br />
+* 004 선택된 데이터가 없습니다.<br />
+* 005 생산입고 처리 완료.<br />
+* 006 처리할 데이터가 없습니다.<br />
+* 007 No entry in ZPPT0170 table<br />
+* 008 성공적으로 생산입고 처리되었습니다.<br />
+* 009 Barcode Interface 처리 완료.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

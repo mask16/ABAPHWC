@@ -1,0 +1,3028 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>Y_SP010</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: Y_SP010</h2>
+<h3> Description: PROGRAM  DOWN     UP</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&nbsp;Program&nbsp;ID&nbsp;&nbsp;:&nbsp;Y_SP010<br />
+*&nbsp;Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;PROGRAM&nbsp;&nbsp;DOWN&nbsp;&nbsp;&&nbsp;&nbsp;UP<br />
+*&nbsp;Created&nbsp;By&nbsp;&nbsp;:<br />
+*&nbsp;Create&nbsp;Date&nbsp;:<br />
+*&nbsp;Description&nbsp;:<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;Development&nbsp;/&nbsp;Modification&nbsp;History<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;YYYY.MM.DD&nbsp;&nbsp;:<br />
+*----------------------------------------------------------------------*<br />
+***********************************************************************<br />
+*&nbsp;기능&nbsp;:&nbsp;프로그램에&nbsp;관련된&nbsp;SCREEN,&nbsp;TEXT&nbsp;등을&nbsp;모두&nbsp;같이&nbsp;DOWNLOAD하고,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;다시&nbsp;원상태로&nbsp;UPLOAD&nbsp;할&nbsp;수&nbsp;있다.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;※&nbsp;입력&nbsp;PARAMETER&nbsp;:<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPID&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;UP,DOWN&nbsp;할&nbsp;프로그램명을&nbsp;적어준다<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FUNCTION&nbsp;-&nbsp;U(UPLOAD&nbsp;시),&nbsp;D(DOWNLOAD시)<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDES&nbsp;-&nbsp;Y(INCLUDE&nbsp;포함시),&nbsp;N(INCLUDE&nbsp;포함안할때)<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;프로그램소스를&nbsp;보관할&nbsp;폴더명지정<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPLOAD&nbsp;시는&nbsp;이&nbsp;프로그램을&nbsp;이용하여<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOWNLOAD&nbsp;한&nbsp;소스가&nbsp;있는&nbsp;폴더를&nbsp;지정하면&nbsp;된다.<br />
+***********************************************************************<br />
+<br />
+   </div>
+   <div class="code">
+REPORT Y_SP010  LINE-SIZE 132  LINE-COUNT 62<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO&nbsp;STANDARD&nbsp;PAGE&nbsp;HEADING.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;Macros*<br />
+   </div>
+   <div class="code">
+DEFINE DEFINE_TABLE.<br />
+&nbsp;&nbsp;DATA:&nbsp;&1&nbsp;LIKE&nbsp;&2&nbsp;OCCURS&nbsp;&3&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+END-OF-DEFINITION.<br />
+DEFINE CLS.<br />
+&nbsp;&nbsp;REFRESH&nbsp;&1.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&1.<br />
+END-OF-DEFINITION.<br />
+DEFINE INIT.<br />
+&nbsp;&nbsp;IF&nbsp;&1&nbsp;NE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SEARCH&nbsp;&1&nbsp;FOR&nbsp;'.&nbsp;.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;'*'&nbsp;TO&nbsp;&1+SY-FDPOS(1).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;&1&nbsp;USING&nbsp;'*%'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'%'&nbsp;TO&nbsp;&1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+END-OF-DEFINITION.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;end&nbsp;ofmacros<br />
+*/******************************************************************/*/*<br />
+*/*/*&nbsp;SAP&nbsp;standard&nbsp;tables&nbsp;*/*/*<br />
+*/*/******************************************************************/<br />
+   </div>
+   <div class="code">
+TABLES: D020S,                         "Dynpro header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D020T,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Dynpro&nbsp;title<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D021T,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Screen&nbsp;field&nbsp;keyword&nbsp;texts<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRDIR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Attribute&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TADIR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Dev.&nbsp;class&nbsp;etc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EUDB,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"CUA&nbsp;data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TSTC,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"transaction&nbsp;data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"CUA&nbsp;titles<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RSMPTEXTS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Function&nbsp;texts&nbsp;(rel&nbsp;4.0)<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/*/*<br />
+*/*/*&nbsp;Work&nbsp;tables&nbsp;to&nbsp;hold&nbsp;ABAP&nbsp;source&nbsp;etc,&nbsp;and&nbsp;dynpro&nbsp;*/*/*&nbsp;contents.<br />
+*/*/*<br />
+*/*/******************************************************************/<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF H.                      "Header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D020S.<br />
+DATA: END OF H.<br />
+DATA: BEGIN OF H1 OCCURS 10,           "Header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;N.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D020S.<br />
+DATA: END OF H1.<br />
+DATA: BEGIN OF H2 OCCURS 0,            "Rel 3 dynp. header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNAME(8)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNUM(4)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NNAME(8)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NNUM(4)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILL(51)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDAT(6)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CTIM(6)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;H2.<br />
+<br />
+DATA: BEGIN OF F OCCURS 250.           "Dynpro Fields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D021S.<br />
+DATA: END OF F.<br />
+DATA: BEGIN OF F1 OCCURS 500,          "Dynpro Fields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;N.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D021S.<br />
+DATA: END OF F1.<br />
+DATA: BEGIN OF OLD_F1 OCCURS 0,        "Dynpro Fields (rel 3)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(8)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(4)&nbsp;&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D021SE_OLD.<br />
+DATA: END OF OLD_F1.<br />
+<br />
+DATA: BEGIN OF F2 OCCURS 0,            "Dynpro Fields (rel 3)<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFIL(284)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFIL(292)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;F2.<br />
+DATA: BEGIN OF M OCCURS 3.             "Match codes (if any)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D023S.<br />
+DATA: END OF M.<br />
+DATA: BEGIN OF E OCCURS 0.             "Dynpro Logic<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D022S.<br />
+DATA: END OF E.<br />
+DATA: BEGIN OF E1 OCCURS 0,            "Dynpro Logic<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;N.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D022S.<br />
+DATA: END OF E1.<br />
+DATA: BEGIN OF T   OCCURS 0,           "prog name and dynpro nrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER(4)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;T.<br />
+DATA: BEGIN OF R   OCCURS 56,          "prog name and language<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LANGUAGE(1)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;R.<br />
+DATA: BEGIN OF S OCCURS 3000,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TXT(300)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;"rel&nbsp;4&nbsp;was&nbsp;132<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;S.<br />
+DATA: BEGIN OF R1 OCCURS 50,           "for include<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSTANCE(3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;R1.<br />
+DATA: BEGIN OF S1 OCCURS 3000,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TXT(180)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;"&nbsp;rel&nbsp;4&nbsp;was&nbsp;132<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;S1.<br />
+DATA: BEGIN OF U OCCURS 100,           "Text elements<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TXT(180)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;"&nbsp;rel&nbsp;4&nbsp;was&nbsp;132<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;U.<br />
+DATA: TU LIKE TEXTPOOL OCCURS 0 WITH HEADER LINE .<br />
+<br />
+DATA: BEGIN OF DIR.                    "ABAP Attributes<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;TRDIR.<br />
+DATA: END OF DIR.<br />
+DATA: BEGIN OF DTXT.                   "Dynpro field keyword texts<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;D021T.<br />
+DATA: END OF DTXT.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/*/*<br />
+<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF EU_KEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_KEY.<br />
+DATA END OF EU_KEY.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Status<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF STA OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_STAT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;rel&nbsp;4<br />
+DATA END OF STA.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Functions<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF FUN OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_FUNT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+DATA END OF FUN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Menus<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF MEN OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_MEN.&nbsp;&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA END OF MEN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Menus&nbsp;(texts)<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF MTX OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_MNLT.&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA END OF MTX.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Action&nbsp;Bar<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF ACT OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_ACT.&nbsp;&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA END OF ACT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Push&nbsp;Buttons<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF BUT OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_BUT.&nbsp;&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA END OF BUT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;PF-Keys<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF PFK OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_PFK.&nbsp;&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA END OF PFK.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Function&nbsp;sets<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF SET OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_STAF.&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA END OF SET.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Documentation<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF DOC OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_ATRT.&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA END OF DOC.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Title&nbsp;codes&nbsp;with&nbsp;text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF TIT OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPE_TITT.&nbsp;&nbsp;"rel&nbsp;4.0<br />
+DATA: END OF TIT.<br />
+DATA BEGIN OF FTX OCCURS 0.            "rel 4.0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSMPTEXTS.<br />
+DATA END OF FTX.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;rel&nbsp;3.1&nbsp;CUA&nbsp;components.<br />
+*&nbsp;Status<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_STA OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_GEN.&nbsp;&nbsp;&nbsp;"&nbsp;rel&nbsp;3.1<br />
+DATA END OF OLD_STA.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Functions<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_FUN OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_FUN.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_FUN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Menus<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_MEN OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_MEN.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_MEN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Menus&nbsp;(texts)<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_MTX OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_TXM.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_MTX.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Action&nbsp;Bar<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_ACT OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_ACT.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_ACT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Push&nbsp;Buttons<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_BUT OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_BUT.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_BUT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;PF-Keys<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_PFK OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_PFK.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_PFK.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Function&nbsp;sets<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_SET OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_SET.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_SET.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Documentation<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF OLD_DOC OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_ETM.&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA END OF OLD_DOC.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Title&nbsp;codes&nbsp;with&nbsp;text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF OLD_TIT OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;TITLE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;3.1<br />
+DATA: END OF OLD_TIT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;dynamic&nbsp;function&nbsp;text<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF FDN OCCURS 1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_FDYN.&nbsp;&nbsp;"not&nbsp;req&nbsp;for&nbsp;rel&nbsp;4.<br />
+DATA END OF FDN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Icons<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF FIN OCCURS 1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_ICON.&nbsp;&nbsp;"not&nbsp;req&nbsp;for&nbsp;rel&nbsp;4<br />
+DATA END OF FIN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;dynamic&nbsp;menu&nbsp;texts<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF MDN OCCURS 1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_MDYN.&nbsp;&nbsp;"not&nbsp;req&nbsp;for&nbsp;rel&nbsp;4.<br />
+DATA END OF MDN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Symbol&nbsp;list<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF SYM OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_SYMB.<br />
+DATA END OF SYM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Status&nbsp;Short&nbsp;text<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF STX OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_CTX.<br />
+DATA END OF STX.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Attributes&nbsp;for&nbsp;function&nbsp;key&nbsp;settings&nbsp;(menu&nbsp;bars)&nbsp;Rel&nbsp;3.0<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF ATT OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_HAT.<br />
+DATA END OF ATT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Include-Menus<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF INC OCCURS 3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_INC.<br />
+DATA END OF INC.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Last&nbsp;used&nbsp;numbers<br />
+   </div>
+   <div class="code">
+DATA BEGIN OF LAST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RSEU1_LST.<br />
+DATA END OF LAST.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;data&nbsp;for&nbsp;call&nbsp;transaction&nbsp;(SE41&nbsp;to&nbsp;re-generate&nbsp;the&nbsp;CUA)<br />
+*<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF T_BDC_TAB OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BDCDATA.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"BDC&nbsp;data<br />
+DATA: END OF T_BDC_TAB.<br />
+DATA: BEGIN OF T_MESSTAB OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BDCDATA.<br />
+DATA: END OF T_MESSTAB.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+DATA: NUMBER(4)               TYPE N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLDNUM(4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILESIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NR_OF_BYTES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I(3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IX(3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;J(3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L(3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CUA-FLAG(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CUA_RETURN(10)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPRO_MESSAGE(160)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPRO_LINE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPRO_WORD(30)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUM(3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNNAME(44)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN1(128)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN2(128)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN3(128)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN1_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN2_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN3_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W_ITERATE(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAIN(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FUNC(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLDNAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD-FUNC(8)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NEW-FUNC(8)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOUND(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LANGUAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-LANGU,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIRST-TIME(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'Y',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OK-CODE(5)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TXLINE(70)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINE(132)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C.<br />
+DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UL_FILE(128)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UL_FILE_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DL_FILE(128)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DL_FILE_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOSLINE(72)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C.<br />
+<br />
+DATA: BEGIN OF DOSDIR OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT(72),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;DOSDIR.<br />
+<br />
+DATA: BEGIN OF I_PROG OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;I_PROG.<br />
+<br />
+DATA: BEGIN OF I_PROGT OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;I_PROGT.<br />
+<br />
+DATA: BEGIN OF I_INCLUDE OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HANDLED(1)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;I_INCLUDE.<br />
+<br />
+DATA: BEGIN OF I_INCL OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(40),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;I_INCL.<br />
+<br />
+DATA: BUFFER(1024).<br />
+DATA: WINSYS(3).<br />
+DATA: GLOBAL_FILEMASK_MASK(20), GLOBAL_FILEMASK_TEXT(20).<br />
+DATA: GLOBAL_FILEMASK_ALL(80).<br />
+DATA: T_FILENAME(128),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TMP_FILENAME(128),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_MODE(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIELDLN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+<br />
+DEFINE_TABLE I_DYNPFIELDS DYNPREAD 0.  "dynpro fields to be updated<br />
+<br />
+DATA: I_FLDS LIKE HELP_VALUE OCCURS 0 WITH HEADER LINE.<br />
+FIELD-SYMBOLS: &ltF&gt.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK A1 WITH FRAME TITLE TEXT-001.<br />
+SELECTION-SCREEN SKIP 1.<br />
+SELECT-OPTIONS REPID FOR TRDIR-NAME OBLIGATORY .<br />
+PARAMETERS:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FUNCTION(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C&nbsp;OBLIGATORY,&nbsp;&nbsp;"Function<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DSNAME(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Data&nbsp;set&nbsp;name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDES(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C&nbsp;DEFAULT&nbsp;'N',&nbsp;"Resolve&nbsp;Includes<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMASK(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Include&nbsp;Mask<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLASS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TRDIR-CLAS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUTHOR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TRDIR-CNAM,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Author<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TRDIR-APPL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PATH(88)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C&nbsp;DEFAULT&nbsp;'D:\DOWN\'&nbsp;LOWER&nbsp;CASE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REL3(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C.<br />
+SELECTION-SCREEN SKIP 1.<br />
+SELECTION-SCREEN BEGIN OF LINE.<br />
+SELECTION-SCREEN COMMENT 1(70) TEXT-004.<br />
+SELECTION-SCREEN END OF LINE.<br />
+SELECTION-SCREEN BEGIN OF LINE.<br />
+SELECTION-SCREEN COMMENT 1(70) TEXT-005.<br />
+SELECTION-SCREEN END OF LINE.<br />
+SELECTION-SCREEN SKIP 1.<br />
+SELECTION-SCREEN BEGIN OF LINE.<br />
+SELECTION-SCREEN COMMENT 1(70) TEXT-002.<br />
+SELECTION-SCREEN END OF LINE.<br />
+SELECTION-SCREEN BEGIN OF LINE.<br />
+SELECTION-SCREEN COMMENT 1(70) TEXT-003.<br />
+SELECTION-SCREEN END OF LINE.<br />
+SELECTION-SCREEN END  OF BLOCK A1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+<br />
+   </div>
+   <div class="code">
+CALL FUNCTION 'WS_QUERY'<br />
+&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;QUERY&nbsp;&nbsp;=&nbsp;'WS'<br />
+&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;=&nbsp;WINSYS.<br />
+IF WINSYS(2) NE 'WN'.                  "Win 3.X no good either<br />
+&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Windows&nbsp;NT&nbsp;or&nbsp;Windows&nbsp;95/98&nbsp;is&nbsp;required'.<br />
+&nbsp;&nbsp;EXIT.<br />
+ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+   </div>
+   <div class="code">
+MOVE FUNCTION TO FUNC.<br />
+MOVE 'Y' TO MAIN.<br />
+CASE FUNC.<br />
+&nbsp;&nbsp;WHEN&nbsp;'U'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Upload&nbsp;required<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;READ_DOS_DIRECTORY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_RANGE_UL.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Get&nbsp;list&nbsp;of&nbsp;progs&nbsp;to&nbsp;process<br />
+&nbsp;&nbsp;WHEN&nbsp;'D'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Download&nbsp;required<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_RANGE_DL.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Get&nbsp;list&nbsp;of&nbsp;progs&nbsp;to&nbsp;process<br />
+&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Function&nbsp;not&nbsp;performed&nbsp;due&nbsp;to&nbsp;user&nbsp;request'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+ENDCASE.<br />
+SORT I_PROG.<br />
+DELETE ADJACENT DUPLICATES FROM I_PROG.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+IF FUNC = 'D'.<br />
+&nbsp;&nbsp;IF&nbsp;INCLUDES&nbsp;=&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_INCLUDES_DL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PROCESS_INCLUDES_DL.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;Program&nbsp;list&nbsp;from&nbsp;selection&nbsp;criteria&nbsp;i.e&nbsp;excluding&nbsp;INCLUDES&nbsp;found<br />
+*<br />
+   </div>
+   <div class="code">
+LOOP AT I_PROG.<br />
+&nbsp;&nbsp;MOVE&nbsp;I_PROG-NAME&nbsp;TO&nbsp;R1-NAME.<br />
+&nbsp;&nbsp;APPEND&nbsp;R1.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;R1&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;WHILE&nbsp;I&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;EXECUTE-FUNCTION.<br />
+&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;REFRESH&nbsp;R1.<br />
+ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+IF INCLUDES = 'Y'.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;I_INCL&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;W_ITERATE&nbsp;=&nbsp;'Y'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;W_ITERATE&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;WHILE&nbsp;W_ITERATE&nbsp;=&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PROCESS_INCLUDES_UL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;LOOP_THROUGH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;I_INCL&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W_ITERATE&nbsp;=&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W_ITERATE&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDWHILE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;endif.<br />
+   </div>
+   <div class="code">
+ENDIF.<br />
+DESCRIBE TABLE I_INCLUDE LINES I.<br />
+IF I &gt 0.<br />
+&nbsp;&nbsp;SKIP&nbsp;1.<br />
+&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'&nbsp;Included&nbsp;Programs&nbsp;found'.<br />
+&nbsp;&nbsp;SKIP&nbsp;1.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_INCLUDE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;I_INCLUDE-NAME&nbsp;TO&nbsp;LINE(40).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;LINE(80).<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;EXECUTE-FUNCTION<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM EXECUTE-FUNCTION.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;R1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;R1&nbsp;TO&nbsp;R.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;R.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;REFRESH&nbsp;R1.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;R.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;T,&nbsp;E1,&nbsp;H1,&nbsp;F1,&nbsp;S,&nbsp;U.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PROCESS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;MAIN.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;REFRESH&nbsp;R.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;R1&nbsp;LINES&nbsp;I.<br />
+ENDFORM.                    "EXECUTE-FUNCTION<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM PROCESS.<br />
+&nbsp;&nbsp;MOVE&nbsp;PATH&nbsp;TO&nbsp;FN1.<br />
+&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;DSNAME&nbsp;NE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;DSNAME&nbsp;TO&nbsp;FN1+66.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R-NAME&nbsp;TO&nbsp;FN1+66.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R-NAME&nbsp;TO&nbsp;FN1+66.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;MOVE&nbsp;FN1&nbsp;TO&nbsp;FN2.<br />
+&nbsp;&nbsp;MOVE&nbsp;FN1&nbsp;TO&nbsp;FN3.<br />
+&nbsp;&nbsp;WRITE&nbsp;'.HHH'&nbsp;TO&nbsp;FN1+124(4).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;WRITE&nbsp;'.FFF'&nbsp;TO&nbsp;FN2+124(4).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;WRITE&nbsp;'.TXT'&nbsp;TO&nbsp;FN3+124(4).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4<br />
+&nbsp;&nbsp;CONDENSE&nbsp;FN1&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;CONDENSE&nbsp;FN2&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;CONDENSE&nbsp;FN3&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;NAME&nbsp;&nbsp;&nbsp;=&nbsp;R-NAME.<br />
+&nbsp;&nbsp;CASE&nbsp;FUNC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;DOWNLOAD_OBJECTS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;:&nbsp;'ABAP&nbsp;:&nbsp;'&nbsp;TO&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R-NAME&nbsp;TO&nbsp;LINE+8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;'has&nbsp;been&nbsp;unloaded'&nbsp;TO&nbsp;LINE+55.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;T&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'No&nbsp;Dynpros&nbsp;were&nbsp;found&nbsp;for&nbsp;unload&nbsp;function'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'The&nbsp;following&nbsp;Dynpros&nbsp;have&nbsp;been&nbsp;unloaded&nbsp;:&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;LOOP_THROUGH_T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'U'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UPLOAD_OBJECTS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;T&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;&nbsp;/&nbsp;'No&nbsp;Dynpros&nbsp;were&nbsp;found&nbsp;for&nbsp;restore&nbsp;function'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'The&nbsp;following&nbsp;Dynpros&nbsp;have&nbsp;been&nbsp;restored&nbsp;:&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;LOOP_THROUGH_T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;MAIN&nbsp;EQ&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;OLDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;:&nbsp;'ABAP&nbsp;:&nbsp;'&nbsp;TO&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R-NAME&nbsp;TO&nbsp;LINE+8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;'has&nbsp;been&nbsp;restored'&nbsp;TO&nbsp;LINE+55.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;:&nbsp;'ABAP&nbsp;:&nbsp;'&nbsp;TO&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R-NAME&nbsp;TO&nbsp;LINE+8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;'has&nbsp;been&nbsp;restored&nbsp;-&nbsp;original&nbsp;name&nbsp;:'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;LINE+55.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;OLDNAME&nbsp;TO&nbsp;LINE+92.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;:&nbsp;'ABAP&nbsp;:&nbsp;'&nbsp;TO&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R-NAME&nbsp;TO&nbsp;LINE+8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;'has&nbsp;been&nbsp;restored'&nbsp;TO&nbsp;LINE+55.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    "PROCESS<br />
+   </div>
+   <div class="codeComment">
+***********************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;print&nbsp;progname&nbsp;+&nbsp;dynpro&nbsp;nrs&nbsp;that&nbsp;have&nbsp;been&nbsp;processed.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM LOOP_THROUGH_T.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R-NAME&nbsp;TO&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;T-NUMBER&nbsp;TO&nbsp;LINE+50.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;LINE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "LOOP_THROUGH_T<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Download&nbsp;Objects&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM DOWNLOAD_OBJECTS.<br />
+&nbsp;&nbsp;PERFORM&nbsp;UNLOAD_ABAP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ABAP&nbsp;source,&nbsp;texts,&nbsp;attr<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;TRDIR<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;EQ&nbsp;R-NAME.<br />
+&nbsp;&nbsp;IF&nbsp;TRDIR-SUBC&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;INCLUDES.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Included&nbsp;file&nbsp;wanted<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SCAN4-INCLUDES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;PERFORM&nbsp;UNLOAD_CUA.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"CUA&nbsp;stuff<br />
+&nbsp;&nbsp;PERFORM&nbsp;DOWNLOAD_DATA.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Download&nbsp;EEE&nbsp;file&nbsp;to&nbsp;PC<br />
+&nbsp;&nbsp;PERFORM&nbsp;BUILD_T.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Build&nbsp;table&nbsp;of&nbsp;all&nbsp;dynpros&nbsp;in&nbsp;ABAP<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;T&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;CASE&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"if&nbsp;no&nbsp;dynpros&nbsp;exist&nbsp;then&nbsp;cannot&nbsp;download&nbsp;any<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;DOWNLOAD_DATA.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Download&nbsp;EEE&nbsp;file&nbsp;to&nbsp;PC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOAD_DYNPROS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Get&nbsp;Raw&nbsp;dynpros&nbsp;from&nbsp;SAP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOAD_DYNPRO_COMPONENTS."Convert&nbsp;to&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;DOWNLOAD_DATA.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Download&nbsp;ABAP&nbsp;etc.&nbsp;to&nbsp;PC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;DOWNLOAD_BIN_H1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Download&nbsp;dynpro&nbsp;header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;DOWNLOAD_BIN_F1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Download&nbsp;dynpro&nbsp;fields<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    "DOWNLOAD_OBJECTS<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Split&nbsp;ABAP&nbsp;up&nbsp;into&nbsp;its&nbsp;component&nbsp;parts&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;A)&nbsp;Program&nbsp;source&nbsp;(72)&nbsp;*/<br />
+*/*&nbsp;B)&nbsp;Texts&nbsp;(132)&nbsp;*/<br />
+*/*&nbsp;C)&nbsp;Attributes&nbsp;(117)&nbsp;*/<br />
+*/*&nbsp;D)&nbsp;CUA&nbsp;stuff&nbsp;(Various)&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UNLOAD_ABAP.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Get&nbsp;ABAP&nbsp;language.&nbsp;Only&nbsp;required&nbsp;on&nbsp;download.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;TRDIR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;EQ&nbsp;R-NAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;TRDIR-RLOAD&nbsp;TO&nbsp;R-LANGUAGE.<br />
+&nbsp;&nbsp;READ&nbsp;REPORT&nbsp;R-NAME&nbsp;INTO&nbsp;S.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Get&nbsp;source&nbsp;into&nbsp;table&nbsp;S<br />
+&nbsp;&nbsp;MOVE&nbsp;'????SRCE'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;INSERT&nbsp;&nbsp;S&nbsp;INDEX&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Text&nbsp;elements,&nbsp;Numbered&nbsp;texts,&nbsp;headings,&nbsp;selection&nbsp;texts&nbsp;*/<br />
+*/*&nbsp;Read&nbsp;text&nbsp;elements&nbsp;with&nbsp;logon&nbsp;language.&nbsp;If&nbsp;they&nbsp;don't&nbsp;*/<br />
+*/*&nbsp;exist&nbsp;read&nbsp;with&nbsp;the&nbsp;value&nbsp;taken&nbsp;from&nbsp;TRDIR.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+*&nbsp;&nbsp;&nbsp;HEUS<br />
+*&nbsp;&nbsp;READ&nbsp;TEXTPOOL&nbsp;R-NAME&nbsp;INTO&nbsp;U&nbsp;LANGUAGE&nbsp;SY-LANGU.<br />
+*&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TEXTPOOL&nbsp;R-NAME&nbsp;INTO&nbsp;U&nbsp;LANGUAGE&nbsp;R-LANGUAGE.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;:TU.&nbsp;REFRESH:TU.<br />
+&nbsp;&nbsp;READ&nbsp;TEXTPOOL&nbsp;R-NAME&nbsp;INTO&nbsp;TU&nbsp;LANGUAGE&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TEXTPOOL&nbsp;R-NAME&nbsp;INTO&nbsp;TU&nbsp;LANGUAGE&nbsp;R-LANGUAGE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;TU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;TU&nbsp;TO&nbsp;U-TXT.&nbsp;APPEND&nbsp;U.<br />
+&nbsp;&nbsp;ENDLOOP&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;U&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;CASE&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????TEXT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;U.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;U-TXT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;U.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Retrieve&nbsp;Attributes&nbsp;from&nbsp;TRDIR&nbsp;and&nbsp;add&nbsp;to&nbsp;table&nbsp;S&nbsp;*/<br />
+*/*&nbsp;Change&nbsp;language&nbsp;to&nbsp;logged&nbsp;on&nbsp;language&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MOVE&nbsp;'????ATTR'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;TRDIR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;EQ&nbsp;R-NAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;SY-LANGU&nbsp;TO&nbsp;TRDIR-RLOAD.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;TRDIR&nbsp;TO&nbsp;DIR.<br />
+&nbsp;&nbsp;MOVE&nbsp;DIR&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;APPEND&nbsp;S.<br />
+ENDFORM.                    "UNLOAD_ABAP<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;retrieve&nbsp;CUA&nbsp;stuff&nbsp;and&nbsp;append&nbsp;to&nbsp;table&nbsp;S.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UNLOAD_CUA.<br />
+&nbsp;&nbsp;MOVE&nbsp;R-NAME&nbsp;TO&nbsp;EU_KEY-NAME.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Program&nbsp;name&nbsp;for&nbsp;CUA<br />
+&nbsp;&nbsp;MOVE&nbsp;'E'&nbsp;TO&nbsp;EU_KEY-SPRSL.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"CUA&nbsp;seems&nbsp;to&nbsp;want&nbsp;D&nbsp;as&nbsp;lang<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;MOVE&nbsp;R-LANGUAGE&nbsp;TO&nbsp;EU_KEY-SPRSL.&nbsp;"Language&nbsp;"rel&nbsp;2.2<br />
+*&nbsp;IMPORT&nbsp;STA&nbsp;FUN&nbsp;MEN&nbsp;MTX&nbsp;ACT&nbsp;BUT&nbsp;PFK&nbsp;SET&nbsp;LAST&nbsp;INC&nbsp;STX&nbsp;DOC&nbsp;"rel&nbsp;2.2<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IMPORT&nbsp;STA&nbsp;STX&nbsp;FUN&nbsp;MEN&nbsp;MTX&nbsp;ACT&nbsp;BUT&nbsp;PFK&nbsp;SET&nbsp;LAST&nbsp;INC&nbsp;DOC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;3.0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATT&nbsp;FDN&nbsp;MDN&nbsp;SYM&nbsp;FIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;3.0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;DATABASE&nbsp;EUDB(CU)&nbsp;ID&nbsp;EU_KEY.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"No&nbsp;statuses<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;RS_CUA_VERSION_EXPORT<br />
+*&nbsp;&nbsp;HEUS<br />
+<br />
+*&nbsp;read&nbsp;titles&nbsp;in&nbsp;logged&nbsp;on&nbsp;language.&nbsp;If&nbsp;not&nbsp;present&nbsp;use<br />
+*&nbsp;language&nbsp;from&nbsp;TRDIR.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(rel&nbsp;4)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;RSMPTEXTS&nbsp;WHERE&nbsp;PROGNAME&nbsp;EQ&nbsp;R-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRSL&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;RSMPTEXTS&nbsp;TO&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;RSMPTEXTS&nbsp;WHERE&nbsp;PROGNAME&nbsp;EQ&nbsp;R-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRSL&nbsp;=&nbsp;R-LANGUAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;RSMPTEXTS&nbsp;TO&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;FTX&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????FTXT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;FTX&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;TITLE&nbsp;WHERE&nbsp;PROGNAME&nbsp;&nbsp;&nbsp;EQ&nbsp;R-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;DDLANGUAGE&nbsp;EQ&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;TITLE&nbsp;TO&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;TITLE&nbsp;WHERE&nbsp;PROGNAME&nbsp;&nbsp;&nbsp;EQ&nbsp;R-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;DDLANGUAGE&nbsp;EQ&nbsp;R-LANGUAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;TITLE&nbsp;TO&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;STA&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????STAT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;STA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;STA&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;FUN&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????FUNC'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;FUN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;FUN&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;MEN&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????MEN1'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;MEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;MEN&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;MTX&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????MTX1'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;MTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;MTX&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;ACT&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????ACTN'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ACT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;ACT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;BUT&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????BUTN'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;BUT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;BUT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;PFK&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????PFKY'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;PFK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;PFK&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;SET&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????SETS'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;SET.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;SET&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;LAST&nbsp;NE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????LIST'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;LAST&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;INC&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????INCL'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;INC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;INC&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;STX&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????STXT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;STX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;STX&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;DOC&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????DOCN'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;DOC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;DOC&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;TIT&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????TITL'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;TIT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Next&nbsp;5&nbsp;tables&nbsp;are&nbsp;rel&nbsp;3.0&nbsp;specific&nbsp;(ATT,&nbsp;FDN,&nbsp;MDN,&nbsp;SYM,&nbsp;FIN)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;ATT&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????VATT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ATT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;ATT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;FDN&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????VFDN'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;FDN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;FDN&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;MDN&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????VMDN'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;MDN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;MDN&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;SYM&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????VSYM'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;SYM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;SYM&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;FIN&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;I&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????VFIN'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;FIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;FIN&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "UNLOAD_CUA<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Upload&nbsp;Objects.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UPLOAD_OBJECTS.<br />
+&nbsp;&nbsp;PERFORM&nbsp;UPLOAD_EEE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ABAP,texts,attr&nbsp;dynpro&nbsp;logic<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;E1&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;IF&nbsp;I&nbsp;&gt&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Do&nbsp;dynpro&nbsp;components&nbsp;exist<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UPLOAD_HHH.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"dynpro&nbsp;header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UPLOAD_FFF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"dynpro&nbsp;fields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;RECONSTRUCT_DYNPROS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"load&nbsp;+&nbsp;gen&nbsp;dynpros<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "UPLOAD_OBJECTS<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Build&nbsp;table&nbsp;containing&nbsp;dynpro&nbsp;names&nbsp;and&nbsp;numbers&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM BUILD_T.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;D020S&nbsp;WHERE&nbsp;PROG&nbsp;EQ&nbsp;R-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;T-NUMBER&nbsp;=&nbsp;D020S-DNUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;T-NAME&nbsp;&nbsp;&nbsp;=&nbsp;D020S-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T.<br />
+&nbsp;&nbsp;ENDSELECT.<br />
+ENDFORM.                    "BUILD_T<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Split&nbsp;dynpros&nbsp;into&nbsp;constituent&nbsp;parts.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UNLOAD_DYNPROS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;FIRST-TIME.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH:&nbsp;F,&nbsp;E.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;H,&nbsp;F,&nbsp;E.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BUILD_HHH.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Dynpro&nbsp;Header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BUILD_FFF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Dynpro&nbsp;Fields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BUILD_EEE_DYNP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Dynpro&nbsp;Logic<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "UNLOAD_DYNPROS<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Header&nbsp;H&nbsp;length&nbsp;284.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM BUILD_HHH.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NAME&nbsp;TO&nbsp;DYNNAME(40).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NUMBER&nbsp;TO&nbsp;DYNNAME+40(4).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;4.<br />
+&nbsp;&nbsp;IMPORT&nbsp;DYNPRO&nbsp;H&nbsp;F&nbsp;E&nbsp;M&nbsp;ID&nbsp;DYNNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NAME&nbsp;TO&nbsp;H1-NAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NUMBER&nbsp;TO&nbsp;H1-NUMBER.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;H&nbsp;TO&nbsp;H1.<br />
+&nbsp;&nbsp;APPEND&nbsp;H1.<br />
+ENDFORM.                    "BUILD_HHH<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Fields&nbsp;D021S&nbsp;Len&nbsp;87.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM BUILD_FFF.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NAME&nbsp;TO&nbsp;F1-NAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NUMBER&nbsp;TO&nbsp;F1-NUMBER.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;F.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;F&nbsp;TO&nbsp;F1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;F1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;F.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "BUILD_FFF<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Dynpro&nbsp;Logic&nbsp;D022S&nbsp;E&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM BUILD_EEE_DYNP.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NAME&nbsp;TO&nbsp;E1-NAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;T-NUMBER&nbsp;TO&nbsp;E1-NUMBER.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;E.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;E&nbsp;TO&nbsp;E1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;E1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;E.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "BUILD_EEE_DYNP<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Unload&nbsp;Constituent&nbsp;parts&nbsp;of&nbsp;dynpro.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UNLOAD_DYNPRO_COMPONENTS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'????LOGC'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;E1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;E1&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;E1.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;FREE&nbsp;E1.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;FOUND.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;D020T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"use&nbsp;logged&nbsp;on&nbsp;language<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;PROG&nbsp;EQ&nbsp;T-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;DYNR&nbsp;EQ&nbsp;T-NUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;LANG&nbsp;EQ&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"try&nbsp;original&nbsp;language.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;D020T<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;PROG&nbsp;EQ&nbsp;T-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;DYNR&nbsp;EQ&nbsp;T-NUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;LANG&nbsp;EQ&nbsp;R-LANGUAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;FOUND&nbsp;=&nbsp;'N'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????DTIT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;FOUND.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;T-NAME&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;T-NUMBER&nbsp;TO&nbsp;S-TXT+8(4).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;D020T-DTXT&nbsp;TO&nbsp;S-TXT+12(60).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;FOUND.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;*&nbsp;FROM&nbsp;D021T<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;PROG&nbsp;EQ&nbsp;T-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;DYNR&nbsp;EQ&nbsp;T-NUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;LANG&nbsp;EQ&nbsp;SY-LANGU.&nbsp;&nbsp;&nbsp;&nbsp;"logged&nbsp;on&nbsp;language<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;FOUND&nbsp;=&nbsp;'N'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????DTXT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;FOUND.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;D021T&nbsp;TO&nbsp;DTXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;DTXT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"try&nbsp;original&nbsp;language<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;*&nbsp;FROM&nbsp;D021T<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;PROG&nbsp;EQ&nbsp;T-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;DYNR&nbsp;EQ&nbsp;T-NUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;LANG&nbsp;EQ&nbsp;R-LANGUAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;FOUND&nbsp;=&nbsp;'N'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'????DTXT'&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;FOUND.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;D021T&nbsp;TO&nbsp;DTXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;DTXT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "UNLOAD_DYNPRO_COMPONENTS<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Build&nbsp;the&nbsp;original&nbsp;dynpro&nbsp;component&nbsp;tables.&nbsp;*/<br />
+*/*&nbsp;Table&nbsp;H1&nbsp;contains&nbsp;1&nbsp;entry&nbsp;for&nbsp;each&nbsp;dynpro.&nbsp;H1&nbsp;contains&nbsp;*/<br />
+*/*&nbsp;the&nbsp;header&nbsp;for&nbsp;the&nbsp;dynpro&nbsp;prefixed&nbsp;by&nbsp;the&nbsp;program&nbsp;name&nbsp;*/<br />
+*/*&nbsp;and&nbsp;dynpro&nbsp;number.&nbsp;*/<br />
+*/*&nbsp;By&nbsp;looping&nbsp;round&nbsp;this&nbsp;table&nbsp;we&nbsp;can&nbsp;re-build&nbsp;the&nbsp;F&nbsp;*/<br />
+*/*&nbsp;(Fields)&nbsp;and&nbsp;E&nbsp;(Logic)&nbsp;components.&nbsp;By&nbsp;stripping&nbsp;off&nbsp;the&nbsp;*/<br />
+*/*&nbsp;program&nbsp;name&nbsp;and&nbsp;dynpro&nbsp;number&nbsp;the&nbsp;original&nbsp;tables&nbsp;are&nbsp;*/<br />
+*/*&nbsp;re-created.&nbsp;(Tables&nbsp;F1&nbsp;and&nbsp;E1&nbsp;also&nbsp;have&nbsp;a&nbsp;prefix&nbsp;of&nbsp;*/<br />
+*/*&nbsp;Program&nbsp;name&nbsp;and&nbsp;dynpro&nbsp;nr).&nbsp;*/<br />
+*/*&nbsp;After&nbsp;the&nbsp;original&nbsp;set&nbsp;of&nbsp;tables&nbsp;has&nbsp;been&nbsp;re-created&nbsp;we&nbsp;*/<br />
+*/*&nbsp;use&nbsp;R3&nbsp;-&nbsp;SYSTEM-CALL&nbsp;(rel&nbsp;2.2)&nbsp;to&nbsp;generate&nbsp;the&nbsp;screen&nbsp;*/<br />
+*/*&nbsp;and&nbsp;then&nbsp;get&nbsp;the&nbsp;next&nbsp;entry&nbsp;in&nbsp;table&nbsp;H1&nbsp;to&nbsp;build&nbsp;the&nbsp;*/<br />
+*/*&nbsp;next&nbsp;screen.&nbsp;For&nbsp;releases&nbsp;3.0&nbsp;and&nbsp;higher&nbsp;use&nbsp;generate&nbsp;*/<br />
+*/*&nbsp;dynpro.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM RECONSTRUCT_DYNPROS.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;H1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;if&nbsp;h1-name&nbsp;ne&nbsp;repid.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;H1-NAME&nbsp;NE&nbsp;R1-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H1-NAME&nbsp;TO&nbsp;OLDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;RECONSTRUCT_F.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;RECONSTRUCT_E.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;H1&nbsp;TO&nbsp;H.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;MAIN&nbsp;=&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;move&nbsp;repid&nbsp;to&nbsp;h-prog.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;R1-NAME&nbsp;TO&nbsp;H-PROG.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;move&nbsp;repid&nbsp;to&nbsp;dynname.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;R1-NAME&nbsp;TO&nbsp;DYNNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H1-NAME&nbsp;TO&nbsp;H-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H1-NAME&nbsp;TO&nbsp;DYNNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H1-NUMBER&nbsp;TO&nbsp;H-DNUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;H1-NUMBER&nbsp;TO&nbsp;DYNNAME+40(4).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORT&nbsp;DYNPRO&nbsp;H&nbsp;F&nbsp;E&nbsp;M&nbsp;ID&nbsp;DYNNAME.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;SYSTEM-CALL&nbsp;GENERATE-SCREEN&nbsp;DYNNAME.&nbsp;"Up&nbsp;to&nbsp;rel&nbsp;2.2<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;GENERATE&nbsp;DYNPRO&nbsp;H&nbsp;F&nbsp;E&nbsp;M&nbsp;ID&nbsp;DYNNAME&nbsp;"R&nbsp;3.0,&nbsp;4.0,&nbsp;4.5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;DYNPRO_MESSAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINE&nbsp;&nbsp;&nbsp;&nbsp;DYNPRO_LINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORD&nbsp;&nbsp;&nbsp;&nbsp;DYNPRO_WORD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH:&nbsp;M,&nbsp;F,&nbsp;E.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;M,&nbsp;H,&nbsp;F,&nbsp;E.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "RECONSTRUCT_DYNPROS<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Re-build&nbsp;Fields&nbsp;table&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM RECONSTRUCT_F.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;F1&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;EQ&nbsp;H1-NAME&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;EQ&nbsp;H1-NUMBER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;F1&nbsp;TO&nbsp;F.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;F.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "RECONSTRUCT_F<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Re-build&nbsp;Logic&nbsp;table&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM RECONSTRUCT_E.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;E1&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;EQ&nbsp;H1-NAME&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;EQ&nbsp;H1-NUMBER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;E1&nbsp;TO&nbsp;E.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;E.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "RECONSTRUCT_E<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;scan&nbsp;for&nbsp;included&nbsp;files&nbsp;(Upload)&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM SCAN4-INCLUDES.<br />
+&nbsp;&nbsp;IF&nbsp;FUNC&nbsp;=&nbsp;'D'.&nbsp;&nbsp;&nbsp;&nbsp;"Downloads&nbsp;-&nbsp;whole&nbsp;table&nbsp;needs&nbsp;to&nbsp;be&nbsp;scanned<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SEARCH-FUNC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;FUNC&nbsp;=&nbsp;'U'.&nbsp;&nbsp;"On&nbsp;upload&nbsp;scan&nbsp;line&nbsp;by&nbsp;line&nbsp;as&nbsp;we&nbsp;are&nbsp;re-building&nbsp;abap<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SEARCH-FUNC.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "SCAN4-INCLUDES<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;scan&nbsp;for&nbsp;text&nbsp;INCLUDE&nbsp;xxxxxxxx&nbsp;*/<br />
+*/*&nbsp;reject&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;as&nbsp;structure&nbsp;not&nbsp;a&nbsp;valid&nbsp;*/<br />
+*/*&nbsp;program&nbsp;name&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM SEARCH-FUNC.<br />
+&nbsp;&nbsp;CONDENSE&nbsp;S-TXT.<br />
+&nbsp;&nbsp;SEARCH&nbsp;S-TXT&nbsp;FOR&nbsp;'.INCLUDE&nbsp;.'.<br />
+&nbsp;&nbsp;CASE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;S-TXT+8(9)&nbsp;EQ&nbsp;'STRUCTURE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;S-TXT+8(9)&nbsp;EQ&nbsp;'structure'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;S-TXT+8(6)&nbsp;EQ&nbsp;'&ltICON&gt'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;3.0c&nbsp;3.0d<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;S-TXT+8(6)&nbsp;EQ&nbsp;'&lticon&gt'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;S-TXT+8(6)&nbsp;EQ&nbsp;'&lttype&gt'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;S-TXT+8(6)&nbsp;EQ&nbsp;'&ltTYPE&gt'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;S-TXT+8(9)&nbsp;EQ&nbsp;'&ltmethods&gt'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;S-TXT+8(9)&nbsp;EQ&nbsp;'&ltMETHODS&gt'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-FDPOS&nbsp;EQ&nbsp;0.&nbsp;&nbsp;"INCLUDE&nbsp;must&nbsp;be&nbsp;in&nbsp;pos&nbsp;1&nbsp;(by&nbsp;reason&nbsp;of&nbsp;condense)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;VALIDATE_INCLUDE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    "SEARCH-FUNC<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Validate&nbsp;INCLUDES&nbsp;.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM VALIDATE_INCLUDE.<br />
+&nbsp;&nbsp;SEARCH&nbsp;S-TXT&nbsp;FOR&nbsp;'...'&nbsp;STARTING&nbsp;AT&nbsp;9&nbsp;ENDING&nbsp;AT&nbsp;39.<br />
+&nbsp;&nbsp;CASE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEARCH&nbsp;S-TXT&nbsp;FOR&nbsp;'.&nbsp;.'&nbsp;STARTING&nbsp;AT&nbsp;9&nbsp;ENDING&nbsp;AT&nbsp;38.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;IX&nbsp;=&nbsp;SY-FDPOS.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;S-TXT+8(IX)&nbsp;TO&nbsp;&ltF&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Now&nbsp;check&nbsp;for&nbsp;Include&nbsp;Mask&nbsp;for&nbsp;example&nbsp;if&nbsp;include&nbsp;mask&nbsp;was&nbsp;set&nbsp;to<br />
+*&nbsp;Z*&nbsp;then&nbsp;only&nbsp;include&nbsp;programs&nbsp;whose&nbsp;first&nbsp;letter&nbsp;starts&nbsp;with&nbsp;a&nbsp;Z.<br />
+*<br />
+*&nbsp;1)&nbsp;get&nbsp;length&nbsp;of&nbsp;the&nbsp;INCLUDE&nbsp;program&nbsp;name.&nbsp;Must&nbsp;be&nbsp;less&nbsp;than&nbsp;or<br />
+*&nbsp;equal&nbsp;40.<br />
+*&nbsp;2)&nbsp;Compare&nbsp;it&nbsp;with&nbsp;the&nbsp;Include&nbsp;mask.<br />
+*&nbsp;3)&nbsp;If&nbsp;Ok&nbsp;add&nbsp;include&nbsp;program&nbsp;name&nbsp;to&nbsp;include&nbsp;table<br />
+*&nbsp;clear&nbsp;i_include.<br />
+*&nbsp;move&nbsp;&ltf&gt&nbsp;to&nbsp;i_include-name.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;I_INCL.<br />
+&nbsp;&nbsp;SEARCH&nbsp;IMASK&nbsp;FOR&nbsp;'.*.'.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;IMASK.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;(&nbsp;&ltF&gt&nbsp;CP&nbsp;IMASK&nbsp;&nbsp;OR&nbsp;&nbsp;IMASK&nbsp;=&nbsp;'&nbsp;'&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;I_INCL&nbsp;WITH&nbsp;KEY&nbsp;=&nbsp;&ltF&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;&ltF&gt&nbsp;TO&nbsp;I_INCL-NAME.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;move&nbsp;1&nbsp;to&nbsp;i_include-count.<br />
+*&nbsp;collect&nbsp;i_include.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;I_INCL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "VALIDATE_INCLUDE<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Download&nbsp;table&nbsp;S.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM DOWNLOAD_DATA.<br />
+&nbsp;&nbsp;CLEAR&nbsp;TXLINE.<br />
+&nbsp;&nbsp;WRITE&nbsp;'Downloading&nbsp;'&nbsp;TO&nbsp;TXLINE.<br />
+&nbsp;&nbsp;WRITE&nbsp;R1-NAME&nbsp;TO&nbsp;TXLINE+12.<br />
+&nbsp;&nbsp;CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERCENTAGE&nbsp;=&nbsp;0<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TXLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;FN3_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'GUI_DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;=&nbsp;FN3_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;=&nbsp;'ASC'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;=&nbsp;S.<br />
+<br />
+<br />
+<br />
+ENDFORM.                    "DOWNLOAD_DATA<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Download&nbsp;Binary&nbsp;files&nbsp;H1&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM DOWNLOAD_BIN_H1.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;FIELD&nbsp;H1&nbsp;LENGTH&nbsp;J&nbsp;IN&nbsp;BYTE&nbsp;MODE.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;H1&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;NR_OF_BYTES&nbsp;=&nbsp;I&nbsp;*&nbsp;J.<br />
+&nbsp;&nbsp;FN1_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;CALL FUNCTION 'GUI_DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN1_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'BIN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIN_FILESIZE&nbsp;=&nbsp;NR_OF_BYTES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;&nbsp;&nbsp;=&nbsp;FILESIZE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H1.<br />
+ENDFORM.                    "DOWNLOAD_BIN_H1<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Download&nbsp;Binary&nbsp;files&nbsp;F1&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM DOWNLOAD_BIN_F1.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;FIELD&nbsp;F1&nbsp;LENGTH&nbsp;J&nbsp;IN&nbsp;BYTE&nbsp;MODE.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;F1&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;NR_OF_BYTES&nbsp;=&nbsp;I&nbsp;*&nbsp;J.<br />
+&nbsp;&nbsp;FN2_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;CALL FUNCTION 'GUI_DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN2_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'BIN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIN_FILESIZE&nbsp;=&nbsp;NR_OF_BYTES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;&nbsp;&nbsp;=&nbsp;FILESIZE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F1.<br />
+ENDFORM.                    "DOWNLOAD_BIN_F1<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Upload&nbsp;data&nbsp;from&nbsp;file&nbsp;.TXT&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UPLOAD_EEE.<br />
+&nbsp;&nbsp;CLEAR&nbsp;TXLINE.<br />
+&nbsp;&nbsp;WRITE&nbsp;'Uploading&nbsp;'&nbsp;TO&nbsp;TXLINE.<br />
+&nbsp;&nbsp;WRITE&nbsp;R1-NAME&nbsp;TO&nbsp;TXLINE+10.<br />
+&nbsp;&nbsp;CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERCENTAGE&nbsp;=&nbsp;0<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TXLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;FIRST-TIME.<br />
+<br />
+&nbsp;&nbsp;FN3_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;CALL FUNCTION 'GUI_UPLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;=&nbsp;FN3_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;=&nbsp;'ASC'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;=&nbsp;NR_OF_BYTES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;=&nbsp;S1.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;S1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;S1-TXT(4)&nbsp;=&nbsp;'????'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT(8)&nbsp;TO&nbsp;NEW-FUNC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;FIRST-TIME&nbsp;=&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT(8)&nbsp;TO&nbsp;OLD-FUNC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;FIRST-TIME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;STORE_COMPONENT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;NEW-FUNC&nbsp;TO&nbsp;OLD-FUNC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;S1-TXT(4)&nbsp;NE&nbsp;'????'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;REBUILD-COMPONENT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;PERFORM&nbsp;STORE_COMPONENT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"last&nbsp;component&nbsp;still&nbsp;to&nbsp;be&nbsp;processed<br />
+&nbsp;&nbsp;PERFORM&nbsp;REBUILD-CUA.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"re-build&nbsp;CUA,&nbsp;statuses,&nbsp;pfk&nbsp;etc<br />
+ENDFORM.                    "UPLOAD_EEE<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Upload&nbsp;Dynpro&nbsp;headers&nbsp;(HHH)&nbsp;and&nbsp;fields&nbsp;(FFF)&nbsp;*/<br />
+*/*&nbsp;titles&nbsp;and&nbsp;dynpro&nbsp;logic&nbsp;is&nbsp;contained&nbsp;in&nbsp;file&nbsp;.TXT&nbsp;*/<br />
+*/*&nbsp;and&nbsp;has&nbsp;already&nbsp;been&nbsp;processed.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UPLOAD_HHH.<br />
+&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN1_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_UPLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;=&nbsp;FN1_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;=&nbsp;'BIN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;=&nbsp;NR_OF_BYTES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;=&nbsp;H2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;H2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H2-CNAME&nbsp;TO&nbsp;H1-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H2-CNUM&nbsp;&nbsp;TO&nbsp;H1-NUMBER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H2-NNAME&nbsp;TO&nbsp;H1-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H2-NNUM&nbsp;&nbsp;TO&nbsp;H1-DNUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H2-CTIM&nbsp;TO&nbsp;H1-TGEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;'19'&nbsp;TO&nbsp;H1-DGEN(2).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;H2-CDAT&nbsp;TO&nbsp;H1-DGEN+2(6).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;HEUS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;H2-FILL&nbsp;TO&nbsp;H1+88(39).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-TYPE	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+00(1).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-FNUM	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+01(4).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-DGRP	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+05(4).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-BZMX	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+09(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-BZBR	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+12(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-MILI	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+15(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-MICO	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+18(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-MALI	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+21(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-MACO	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+24(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-NOLI	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+27(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-NOCO	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+30(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-VALP	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+33(3).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-CUAN	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+36(1).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-HDAT	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+37(1).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;H1-SPRA	&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;H2-FILL+38(1).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;H1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN1_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_UPLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;=&nbsp;FN1_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;=&nbsp;'BIN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;=&nbsp;NR_OF_BYTES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;=&nbsp;H1.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;H1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H1-NAME&nbsp;TO&nbsp;T-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;H1-NUMBER&nbsp;TO&nbsp;T-NUMBER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "UPLOAD_HHH<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Upload&nbsp;Binary&nbsp;file&nbsp;F1&nbsp;-&nbsp;Dynpro&nbsp;fields&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UPLOAD_FFF.<br />
+&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN2_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_UPLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;=&nbsp;FN2_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;=&nbsp;'BIN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;=&nbsp;NR_OF_BYTES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;=&nbsp;F2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;F2.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;HEUS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1&nbsp;=&nbsp;F2.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+000(08).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-NUMBER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+008(04).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+012(30).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-DIDX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+042(02).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FLG1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+044(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FLG2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+045(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FLG3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+046(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FILL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+047(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FMB1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+048(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FMB2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+049(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-COLR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+050(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-LENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+051(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-LINE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+052(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-COLN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+053(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-LTYP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+054(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-LANF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+055(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-LBLK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+056(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-LREP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+057(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FMKY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+058(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-PAID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+061(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-UCNV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+064(05).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+069(04).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-AUTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+073(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-WNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+076(30).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-DMAC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+106(31).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-GRP1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+137(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-GRP2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+140(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-GRP3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+143(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-GRP4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+146(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-ITYP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+149(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-AGLT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+150(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-ADEZ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+151(01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-STXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+152(132).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FTYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+284(05).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_F1-FCOUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;F2-TFIL+289(03).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_F1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;OLD_F1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;OLD_F1&nbsp;TO&nbsp;F1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;F1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FN2_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FN2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_UPLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;=&nbsp;FN2_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;=&nbsp;'BIN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;=&nbsp;NR_OF_BYTES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;=&nbsp;F1.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    "UPLOAD_FFF<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Re-construct&nbsp;data&nbsp;from&nbsp;file&nbsp;.TXT&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM REBUILD-COMPONENT.<br />
+&nbsp;&nbsp;CASE&nbsp;OLD-FUNC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????LOGC'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Dynpro&nbsp;LOGIC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHIFT&nbsp;S1-TXT+8&nbsp;RIGHT&nbsp;BY&nbsp;32&nbsp;PLACES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;E1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;E1.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Load&nbsp;ABAP&nbsp;Source&nbsp;code,&nbsp;CUA,&nbsp;pfkeys&nbsp;etc&nbsp;to&nbsp;int&nbsp;tables&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????SRCE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;S-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;INCLUDES.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Included&nbsp;file&nbsp;wanted<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SCAN4-INCLUDES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;if&nbsp;restoring&nbsp;/&nbsp;uploading&nbsp;rel&nbsp;3.1&nbsp;or&nbsp;lower&nbsp;different&nbsp;cua&nbsp;tables<br />
+*&nbsp;are&nbsp;used.&nbsp;At&nbsp;generate&nbsp;CUA&nbsp;time&nbsp;these&nbsp;will&nbsp;be&nbsp;converted&nbsp;by&nbsp;the<br />
+*&nbsp;system&nbsp;to&nbsp;rel&nbsp;4.0<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????STAT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_STA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_STA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;STA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;STA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????FUNC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_FUN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_FUN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;FUN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;FUN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????MEN1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_MEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_MEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;MEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;MEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????MTX1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_MTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_MTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;MTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;MTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????ACTN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_ACT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_ACT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;ACT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ACT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????BUTN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_BUT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_BUT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;BUT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;BUT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????PFKY'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_PFK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_PFK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;PFK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;PFK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????SETS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_SET.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_SET.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;SET.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;SET.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????DOCN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_DOC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_DOC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;DOC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;DOC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????TITL'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;OLD_TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;OLD_TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????LIST'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;LAST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????INCL'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;INC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;INC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????STXT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;STX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;STX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????FTXT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;next&nbsp;5&nbsp;tables&nbsp;(ATT&nbsp;FDN&nbsp;MDN&nbsp;SYM&nbsp;and&nbsp;FIN)&nbsp;are&nbsp;rel&nbsp;3.0&nbsp;specific<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????VATT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;ATT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ATT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????VFDN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;FDN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;FDN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????VMDN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;MDN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;MDN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????VSYM'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;SYM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;SYM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????VFIN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;FIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;FIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;CUA-FLAG.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Load&nbsp;ABAP&nbsp;Text&nbsp;elements&nbsp;(Max&nbsp;length&nbsp;132&nbsp;-&nbsp;the&nbsp;system&nbsp;*/<br />
+*/*&nbsp;allows&nbsp;255&nbsp;but&nbsp;this&nbsp;program&nbsp;handles&nbsp;132&nbsp;only)&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????TEXT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;U-TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;U.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Update&nbsp;ABAP's&nbsp;Attributes.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Ensure&nbsp;Attribute&nbsp;updated&nbsp;before&nbsp;dynpro&nbsp;text&nbsp;or&nbsp;language&nbsp;*/<br />
+*/*&nbsp;may&nbsp;be&nbsp;wrong.&nbsp;If&nbsp;language&nbsp;field&nbsp;is&nbsp;blank&nbsp;then&nbsp;default&nbsp;*/<br />
+*/*&nbsp;(logon)&nbsp;language&nbsp;will&nbsp;be&nbsp;used&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????ATTR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"uploading&nbsp;rel&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHIFT&nbsp;S1-TXT+8&nbsp;RIGHT&nbsp;BY&nbsp;32&nbsp;PLACES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;DIR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;SY-MANDT&nbsp;TO&nbsp;NUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;NUM&nbsp;TO&nbsp;DIR-RMAND.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Ensure&nbsp;uploaded&nbsp;to&nbsp;cor.&nbsp;client<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;if&nbsp;repid&nbsp;ne&nbsp;dir-name.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;R1-NAME&nbsp;NE&nbsp;DIR-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;DIR-NAME&nbsp;TO&nbsp;OLDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;move&nbsp;repid&nbsp;to&nbsp;dir-name.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;R1-NAME&nbsp;TO&nbsp;DIR-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UPDATE_TRDIR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????DTIT'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Dynpro&nbsp;title<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"uploading&nbsp;rel&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHIFT&nbsp;S1-TXT+8&nbsp;RIGHT&nbsp;BY&nbsp;32&nbsp;PLACES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;TRDIR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;TRDIR&nbsp;WHERE&nbsp;NAME&nbsp;EQ&nbsp;R-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;write&nbsp;repid&nbsp;to&nbsp;d020t-prog.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R1-NAME&nbsp;TO&nbsp;D020T-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;REL3&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;S1-TXT(40)&nbsp;TO&nbsp;D020T-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;S1-TXT(8)&nbsp;TO&nbsp;D020T-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;S1-TXT+40(4)&nbsp;TO&nbsp;D020T-DYNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;TRDIR-RLOAD&nbsp;EQ&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;SY-LANGU&nbsp;TO&nbsp;TRDIR-RLOAD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;TRDIR-RLOAD&nbsp;TO&nbsp;D020T-LANG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;S1-TXT+44(60)&nbsp;TO&nbsp;D020T-DTXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;D020T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????DTXT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"uploading&nbsp;rel&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHIFT&nbsp;S1-TXT+8&nbsp;RIGHT&nbsp;BY&nbsp;32&nbsp;PLACES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;S1-TXT&nbsp;TO&nbsp;DTXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;DTXT&nbsp;TO&nbsp;D021T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;write&nbsp;repid&nbsp;to&nbsp;d021t-prog.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;R1-NAME&nbsp;TO&nbsp;D021T-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;REL3&nbsp;=&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;S1-TXT(8)&nbsp;TO&nbsp;D021T-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;S1-TXT(40)&nbsp;TO&nbsp;D021T-PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;D021T.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    "REBUILD-COMPONENT<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Store&nbsp;re-constructed&nbsp;component&nbsp;of&nbsp;ABAP&nbsp;back&nbsp;on&nbsp;to&nbsp;the&nbsp;library&nbsp;*/<br />
+*/*&nbsp;Note&nbsp;that&nbsp;any&nbsp;attribute&nbsp;found&nbsp;has&nbsp;already&nbsp;been&nbsp;stored&nbsp;back&nbsp;*/<br />
+*/*&nbsp;on&nbsp;TRDIR.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM STORE_COMPONENT.<br />
+&nbsp;&nbsp;CASE&nbsp;OLD-FUNC.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ABAP&nbsp;source.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Store&nbsp;ABAP&nbsp;source&nbsp;code&nbsp;back&nbsp;into&nbsp;the&nbsp;library&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????SRCE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;insert&nbsp;report&nbsp;repid&nbsp;from&nbsp;s.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;R1-NAME&nbsp;FROM&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;R-NAME&nbsp;FROM&nbsp;S.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;S.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Store&nbsp;ABAP&nbsp;Text&nbsp;Elements&nbsp;Back&nbsp;into&nbsp;Library&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'????TEXT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;TU&nbsp;&nbsp;&nbsp;.&nbsp;CLEAR&nbsp;&nbsp;:TU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;U&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;U&nbsp;TO&nbsp;TU&nbsp;.&nbsp;APPEND&nbsp;TU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;insert&nbsp;textpool&nbsp;repid&nbsp;from&nbsp;u&nbsp;language&nbsp;sy-langu.<br />
+*&nbsp;HEUS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;TEXTPOOL&nbsp;R1-NAME&nbsp;FROM&nbsp;U&nbsp;LANGUAGE&nbsp;&nbsp;SY-LANGU.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;TEXTPOOL&nbsp;R-NAME&nbsp;FROM&nbsp;U&nbsp;LANGUAGE&nbsp;&nbsp;SY-LANGU.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;TEXTPOOL&nbsp;R1-NAME&nbsp;FROM&nbsp;TU&nbsp;LANGUAGE&nbsp;&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;TEXTPOOL&nbsp;R-NAME&nbsp;FROM&nbsp;TU&nbsp;LANGUAGE&nbsp;&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH:&nbsp;TU,U.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    "STORE_COMPONENT<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Update&nbsp;Attributes&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UPDATE_TRDIR.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;DIR&nbsp;TO&nbsp;TRDIR.<br />
+&nbsp;&nbsp;TRDIR-EDTX&nbsp;&nbsp;=&nbsp;SPACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;MODIFY&nbsp;TRDIR.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;TADIR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;PGMID&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJECT&nbsp;=&nbsp;'PROG'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJ_NAME&nbsp;=&nbsp;TRDIR-NAME.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'R3TR'&nbsp;TO&nbsp;TADIR-PGMID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'PROG'&nbsp;TO&nbsp;TADIR-OBJECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;TRDIR-NAME&nbsp;TO&nbsp;TADIR-OBJ_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'$TMP'&nbsp;TO&nbsp;TADIR-DEVCLASS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'L'&nbsp;TO&nbsp;TADIR-CPROJECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;SY-LANGU&nbsp;TO&nbsp;TADIR-MASTERLANG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;SY-SYSID&nbsp;TO&nbsp;TADIR-SRCSYSTEM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRDIR-EDTX&nbsp;&nbsp;=&nbsp;SPACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;TADIR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "UPDATE_TRDIR<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;re-build&nbsp;the&nbsp;CUA,&nbsp;update&nbsp;the&nbsp;title&nbsp;table&nbsp;(if&nbsp;any&nbsp;entries&nbsp;*/<br />
+*/*&nbsp;exist)&nbsp;and&nbsp;update&nbsp;EUDB&nbsp;*/<br />
+*/*&nbsp;Finally&nbsp;generate&nbsp;the&nbsp;CUA&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM REBUILD-CUA.<br />
+&nbsp;&nbsp;IF&nbsp;CUA-FLAG&nbsp;=&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;LOAD_CUA&nbsp;USING&nbsp;R-NAME&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;SY-LANGU&nbsp;TO&nbsp;TITLE-DDLANGUAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;R-NAME&nbsp;TO&nbsp;TITLE-PROGNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;TIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;TIT&nbsp;TO&nbsp;TITLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;TITLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;CUA-FLAG.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "REBUILD-CUA<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Load&nbsp;the&nbsp;CUA&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM LOAD_CUA USING PROGRAM LANGUAGE.<br />
+&nbsp;&nbsp;EU_KEY-NAME&nbsp;&nbsp;=&nbsp;PROGRAM.<br />
+&nbsp;&nbsp;EU_KEY-SPRSL&nbsp;=&nbsp;LANGUAGE.<br />
+&nbsp;&nbsp;EU_KEY-SPRSL&nbsp;=&nbsp;'D'.<br />
+<br />
+<br />
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;EUDB&nbsp;WHERE&nbsp;RELID&nbsp;=&nbsp;'CU'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;NAME&nbsp;&nbsp;=&nbsp;PROGRAM.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;create&nbsp;new&nbsp;EUDB&nbsp;table&nbsp;entry<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;EUDB.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;HANKH<br />
+*&nbsp;&nbsp;EUDB-LANGU&nbsp;=&nbsp;'D'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;EUDB-LANGU&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;EUDB-AUTOR&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;EUDB-DATUM&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;EUDB-ZEIT&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;EUDB-RELID&nbsp;=&nbsp;'CU'.<br />
+&nbsp;&nbsp;EUDB-SRTF2&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;EUDB-NAME&nbsp;&nbsp;=&nbsp;R-NAME.<br />
+&nbsp;&nbsp;EUDB-VAUTOR&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;EUDB-VDATUM&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;EUDB-VZEIT&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;insert&nbsp;into&nbsp;table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;INSERT&nbsp;EUDB.<br />
+&nbsp;&nbsp;CASE&nbsp;REL3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;TEXTNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;OLD_MTX.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;HEUS&nbsp;&nbsp;RS_CUA_VERSION_EXPORT<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;SYSTEM-EXCEPTIONS&nbsp;IMPORT_MISMATCH_ERRORS&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORT&nbsp;STA&nbsp;TO&nbsp;VSTA_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FUN&nbsp;TO&nbsp;VFUN_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MTX&nbsp;TO&nbsp;VMTX_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOC&nbsp;TO&nbsp;VDOC_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TIT&nbsp;TO&nbsp;VTIT_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEN&nbsp;TO&nbsp;VMEN_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACT&nbsp;TO&nbsp;VACT_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADM&nbsp;TO&nbsp;LOC_ADM<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUT&nbsp;TO&nbsp;VBUT_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIV&nbsp;TO&nbsp;VBIV_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFK&nbsp;TO&nbsp;VPFK_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;TO&nbsp;VSET_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CTX&nbsp;TO&nbsp;VCTX_40<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;DATABASE&nbsp;EUDB(CU)&nbsp;ID&nbsp;EUDB_KEY<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACCEPTING&nbsp;TRUNCATION.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDCATCH.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;1.<br />
+<br />
+*&nbsp;EXPORT&nbsp;STA&nbsp;STX&nbsp;FUN&nbsp;MEN&nbsp;MTX&nbsp;ACT&nbsp;BUT&nbsp;PFK&nbsp;SET&nbsp;INC&nbsp;LAST&nbsp;DOC&nbsp;"rel&nbsp;2.2<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORT&nbsp;STA&nbsp;&nbsp;FROM&nbsp;OLD_STA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FUN&nbsp;&nbsp;FROM&nbsp;OLD_FUN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEN&nbsp;&nbsp;FROM&nbsp;OLD_MEN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MTX&nbsp;&nbsp;FROM&nbsp;OLD_MTX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACT&nbsp;&nbsp;FROM&nbsp;OLD_ACT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUT&nbsp;&nbsp;FROM&nbsp;OLD_BUT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFK&nbsp;&nbsp;FROM&nbsp;OLD_PFK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;&nbsp;FROM&nbsp;OLD_SET<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOC&nbsp;&nbsp;FROM&nbsp;OLD_DOC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TIT&nbsp;&nbsp;FROM&nbsp;OLD_TIT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LAST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATT&nbsp;FDN&nbsp;MDN&nbsp;SYM&nbsp;FIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"rel&nbsp;3.0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;DATABASE&nbsp;EUDB(CU)&nbsp;ID&nbsp;EU_KEY.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;REL&nbsp;4.0&nbsp;converts&nbsp;old&nbsp;CUA&nbsp;(3.1&nbsp;and&nbsp;lower)&nbsp;to&nbsp;rel&nbsp;4.<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;MTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORT&nbsp;STA&nbsp;FUN&nbsp;MEN&nbsp;MTX&nbsp;ACT&nbsp;BUT&nbsp;PFK&nbsp;SET&nbsp;DOC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;DATABASE&nbsp;EUDB(CU)&nbsp;ID&nbsp;EU_KEY.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;only&nbsp;entry&nbsp;with&nbsp;sprsl&nbsp;=&nbsp;D&nbsp;allowed<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;EUDB&nbsp;WHERE&nbsp;RELID&nbsp;=&nbsp;'CU'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NAME&nbsp;=&nbsp;PROGRAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRSL&nbsp;&nbsp;=&nbsp;'&nbsp;'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*<br />
+*&nbsp;set&nbsp;release&nbsp;in&nbsp;EUDB&nbsp;to&nbsp;ver&nbsp;4.0&nbsp;if&nbsp;appropriate.&nbsp;Rel&nbsp;3.1G&nbsp;and&nbsp;earlier<br />
+*&nbsp;will&nbsp;be&nbsp;handled&nbsp;and&nbsp;converted&nbsp;by&nbsp;the&nbsp;system<br />
+*<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;REL3&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;EUDB&nbsp;WHERE&nbsp;RELID&nbsp;=&nbsp;'CU'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NAME&nbsp;=&nbsp;PROGRAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRSL&nbsp;&nbsp;=&nbsp;'D'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'000040'&nbsp;TO&nbsp;EUDB-VERSION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;EUDB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;EUDB&nbsp;WHERE&nbsp;RELID&nbsp;=&nbsp;'CU'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NAME&nbsp;=&nbsp;PROGRAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRSL&nbsp;&nbsp;=&nbsp;'D'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'&nbsp;'&nbsp;TO&nbsp;EUDB-VERSION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;EUDB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;FTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;FTX&nbsp;TO&nbsp;RSMPTEXTS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;MAIN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Y'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;move&nbsp;repid&nbsp;to&nbsp;rsmptexts-progname.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;R1-NAME&nbsp;TO&nbsp;RSMPTEXTS-PROGNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;RSMPTEXTS.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*HEUS<br />
+*&nbsp;call&nbsp;transaction&nbsp;se41&nbsp;to&nbsp;generate&nbsp;the&nbsp;user&nbsp;interface<br />
+<br />
+*&nbsp;&nbsp;REFRESH&nbsp;T_BDC_TAB.<br />
+*&nbsp;&nbsp;PERFORM&nbsp;BLD_DYNPRO&nbsp;USING:<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMSMPE'&nbsp;'100',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RSMPE-PROGRAM'&nbsp;PROGRAM,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RSMPE-B_STATEXT'&nbsp;'X',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RSMPE-STATUS'&nbsp;'ALV_PF',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE&nbsp;'&nbsp;'DELI'.&nbsp;"'CHNG'.<br />
+*&nbsp;&nbsp;PERFORM&nbsp;bld_dynpro&nbsp;USING:<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLSPO1'&nbsp;'100',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE&nbsp;'&nbsp;'=YES'.<br />
+**<br />
+*&nbsp;&nbsp;PERFORM&nbsp;bld_dynpro&nbsp;USING:<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMSMPE'&nbsp;'100',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE&nbsp;'&nbsp;'=WB_BACK'.<br />
+*<br />
+*&nbsp;&nbsp;PERFORM&nbsp;bld_dynpro&nbsp;USING:<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMSMPE'&nbsp;'100',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RSMPE-PROGRAM'&nbsp;program,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RSMPE-B_STATEXT'&nbsp;'X',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE&nbsp;'&nbsp;'/3'.<br />
+*&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'SE41'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;T_BDC_TAB<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE&nbsp;'E'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;'S'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;T_MESSTAB.<br />
+*&nbsp;&nbsp;CASE&nbsp;SY-SUBRC.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Warning&nbsp;---CUA&nbsp;for',&nbsp;PROGRAM,&nbsp;'incorrect.&nbsp;RC=',&nbsp;SY-SUBRC.<br />
+*&nbsp;&nbsp;ENDCASE.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;CUA-FLAG.<br />
+ENDFORM.                    "LOAD_CUA<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Handle&nbsp;CUA&nbsp;texts&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM TEXTNR.<br />
+&nbsp;&nbsp;DATA:&nbsp;NO&nbsp;TYPE&nbsp;I.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;rel&nbsp;3.1&nbsp;and&nbsp;earlier<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;OLD_MTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;OLD_MTX-TEXTNR&nbsp;NE&nbsp;OLD_MTX-CODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;OLD_MTX-TEXTNR&nbsp;=&nbsp;OLD_MTX-CODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;OLD_MTX.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;OLD_FUN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;OLD_FUN-TEXTNR&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;OLD_FUN-NO&nbsp;=&nbsp;'01'&nbsp;AND&nbsp;OLD_FUN-CODE&nbsp;CN&nbsp;'&gt;0123456789'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_FUN-TEXTNR&nbsp;=&nbsp;OLD_FUN-CODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO&nbsp;=&nbsp;LAST-TEXTNR&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNPACK&nbsp;NO&nbsp;TO&nbsp;LAST-TEXTNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_FUN-TEXTNR&nbsp;=&nbsp;LAST-TEXTNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLD_FUN-TEXTNR(1)&nbsp;=&nbsp;'&gt;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;OLD_FUN.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "TEXTNR<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Build&nbsp;data&nbsp;for&nbsp;BDC&nbsp;table&nbsp;(Call&nbsp;transaction&nbsp;SE41)&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM BLD_DYNPRO USING PU_DYNBEGIN TYPE ANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PU_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PU_VALUE&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ANY.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;T_BDC_TAB.<br />
+&nbsp;&nbsp;IF&nbsp;PU_DYNBEGIN&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;PU_DYNBEGIN&nbsp;TO&nbsp;T_BDC_TAB-DYNBEGIN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PU_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;T_BDC_TAB-PROGRAM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PU_VALUE&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;T_BDC_TAB-DYNPRO.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;PU_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;T_BDC_TAB-FNAM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PU_VALUE&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;T_BDC_TAB-FVAL.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;APPEND&nbsp;T_BDC_TAB.<br />
+<br />
+ENDFORM.                    "BLD_DYNPRO<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;To&nbsp;get&nbsp;path&nbsp;and&nbsp;file&nbsp;name&nbsp;via&nbsp;F4&nbsp;or&nbsp;mouse&nbsp;click&nbsp;use&nbsp;a&nbsp;call&nbsp;to<br />
+*&nbsp;Windows&nbsp;via&nbsp;WS_FILENAME_GET.<br />
+*&nbsp;Restriction&nbsp;is&nbsp;that&nbsp;a&nbsp;File&nbsp;must&nbsp;be&nbsp;selected&nbsp;to&nbsp;return&nbsp;any&nbsp;data<br />
+*&nbsp;Program&nbsp;chops&nbsp;off&nbsp;the&nbsp;file&nbsp;name&nbsp;when&nbsp;a&nbsp;path&nbsp;is&nbsp;wanted&nbsp;so&nbsp;the<br />
+*&nbsp;function&nbsp;can&nbsp;also&nbsp;be&nbsp;used&nbsp;to&nbsp;find&nbsp;the&nbsp;path&nbsp;on&nbsp;upload.<br />
+*&nbsp;Any&nbsp;valid&nbsp;file&nbsp;name&nbsp;can&nbsp;then&nbsp;be&nbsp;entered<br />
+*<br />
+*&nbsp;Note&nbsp;also&nbsp;that&nbsp;if&nbsp;a&nbsp;mouse&nbsp;click&nbsp;is&nbsp;done&nbsp;on&nbsp;program&nbsp;then&nbsp;the<br />
+*&nbsp;path&nbsp;is&nbsp;copied&nbsp;as&nbsp;well.<br />
+*<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN<br />
+&nbsp;&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;PATH.<br />
+&nbsp;&nbsp;CLS&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;PERFORM&nbsp;QUERY_FILENAME&nbsp;USING&nbsp;T_FILENAME&nbsp;T_MODE.<br />
+&nbsp;&nbsp;MOVE&nbsp;'PATH'&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;PATH&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDVALUE.<br />
+&nbsp;&nbsp;MOVE&nbsp;0&nbsp;TO&nbsp;I_DYNPFIELDS-STEPL.<br />
+&nbsp;&nbsp;APPEND&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;PERFORM&nbsp;UPDATE_SEL_SCREEN.<br />
+<br />
+AT SELECTION-SCREEN<br />
+&nbsp;&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;REPID-LOW.<br />
+&nbsp;&nbsp;PERFORM&nbsp;QUERY_FILENAME&nbsp;USING&nbsp;T_FILENAME&nbsp;T_MODE.<br />
+&nbsp;&nbsp;CLS&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'REPID-LOW'&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;REPID-LOW&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDVALUE.<br />
+&nbsp;&nbsp;MOVE&nbsp;0&nbsp;TO&nbsp;I_DYNPFIELDS-STEPL.<br />
+&nbsp;&nbsp;APPEND&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'PATH'&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;PATH&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDVALUE.<br />
+&nbsp;&nbsp;MOVE&nbsp;0&nbsp;TO&nbsp;I_DYNPFIELDS-STEPL.<br />
+&nbsp;&nbsp;APPEND&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;PERFORM&nbsp;UPDATE_SEL_SCREEN.<br />
+<br />
+AT SELECTION-SCREEN<br />
+&nbsp;&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;REPID-HIGH.<br />
+&nbsp;&nbsp;PERFORM&nbsp;QUERY_FILENAME&nbsp;USING&nbsp;T_FILENAME&nbsp;T_MODE.<br />
+&nbsp;&nbsp;CLS&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'REPID-HIGH'&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;REPID-HIGH&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDVALUE.<br />
+&nbsp;&nbsp;MOVE&nbsp;0&nbsp;TO&nbsp;I_DYNPFIELDS-STEPL.<br />
+&nbsp;&nbsp;APPEND&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'PATH'&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;PATH&nbsp;TO&nbsp;I_DYNPFIELDS-FIELDVALUE.<br />
+&nbsp;&nbsp;MOVE&nbsp;0&nbsp;TO&nbsp;I_DYNPFIELDS-STEPL.<br />
+&nbsp;&nbsp;APPEND&nbsp;I_DYNPFIELDS.<br />
+&nbsp;&nbsp;PERFORM&nbsp;UPDATE_SEL_SCREEN.<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Get&nbsp;file&nbsp;names&nbsp;(Windows)&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM QUERY_FILENAME USING DEF_PATH LIKE T_FILENAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;TMP_FILENAME&nbsp;LIKE&nbsp;T_FILENAME.<br />
+&nbsp;&nbsp;DATA:&nbsp;TMP_MASK&nbsp;LIKE&nbsp;GLOBAL_FILEMASK_ALL.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltTMP_SYM&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Build&nbsp;Filter&nbsp;for&nbsp;Fileselector<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GLOBAL_FILEMASK_MASK&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TMP_MASK&nbsp;=&nbsp;',*.*,*.*.'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TMP_MASK&nbsp;=&nbsp;','.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;GLOBAL_FILEMASK_TEXT&nbsp;TO&nbsp;TMP_MASK+1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;','&nbsp;TO&nbsp;TMP_MASK+21.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;GLOBAL_FILEMASK_MASK&nbsp;TO&nbsp;TMP_MASK+22.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;'.'&nbsp;TO&nbsp;TMP_MASK+42.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;TMP_MASK&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;GLOBAL_FILEMASK_ALL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TMP_MASK&nbsp;=&nbsp;GLOBAL_FILEMASK_ALL.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;FIELDLN&nbsp;=&nbsp;STRLEN(&nbsp;DEF_PATH&nbsp;)&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;DEF_PATH+FIELDLN(1)&nbsp;TO&nbsp;&ltTMP_SYM&gt.<br />
+&nbsp;&nbsp;IF&nbsp;&ltTMP_SYM&gt&nbsp;=&nbsp;'/'&nbsp;OR&nbsp;&ltTMP_SYM&gt&nbsp;=&nbsp;'\'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&ltTMP_SYM&gt.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'WS_FILENAME_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEF_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;T_FILENAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEF_PATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;DEF_PATH<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MASK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;',*.*,*.*.'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MASK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TMP_MASK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;MODE<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TMP_FILENAME<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_WINSYS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;01<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_BATCH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;02<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECTION_CANCEL&nbsp;=&nbsp;03<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECTION_ERROR&nbsp;&nbsp;=&nbsp;04.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"User&nbsp;has&nbsp;cancelled&nbsp;selection.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;T_FILENAME&nbsp;=&nbsp;TMP_FILENAME.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Try&nbsp;and&nbsp;get&nbsp;path&nbsp;name.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;FIELDLN&nbsp;=&nbsp;STRLEN(&nbsp;T_FILENAME&nbsp;).<br />
+&nbsp;&nbsp;L&nbsp;=&nbsp;&nbsp;FIELDLN&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;&nbsp;T_FILENAME+L(1)&nbsp;TO&nbsp;&ltTMP_SYM&gt.<br />
+&nbsp;&nbsp;WHILE&nbsp;&ltTMP_SYM&gt&nbsp;NE&nbsp;'\'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L&nbsp;=&nbsp;L&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&nbsp;T_FILENAME+L(1)&nbsp;TO&nbsp;&ltTMP_SYM&gt.<br />
+&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;L&nbsp;=&nbsp;L&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;T_FILENAME(L)&nbsp;TO&nbsp;&ltTMP_SYM&gt.<br />
+&nbsp;&nbsp;WRITE&nbsp;&ltTMP_SYM&gt&nbsp;TO&nbsp;PATH.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;by&nbsp;han<br />
+*&nbsp;&nbsp;I&nbsp;=&nbsp;FIELDLN&nbsp;-&nbsp;L&nbsp;-&nbsp;4.<br />
+*&nbsp;&nbsp;SEARCH&nbsp;T_FILENAME&nbsp;FOR&nbsp;'&nbsp;'.<br />
+*&nbsp;&nbsp;ASSIGN&nbsp;T_FILENAME+L(I)&nbsp;TO&nbsp;&ltTMP_SYM&gt.<br />
+*&nbsp;&nbsp;WRITE&nbsp;&ltTMP_SYM&gt&nbsp;TO&nbsp;REPID-LOW.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM.                    "QUERY_FILENAME<br />
+   </div>
+   <div class="codeComment">
+*/******************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Update&nbsp;screen&nbsp;fields&nbsp;with&nbsp;value&nbsp;selected&nbsp;from&nbsp;table&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/******************************************************************/<br />
+   </div>
+   <div class="code">
+FORM UPDATE_SEL_SCREEN.<br />
+&nbsp;&nbsp;CALL FUNCTION 'DYNP_VALUES_UPDATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-CPROG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNUMB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DYNNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPFIELDS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DYNPFIELDS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_ABAPWORKAREA&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_DYNPROFIELD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_DYNPRONAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_DYNPROW_NUMMER&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_REQUEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_FIELDDESCRIPTION&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNDEFIND_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8.<br />
+ENDFORM.                    "UPDATE_SEL_SCREEN<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;fix&nbsp;selection&nbsp;so&nbsp;that&nbsp;for&nbsp;example&nbsp;ZAC*&nbsp;chhoses&nbsp;ALL&nbsp;progs<br />
+*&nbsp;starting&nbsp;with&nbsp;ZAC.<br />
+*<br />
+   </div>
+   <div class="code">
+FORM GET_RANGE_DL.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;TRDIR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;I_PROG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;IN&nbsp;REPID.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;REPID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REPID-OPTION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEARCH&nbsp;REPID-HIGH&nbsp;FOR&nbsp;'.*.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;REPID-HIGH&nbsp;USING&nbsp;'*%'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;REPID-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;TRDIR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;I_PROG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;LIKE&nbsp;REPID-HIGH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "GET_RANGE_DL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;get&nbsp;proper&nbsp;selection&nbsp;range&nbsp;for&nbsp;upload&nbsp;programs<br />
+*&nbsp;e.g&nbsp;if&nbsp;you&nbsp;specify&nbsp;Z&nbsp;to&nbsp;ZZJ*&nbsp;you&nbsp;will&nbsp;get&nbsp;ALL<br />
+*&nbsp;progs&nbsp;from&nbsp;Z&nbsp;to&nbsp;ZZJ*&nbsp;unlike&nbsp;the&nbsp;SAP&nbsp;BETWEEN&nbsp;clause.<br />
+*<br />
+   </div>
+   <div class="code">
+FORM GET_RANGE_UL.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_PROGT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_PROGT-NAME&nbsp;IN&nbsp;REPID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_PROG-NAME&nbsp;=&nbsp;I_PROGT-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;I_PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;REPID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;REPID-OPTION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEARCH&nbsp;REPID-HIGH&nbsp;FOR&nbsp;'.*.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;REPID-HIGH&nbsp;USING&nbsp;'*%'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_PROGT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;needs&nbsp;to&nbsp;be&nbsp;done&nbsp;like&nbsp;this&nbsp;owing&nbsp;to&nbsp;way&nbsp;the&nbsp;IN&nbsp;cluse&nbsp;is&nbsp;implemented<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;REPID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;REPID-SIGN&nbsp;=&nbsp;'I'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;REPID-OPTION&nbsp;=&nbsp;'BT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_PROGT-NAME&nbsp;CP&nbsp;REPID-HIGH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_PROG-NAME&nbsp;=&nbsp;I_PROGT-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;I_PROG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "GET_RANGE_UL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Build&nbsp;DOS&nbsp;batch&nbsp;file&nbsp;to&nbsp;read&nbsp;relevant&nbsp;directory&nbsp;*/<br />
+*/*&nbsp;This&nbsp;might&nbsp;not&nbsp;work&nbsp;for&nbsp;W2K&nbsp;as&nbsp;native&nbsp;DOS&nbsp;is&nbsp;not&nbsp;*/<br />
+*/*&nbsp;supported&nbsp;as&nbsp;such.&nbsp;The&nbsp;DIR&nbsp;command&nbsp;should&nbsp;work&nbsp;*/<br />
+*/*&nbsp;otherwise&nbsp;you&nbsp;will&nbsp;have&nbsp;to&nbsp;modify&nbsp;this&nbsp;code&nbsp;to&nbsp;call&nbsp;a&nbsp;*/<br />
+*/*&nbsp;Windows&nbsp;function&nbsp;to&nbsp;get&nbsp;a&nbsp;directory&nbsp;listing.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/***************************************************************/<br />
+   </div>
+   <div class="code">
+FORM READ_DOS_DIRECTORY.<br />
+&nbsp;&nbsp;MOVE&nbsp;'ECHO&nbsp;Reading&nbsp;Disk&nbsp;directory&nbsp;-&nbsp;please&nbsp;wait'&nbsp;TO&nbsp;DOSDIR-TEXT.<br />
+&nbsp;&nbsp;APPEND&nbsp;DOSDIR.<br />
+&nbsp;&nbsp;MOVE&nbsp;'C:\DIR.$$$'&nbsp;TO&nbsp;UL_FILE.<br />
+&nbsp;&nbsp;MOVE&nbsp;'C:\ABAP.BAT'&nbsp;TO&nbsp;DL_FILE.<br />
+&nbsp;&nbsp;WRITE&nbsp;'DIR'&nbsp;TO&nbsp;DOSLINE.<br />
+&nbsp;&nbsp;WRITE&nbsp;PATH&nbsp;TO&nbsp;DOSLINE+4.<br />
+&nbsp;&nbsp;WRITE&nbsp;'/B&nbsp;&gt&nbsp;C:\DIR.$$$'&nbsp;TO&nbsp;DOSLINE+50.<br />
+&nbsp;&nbsp;CONDENSE&nbsp;DOSLINE.<br />
+&nbsp;&nbsp;MOVE&nbsp;DOSLINE&nbsp;TO&nbsp;DOSDIR-TEXT.<br />
+&nbsp;&nbsp;APPEND&nbsp;DOSDIR.<br />
+&nbsp;&nbsp;MOVE&nbsp;'EXIT'&nbsp;TO&nbsp;DOSDIR-TEXT.<br />
+&nbsp;&nbsp;APPEND&nbsp;DOSDIR.<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Download&nbsp;DOS&nbsp;batch&nbsp;file&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/***************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DL_FILE_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;DL_FILE.<br />
+&nbsp;&nbsp;CALL FUNCTION 'GUI_DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;=&nbsp;DL_FILE_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;=&nbsp;'ASC'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;=&nbsp;DOSDIR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Execute&nbsp;it&nbsp;and&nbsp;pipe&nbsp;output&nbsp;to&nbsp;DIR.$$$&nbsp;on&nbsp;C&nbsp;drive&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/***************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DL_FILE_S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;DL_FILE.<br />
+&nbsp;&nbsp;CALL FUNCTION 'WS_EXECUTE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMANDLINE&nbsp;=&nbsp;DL_FILE_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFORM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"//&nbsp;synchronous<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'C:\ABAP.BAT'.<br />
+&nbsp;&nbsp;REFRESH&nbsp;DOSDIR.<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Upload&nbsp;directory&nbsp;listing&nbsp;to&nbsp;SAP&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/***************************************************************/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;UL_FILE_S&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;UL_FILE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'GUI_UPLOAD'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;=&nbsp;UL_FILE_S<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;=&nbsp;'DAT'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'GUI_UPLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;=&nbsp;UL_FILE_S<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;=&nbsp;'ASC'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;=&nbsp;DOSDIR.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;DOSDIR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SEARCH&nbsp;DOSDIR-TEXT&nbsp;FOR&nbsp;'.TXT&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;DOSDIR-TEXT(SY-FDPOS)&nbsp;TO&nbsp;&ltF&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_PROGT-NAME&nbsp;=&nbsp;&ltF&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;I_PROGT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "READ_DOS_DIRECTORY<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Get&nbsp;Include&nbsp;programs&nbsp;for&nbsp;upload&nbsp;via&nbsp;function&nbsp;module.&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/***************************************************************/<br />
+   </div>
+   <div class="code">
+FORM GET_INCLUDES_DL.<br />
+&nbsp;&nbsp;REFRESH&nbsp;I_INCL.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_PROG.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'RS_GET_ALL_INCLUDES'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_PROG-NAME<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH_INACTIVE_INCLS&nbsp;=&nbsp;'&nbsp;'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDETAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_INCL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT_EXISTENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;if&nbsp;function&nbsp;pool&nbsp;(SAPLxxxx)&nbsp;then&nbsp;always&nbsp;need&nbsp;the<br />
+*&nbsp;SAP&nbsp;generated&nbsp;include&nbsp;LxxxUXX&nbsp;as&nbsp;well.<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_PROG(4)&nbsp;=&nbsp;'SAPL'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Function&nbsp;Pool<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;I_PROG-NAME+3(37)&nbsp;TO&nbsp;&ltF&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;&ltF&gt&nbsp;'UXX'&nbsp;INTO&nbsp;I_INCL-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;I_INCL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_INCL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEARCH&nbsp;IMASK&nbsp;FOR&nbsp;'.*.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;IMASK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;(&nbsp;I_INCL-NAME&nbsp;CP&nbsp;IMASK&nbsp;OR&nbsp;IMASK&nbsp;EQ&nbsp;'&nbsp;'&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;I_INCLUDE&nbsp;WITH&nbsp;KEY&nbsp;NAME&nbsp;=&nbsp;I_INCL-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;I_INCL-NAME&nbsp;TO&nbsp;I_INCLUDE-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;I_INCLUDE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;I_INCL.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "GET_INCLUDES_DL<br />
+   </div>
+   <div class="codeComment">
+*/***************************************************************/<br />
+*/*&nbsp;*/<br />
+*/*&nbsp;Handle&nbsp;Include&nbsp;programs&nbsp;(download)&nbsp;*/<br />
+*/*&nbsp;*/<br />
+*/***************************************************************/<br />
+   </div>
+   <div class="code">
+FORM PROCESS_INCLUDES_DL.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_INCLUDE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Now&nbsp;handle&nbsp;all&nbsp;included&nbsp;programs&nbsp;found<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;check&nbsp;included&nbsp;program&nbsp;has&nbsp;not&nbsp;already&nbsp;been&nbsp;down&nbsp;/&nbsp;up&nbsp;loaded<br />
+*&nbsp;Check&nbsp;on&nbsp;download&nbsp;if&nbsp;INCLUDE&nbsp;program&nbsp;exists&nbsp;in&nbsp;Library<br />
+*&nbsp;check&nbsp;on&nbsp;UPLOAD&nbsp;if&nbsp;INCLUDE&nbsp;exists&nbsp;in&nbsp;the&nbsp;directory<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;I_PROG&nbsp;WITH&nbsp;KEY&nbsp;NAME&nbsp;=&nbsp;I_INCLUDE-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Program&nbsp;not&nbsp;yet&nbsp;handled.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;TRDIR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;NAME&nbsp;=&nbsp;I_INCLUDE-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;I_INCLUDE-NAME&nbsp;TO&nbsp;R1-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;I_INCLUDE-HANDLED.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;I_INCLUDE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;R1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;R1&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHILE&nbsp;I&nbsp;NE&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;EXECUTE-FUNCTION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;R1.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "PROCESS_INCLUDES_DL<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;Look&nbsp;for&nbsp;Includes&nbsp;in&nbsp;uploaded&nbsp;programs&nbsp;or&nbsp;on&nbsp;download<br />
+*&nbsp;when&nbsp;handling&nbsp;INCLUDE&nbsp;programs&nbsp;themselves<br />
+*<br />
+   </div>
+   <div class="code">
+FORM PROCESS_INCLUDES_UL.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_INCL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;is&nbsp;included&nbsp;file&nbsp;in&nbsp;the&nbsp;directory<br />
+*&nbsp;The&nbsp;mask&nbsp;(e..g&nbsp;Z*)&nbsp;will&nbsp;have&nbsp;already&nbsp;been&nbsp;checked&nbsp;by&nbsp;the&nbsp;scan<br />
+*&nbsp;process.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;FUNC&nbsp;=&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;TRDIR&nbsp;WHERE&nbsp;NAME&nbsp;=&nbsp;I_INCL-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;FUNC&nbsp;=&nbsp;'U'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;I_PROGT&nbsp;WITH&nbsp;KEY&nbsp;NAME&nbsp;=&nbsp;I_INCL-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;check&nbsp;if&nbsp;the&nbsp;include&nbsp;has&nbsp;already&nbsp;been&nbsp;processed<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;I_INCLUDE&nbsp;WITH&nbsp;KEY&nbsp;NAME&nbsp;=&nbsp;I_INCL-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;I_INCL-NAME&nbsp;TO&nbsp;I_INCLUDE-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'&nbsp;'&nbsp;TO&nbsp;I_INCLUDE-HANDLED.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;I_INCLUDE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;REFRESH&nbsp;I_INCL.<br />
+ENDFORM.                    "PROCESS_INCLUDES_UL<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;scan&nbsp;through&nbsp;included&nbsp;table<br />
+*<br />
+   </div>
+   <div class="code">
+FORM LOOP_THROUGH.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;I_INCLUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Now&nbsp;handle&nbsp;all&nbsp;included&nbsp;programs&nbsp;found<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;HANDLED&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;I_INCLUDE-NAME&nbsp;TO&nbsp;R1-NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;R1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'Y'&nbsp;TO&nbsp;I_INCLUDE-HANDLED.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;I_INCLUDE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;R1&nbsp;LINES&nbsp;I.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHILE&nbsp;I&nbsp;NE&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;EXECUTE-FUNCTION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;R1.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "LOOP_THROUGH<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

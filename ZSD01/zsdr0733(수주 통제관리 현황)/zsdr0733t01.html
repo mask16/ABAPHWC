@@ -1,0 +1,898 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSDR0733T01</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZSDR0733T01</h2>
+<h3> Description: Include ZMMR0000_T01</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;TABLES&nbsp;DEFINE<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+TABLES:  MARA, MKPF, VBAK, LIPS,VBAP, MARC, MVKE.<br />
+<br />
+CONSTANTS : C_WAIT(03) VALUE '0.5'.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;INTERNAL&nbsp;TABLE&nbsp;DEFINE<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+DATA PRE_SDATE TYPE SY-DATUM.<br />
+DATA LV_SDATE TYPE SPMON.<br />
+DATA: GT_TABLE TYPE REF TO DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_LINE&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*DATA:&nbsp;LV_WRBTR&nbsp;TYPE&nbsp;P&nbsp;DECIMALS&nbsp;2.<br />
+<br />
+   </div>
+   <div class="code">
+DATA FR_DATE TYPE SY-DATUM.<br />
+DATA TO_DATE TYPE SY-DATUM.<br />
+DATA FR_DATE1 TYPE SY-DATUM.<br />
+DATA FR_DATE2 TYPE SY-DATUM.<br />
+DATA FR_DATE3 TYPE SY-DATUM.<br />
+DATA TO_DATE1 TYPE SY-DATUM.<br />
+DATA TO_DATE2 TYPE SY-DATUM.<br />
+DATA TO_DATE3 TYPE SY-DATUM.<br />
+DATA FR_DATE4 TYPE SY-DATUM.<br />
+DATA TO_DATE4 TYPE SY-DATUM.<br />
+DATA FR_DATE9 TYPE SY-DATUM.<br />
+DATA gv_spdat TYPE SY-DATUM.<br />
+<br />
+<br />
+TYPE-POOLS: VRM.<br />
+DATA  GT_VALUES TYPE VRM_VALUES WITH HEADER LINE.<br />
+<br />
+<br />
+FIELD-SYMBOLS: &ltTABLE&gt TYPE STANDARD TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltWA&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFIELD&gt.<br />
+<br />
+<br />
+<br />
+DATA   GT_ZMARDH LIKE ZMARDH OCCURS 0 WITH HEADER LINE.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_DAILY OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;LIKE&nbsp;MKPF-BUDAT,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_DAILY.<br />
+<br />
+<br />
+<br />
+DATA : BEGIN OF GS_LGORT OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS_CO(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MARD-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT_L&nbsp;LIKE&nbsp;MARD-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT_E&nbsp;LIKE&nbsp;MARD-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT_R&nbsp;LIKE&nbsp;MARD-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GS_LGORT.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_PRODUCT OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;LIKE&nbsp;ZSDT0700-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;LIKE&nbsp;MSEG-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;LIKE&nbsp;MKPF-BUDAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;LIKE&nbsp;MSEG-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;LIKE&nbsp;MSEG-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BWART&nbsp;LIKE&nbsp;MSEG-BWART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHKZG&nbsp;LIKE&nbsp;MSEG-SHKZG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;LIKE&nbsp;MSEG-MEINS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_PRODUCT.<br />
+<br />
+DATA : BEGIN OF GT_SHIP OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;LIKE&nbsp;ZSDT0700-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;LIKE&nbsp;MSEG-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;LIKE&nbsp;MKPF-BUDAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;LIKE&nbsp;MSEG-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;LIKE&nbsp;MSEG-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BWART&nbsp;LIKE&nbsp;MSEG-BWART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHKZG&nbsp;LIKE&nbsp;MSEG-SHKZG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;LIKE&nbsp;MSEG-MEINS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_SHIP.<br />
+<br />
+DATA GS_SHIP LIKE GT_SHIP.<br />
+<br />
+DATA GS_PRODUCT LIKE GT_PRODUCT.<br />
+RANGES RA_BUDAT FOR MKPF-BUDAT.<br />
+<br />
+<br />
+TYPES: BEGIN OF TY_DATA,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATKL&nbsp;LIKE&nbsp;MARA-MATKL,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN(1)&nbsp;TYPE&nbsp;C,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISPO&nbsp;LIKE&nbsp;MARC-DISPO,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DSNAM&nbsp;LIKE&nbsp;T024D-DSNAM,<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;menge1&nbsp;TYPE&nbsp;integer,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE1&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE2&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE3&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE4&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE5&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE6&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE7&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE8(10)&nbsp;TYPE&nbsp;C,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE9(10)&nbsp;TYPE&nbsp;C,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE10&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE11&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE12&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE13&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE14&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE15&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE16&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE17(10)&nbsp;TYPE&nbsp;C,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE18(10)&nbsp;TYPE&nbsp;C,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE19&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE20&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE21&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE22&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE23&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE24&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE25&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE26(10)&nbsp;TYPE&nbsp;C,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE27(10)&nbsp;TYPE&nbsp;C,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE28&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE29&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE30&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE31&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE32&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VKBUR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-VKBUR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEZEI&nbsp;TYPE&nbsp;TVKBT-BEZEI,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN(1)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN1(1)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-BEZEI,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;menge1&nbsp;TYPE&nbsp;integer,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_AMENG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_TIG_MENG&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_MIG_MENG&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_SUB_MENG&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ETC_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CO2_TIG_MENG&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_T_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_S_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FCW_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_SP_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_PP_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_SP_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_PP_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_FCW_MENG&nbsp;TYPE&nbsp;P&nbsp;LENGTH&nbsp;13&nbsp;DECIMALS&nbsp;2.<br />
+<br />
+TYPES: END OF TY_DATA.<br />
+<br />
+DATA: GT_DATA TYPE TY_DATA OCCURS 0 WITH HEADER LINE.<br />
+<br />
+DATA: BEGIN OF GT_DISP OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;TYPE&nbsp;TY_DATA.<br />
+DATA: COLTAB TYPE LVC_T_SCOL.<br />
+DATA: END OF GT_DISP.<br />
+<br />
+DATA: GS_DISP LIKE GT_DISP.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_RMMNG OCCURS 0,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;LGORT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-LGORT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;판매&nbsp;문서<br />
+*&nbsp;&nbsp;KWMENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수주수량<br />
+*&nbsp;&nbsp;KBMENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KBMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;확정수량<br />
+*&nbsp;&nbsp;RFMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;납품요청수량<br />
+*&nbsp;&nbsp;SHMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;출하수량<br />
+*&nbsp;&nbsp;RLMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;확정출하납품수량<br />
+*&nbsp;&nbsp;CFMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;매출확정수량<br />
+*&nbsp;&nbsp;RMMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;잔량<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LGORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;저장위치<br />
+&nbsp;&nbsp;AUART&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-AUART,<br />
+&nbsp;&nbsp;MVGR1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR1,<br />
+&nbsp;&nbsp;MVGR2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR2,<br />
+&nbsp;&nbsp;MATNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-MATNR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;제품코드<br />
+&nbsp;&nbsp;MEINS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-MEINS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;판매단위<br />
+&nbsp;&nbsp;PRDHA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MARA-PRDHA,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계층구조<br />
+&nbsp;&nbsp;KWMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수량<br />
+&nbsp;&nbsp;TMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;합계수량<br />
+&nbsp;&nbsp;ATMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복계수량<br />
+&nbsp;&nbsp;AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복봉<br />
+&nbsp;&nbsp;STS_AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;피복<br />
+&nbsp;&nbsp;STS_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;TIG<br />
+&nbsp;&nbsp;STS_MIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;MIG<br />
+&nbsp;&nbsp;STS_SUB_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;SUB<br />
+&nbsp;&nbsp;ETC_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기타<br />
+&nbsp;&nbsp;BTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2계수량<br />
+&nbsp;&nbsp;SP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;태경<br />
+&nbsp;&nbsp;SP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;세경<br />
+&nbsp;&nbsp;PP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;태경<br />
+&nbsp;&nbsp;PP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;세경<br />
+&nbsp;&nbsp;CO2_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2&nbsp;TIG<br />
+&nbsp;&nbsp;CTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;계<br />
+&nbsp;&nbsp;SUB_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;태경<br />
+&nbsp;&nbsp;SUB_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;세경<br />
+&nbsp;&nbsp;DTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FLUX<br />
+&nbsp;&nbsp;FTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW&nbsp;계<br />
+&nbsp;&nbsp;FCW_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW<br />
+&nbsp;&nbsp;BW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;S/P<br />
+&nbsp;&nbsp;BW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;P/P<br />
+&nbsp;&nbsp;NW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;S/P<br />
+&nbsp;&nbsp;NW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;&nbsp;P/P<br />
+&nbsp;&nbsp;STS_FCW_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;FCW<br />
+<br />
+<br />
+END OF GT_RMMNG.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_LABST_SUM   OCCURS 0  ,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;LIKE&nbsp;ZSDT0700-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;&nbsp;LIKE&nbsp;MARD-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LABST_L&nbsp;LIKE&nbsp;MARD-LABST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LABST_E&nbsp;LIKE&nbsp;MARD-LABST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LABST_R&nbsp;LIKE&nbsp;MARD-LABST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LABST_T&nbsp;LIKE&nbsp;MARD-LABST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_LABST_SUM.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_PRODUCT_SUM OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;LIKE&nbsp;ZSDT0700-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;&nbsp;LIKE&nbsp;MARD-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;LIKE&nbsp;MKPF-BUDAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_L&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_E&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_T&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_PRODUCT_SUM.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_SHIP_SUM OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;LIKE&nbsp;ZSDT0700-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;&nbsp;LIKE&nbsp;MARD-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;LIKE&nbsp;MKPF-BUDAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_L&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_E&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_R&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_T&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_SHIP_SUM.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_LABST OCCURS 0,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;&nbsp;LIKE&nbsp;MARD-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;LIKE&nbsp;MARD-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;&nbsp;LIKE&nbsp;ZSDT0700-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;&nbsp;LIKE&nbsp;MARD-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LABST&nbsp;LIKE&nbsp;MARD-LABST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_LABST.<br />
+<br />
+DATA : BEGIN OF GT_VBPA OCCURS 0,<br />
+&nbsp;&nbsp;VBELN&nbsp;LIKE&nbsp;VBPA-VBELN,<br />
+&nbsp;&nbsp;PARVW&nbsp;LIKE&nbsp;VBPA-PARVW,<br />
+&nbsp;&nbsp;KUNNR&nbsp;LIKE&nbsp;VBPA-KUNNR,<br />
+END OF GT_VBPA,<br />
+<br />
+BEGIN OF GT_0516 OCCURS 0,<br />
+&nbsp;&nbsp;VBELN2&nbsp;&nbsp;LIKE&nbsp;ZSDT0516-VBELN2,<br />
+&nbsp;&nbsp;POSNR&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-POSNR,<br />
+&nbsp;&nbsp;VBELN&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZSDT0516-VBELN,<br />
+&nbsp;&nbsp;NETPR&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-NETPR,<br />
+&nbsp;&nbsp;KPEIN&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-KPEIN,<br />
+&nbsp;&nbsp;KMEIN&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-KMEIN,<br />
+END OF GT_0516,<br />
+BEGIN OF GT_0516_2 OCCURS 0,<br />
+&nbsp;&nbsp;VBELN2&nbsp;&nbsp;LIKE&nbsp;ZSDT0516-VBELN2,<br />
+&nbsp;&nbsp;POSNR&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-POSNR,<br />
+&nbsp;&nbsp;VBELN&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZSDT0516-VBELN,<br />
+&nbsp;&nbsp;NETPR&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-NETPR,<br />
+&nbsp;&nbsp;KPEIN&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-KPEIN,<br />
+&nbsp;&nbsp;KMEIN&nbsp;&nbsp;&nbsp;LIKE&nbsp;VBAP-KMEIN,<br />
+END OF GT_0516_2.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;gt_product2&nbsp;OCCURS&nbsp;0,<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;werks&nbsp;&nbsp;LIKE&nbsp;mard-werks,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lgort&nbsp;LIKE&nbsp;mard-lgort,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cate1&nbsp;&nbsp;LIKE&nbsp;zsdt0700-cate1,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matnr&nbsp;&nbsp;LIKE&nbsp;mard-matnr,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;menge&nbsp;LIKE&nbsp;mseg-menge,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;budat&nbsp;LIKE&nbsp;mkpf-budat,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gubun(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gt_product2.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF GT_ZSDT0700  OCCURS 0,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;LIKE&nbsp;ZSDT0700-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MTART&nbsp;LIKE&nbsp;ZSDT0700-MTART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;LIKE&nbsp;ZSDT0700-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;LIKE&nbsp;MARA-MEINS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_ZSDT0700.<br />
+<br />
+DATA : BEGIN OF GT_ZSDT0700T  OCCURS 0  ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE1&nbsp;LIKE&nbsp;ZSDT0700T-CATE1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATE0&nbsp;LIKE&nbsp;ZSDT0700T-CATE0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STXT&nbsp;&nbsp;LIKE&nbsp;ZSDT0700T-STXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMAND&nbsp;LIKE&nbsp;ZSDT0701T-COMMAND,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_ZSDT0700T.<br />
+<br />
+DATA :GS_LINE LIKE GT_DISP.<br />
+DATA GV_MODE(1).<br />
+DATA GV_WAERS LIKE T001-WAERS.<br />
+<br />
+<br />
+DATA : BEGIN OF GT_ITEM OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBLNR&nbsp;LIKE&nbsp;MSEG-MBLNR&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZEILE&nbsp;LIKE&nbsp;MSEG-ZEILE&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MJAHR&nbsp;LIKE&nbsp;MKPF-MJAHR&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BWART&nbsp;LIKE&nbsp;MSEG-BWART&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;LIKE&nbsp;MKPF-BUDAT&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BLDAT&nbsp;LIKE&nbsp;MKPF-BLDAT&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USNAM&nbsp;LIKE&nbsp;MKPF-USNAM&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;LIKE&nbsp;MSEG-WERKS&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;LIKE&nbsp;MSEG-LGORT&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATKL&nbsp;LIKE&nbsp;MARA-MATKL&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;LIKE&nbsp;MSEG-MATNR&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DMBTR&nbsp;LIKE&nbsp;MSEG-DMBTR&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WAERS&nbsp;LIKE&nbsp;MSEG-WAERS&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE&nbsp;LIKE&nbsp;MSEG-MENGE&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;LIKE&nbsp;MSEG-MEINS&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERFMG&nbsp;LIKE&nbsp;MSEG-ERFMG&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERFME&nbsp;LIKE&nbsp;MSEG-ERFME&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHKZG&nbsp;LIKE&nbsp;MSEG-SHKZG&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKTX&nbsp;LIKE&nbsp;MAKT-MAKTX&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EBELN&nbsp;LIKE&nbsp;MSEG-EBELN&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIFNR&nbsp;LIKE&nbsp;EKKO-LIFNR&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME1&nbsp;LIKE&nbsp;LFA1-NAME1&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFO(4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ALV&nbsp;ROW&nbsp;COLOR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLINFO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_T_SCOL,&nbsp;&nbsp;&nbsp;"ALV&nbsp;COLUMN&nbsp;COLOR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STYLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_T_STYL,&nbsp;&nbsp;&nbsp;"ALV&nbsp;CONTROL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_ITEM.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*TYPES:&nbsp;BEGIN&nbsp;OF&nbsp;TYP_DATA_0100,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISPO&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;MARC-DISPO,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;mrp&nbsp;관리<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUART&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-AUART,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;오더유형<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VBELN&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;판매&nbsp;문서<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POSNR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-POSNR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;품목번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VTWEG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-VTWEG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;유통경로<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERDAT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-ERDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;생성일자<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VDATU&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-VDATU,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;납품요청일자<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DIFFDT1(4)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;생성일자-납품일자&nbsp;(2014.10.13)&nbsp;생성<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPART&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-SPART,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;제품군<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-MATNR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;제품코드<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKTX&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MAKT-MAKTX,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;제품명<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KWMENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수주수량<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KBMENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KBMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;확정수량<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RFMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;납품요청수량<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;출하수량<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RLMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;확정출하납품수량<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CFMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;매출확정수량<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RMMNG&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-RFMNG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;잔량<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-MEINS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;판매단위<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VSTEL&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-VSTEL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;출하지점<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-WERKS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;플랜트<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;저장위치<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LFART&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LIKP-LFART,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;납품유형<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LBELN&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LIKP-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;납품문서<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOSNR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LIPS-POSNR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;납품문서품목<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WADAT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LIKP-WADAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계획출하일자<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEROT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LIKP-BEROT,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPDAT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;SY-DATUM,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;출하일자<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ABGRU&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-ABGRU,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;거부&nbsp;사유<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DIFFDT2(4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;납품일자-출하일자&nbsp;(2014.10.13)&nbsp;생성<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RJAHR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MKPF-MJAHR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;-[적송]&nbsp;자재전표연도<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RBLNR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MKPF-MBLNR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;-[적송]&nbsp;자재문서번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VGBEL&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-VGBEL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;참조문서번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISDAT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LIKP-WADAT_IST,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;확정출하일자<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MJAHR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-MJAHR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;[확정]&nbsp;자재전표연도<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBLNR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBFA-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;[확정]&nbsp;자재문서번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBRK-BUKRS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;회사&nbsp;코드<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FKART&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBRK-FKART,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;대금청구유형<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KBELN&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBRK-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;대금청구<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FKDAT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBRK-FKDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;대금청구일자<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BKPF-GJAHR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;회계연도<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BELNR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BKPF-BELNR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;회계&nbsp;전표&nbsp;번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GBSTA&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBUP-GBSTA,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SD&nbsp;문서품목의&nbsp;전체&nbsp;처리상태<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POSEX&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-POSEX,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;고객사P/O&nbsp;품목번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZLCNUM&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-ZLCNUM,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;L/C&nbsp;번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZBLNUM&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-ZBLNUM,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;청구번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZORNUM&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-ZORNUM,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;발주번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZPONUM&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-ZPONUM,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/O&nbsp;번호<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZNAME&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-ZNAME,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;주문자<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;TYP_DATA_0100.<br />
+<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF TYP_DATA_0100,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUART&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-AUART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VKBUR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-VKBUR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-BEZEI,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MVGR1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MVGR2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PRDHA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MARA-PRDHA,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계층구조<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KWMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;합계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복봉<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;피복<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;TIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_MIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;MIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_SUB_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;SUB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ETC_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기타<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CO2_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2&nbsp;TIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FLUX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FCW_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;S/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;P/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;S/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;&nbsp;P/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_FCW_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;FCW<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;TYP_DATA_0100.<br />
+<br />
+DATA: GT_DATA_0100  TYPE  TABLE OF  TYP_DATA_0100.<br />
+DATA: GT_DATA_0101  TYPE  TABLE OF  TYP_DATA_0100.<br />
+DATA: GT_DATA_0110  TYPE  TABLE OF  TYP_DATA_0100.<br />
+<br />
+<br />
+TYPES: BEGIN OF TYP_DATA_0200,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUART&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-AUART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VKBUR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-VKBUR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-BEZEI,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MVGR1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MVGR2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PRDHA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MARA-PRDHA,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계층구조<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KWMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;합계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복봉<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;피복<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;TIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_MIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;MIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_SUB_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;SUB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ETC_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기타<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CO2_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2&nbsp;TIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FLUX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FCW_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;S/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;P/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;S/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;&nbsp;P/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_FCW_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;FCW<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;TYP_DATA_0200.<br />
+<br />
+DATA: GT_DATA_0200    TYPE STANDARD TABLE OF TYP_DATA_0200.<br />
+<br />
+TYPES: BEGIN OF TYP_DATA_0300,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUART&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAK-AUART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VKBUR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-VKBUR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUBUN1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TVKBT-BEZEI,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MVGR1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MVGR2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MVKE-MVGR2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PRDHA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MARA-PRDHA,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계층구조<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KWMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;합계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;피복봉<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_AMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;피복<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;TIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_MIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;MIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_SUB_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;SUB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ETC_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기타<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2계수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;S/P&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PP_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;P/P&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CO2_TIG_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2&nbsp;TIG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_T_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;태경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB_S_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SUB&nbsp;세경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FLUX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FTMENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FCW_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;FCW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;S/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BW&nbsp;P/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_SP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;S/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NW_PP_MENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;NW&nbsp;&nbsp;P/P<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STS_FCW_MENG&nbsp;&nbsp;&nbsp;TYPE&nbsp;VBAP-KWMENG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;STS&nbsp;FCW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;TYP_DATA_0300.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Internal&nbsp;Table&nbsp;&&nbsp;Structure<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+DATA: GT_DATA_0300    TYPE  TABLE OF TYP_DATA_0300.<br />
+<br />
+DATA : BEGIN OF  TYP_DATA_0400 OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MTART&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MARA-MTART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISPO&nbsp;&nbsp;&nbsp;LIKE&nbsp;MARC-DISPO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DSNAM&nbsp;&nbsp;&nbsp;LIKE&nbsp;T024D-DSNAM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATKL&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MARA-MATKL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKTX&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MAKT-MAKTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MARA-MEINS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LABST&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MARD-LABST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BWART&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-BWART,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LFGJA&nbsp;LIKE&nbsp;MARD-LFGJA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LFMON&nbsp;LIKE&nbsp;MARD-LFMON,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LABST2&nbsp;LIKE&nbsp;MARD-LABST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSME&nbsp;LIKE&nbsp;MARD-INSME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPEME&nbsp;LIKE&nbsp;MARD-SPEME,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WGBEZ&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;T023T-WGBEZ&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGOBE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;T001L-LGOBE,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MVGR4&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MVKE-MVGR4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEZEI&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TVM4T-BEZEI,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PRODH&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;&nbsp;T179T-PRODH,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VTEXT&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;&nbsp;T179T-VTEXT,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS_MSEG&nbsp;&nbsp;LIKE&nbsp;MSEG-MEINS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_GR_NOR&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-MENGE,&nbsp;"&nbsp;정상입고<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_GR_ETC&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-MENGE,&nbsp;"&nbsp;기타&nbsp;입고<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_GR_TOT&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-MENGE,&nbsp;"&nbsp;입고&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_GI_NOR&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-MENGE,&nbsp;"&nbsp;정상&nbsp;출고<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_GI_ETC&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-MENGE,&nbsp;"&nbsp;기타&nbsp;출고<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE_GI_TOT&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-MENGE,&nbsp;"&nbsp;출고&nbsp;계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHKZG&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MSEG-SHKZG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LBKUM&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MBEW-LBKUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VERPR&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MBEW-VERPR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SALK3&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;MBEW-SALK3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WAERS&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;T001-WAERS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ICON&nbsp;&nbsp;&nbsp;TYPE&nbsp;ICON_TEXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFO(4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ALV&nbsp;ROW&nbsp;COLOR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLINFO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_T_SCOL,&nbsp;&nbsp;&nbsp;"ALV&nbsp;COLUMN&nbsp;COLOR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STYLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_T_STYL.&nbsp;&nbsp;&nbsp;"ALV&nbsp;CONTROL<br />
+DATA : END   OF  TYP_DATA_0400.<br />
+<br />
+DATA: PA_SPMON TYPE ZSDT0400-SPMON.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*DATA:&nbsp;lt_data_0400&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;&nbsp;gt_data_0400.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+DATA: GT_MARC TYPE TABLE OF MARC,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_MARC&nbsp;TYPE&nbsp;MARC.<br />
+<br />
+DATA:  BEGIN OF LT_MSEG OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISPO&nbsp;LIKE&nbsp;MARC-DISPO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBLNR&nbsp;LIKE&nbsp;MSEG-MBLNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MJAHR&nbsp;LIKE&nbsp;MSEG-MJAHR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BWART&nbsp;LIKE&nbsp;MSEG-BWART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHKZG&nbsp;LIKE&nbsp;MSEG-SHKZG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;LIKE&nbsp;MSEG-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;LIKE&nbsp;MSEG-LGORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;LIKE&nbsp;MSEG-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE&nbsp;LIKE&nbsp;MSEG-MENGE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;LIKE&nbsp;MSEG-MEINS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WAERS&nbsp;LIKE&nbsp;MSEG-WAERS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DMBTR&nbsp;LIKE&nbsp;MSEG-DMBTR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LT_MSEG.<br />
+<br />
+RANGES:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_GJAHR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;MSEG-GJAHR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_ALL&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;&nbsp;"&nbsp;전체<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;&nbsp;"입고유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GR_ETC&nbsp;&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;&nbsp;"기타&nbsp;입고유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;&nbsp;"출고유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GI_ETC&nbsp;&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;&nbsp;"기타&nbsp;출고유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GRI_ETC&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;"기타&nbsp;입출고&nbsp;유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GRI_ETC_CANC&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;&nbsp;"기타&nbsp;입출고취소유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GRI&nbsp;FOR&nbsp;MSEG-BWART,&nbsp;"정상&nbsp;&nbsp;입출고&nbsp;유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_BWART_GRI_CANC&nbsp;FOR&nbsp;MSEG-BWART.&nbsp;&nbsp;"정상&nbsp;&nbsp;입출고취소유형<br />
+<br />
+<br />
+RANGES: SO_DDAT1  FOR MKPF-BUDAT.<br />
+RANGES: SO_DDAT2  FOR MKPF-BUDAT.<br />
+RANGES: SO_DDAT3  FOR MKPF-BUDAT.<br />
+RANGES: SO_DDAT4  FOR MKPF-BUDAT.<br />
+RANGES: SO_DDAT5  FOR MKPF-BUDAT.<br />
+RANGES: SO_DDAT9  FOR MKPF-BUDAT.<br />
+RANGES: SO_DDAT11  FOR MKPF-BUDAT.<br />
+RANGES: SO_DDAT12  FOR MKPF-BUDAT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-입고&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE __SET_BWART_GR.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GR.<br />
+&nbsp;&nbsp;R_BWART_GR-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GR-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GR-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GR-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GR.<br />
+END-OF-DEFINITION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-기타&nbsp;입고&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE __SET_BWART_GR_ETC.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GR_ETC.<br />
+&nbsp;&nbsp;R_BWART_GR_ETC-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GR_ETC-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GR_ETC-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GR_ETC-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GR_ETC.<br />
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-출고&nbsp;&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE __SET_BWART_GI.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GI.<br />
+&nbsp;&nbsp;R_BWART_GI-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GI-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GI-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GI-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GI.<br />
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-기타&nbsp;출고&nbsp;&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE<br />
+&nbsp;&nbsp;__SET_BWART_GI_ETC.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GI_ETC.<br />
+&nbsp;&nbsp;R_BWART_GI_ETC-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GI_ETC-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GI_ETC-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GI_ETC-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GI_ETC.<br />
+END-OF-DEFINITION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-기타&nbsp;입&nbsp;출고&nbsp;&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE __SET_BWART_GRI_ETC.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GRI_ETC.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GRI_ETC.<br />
+END-OF-DEFINITION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-기타&nbsp;입&nbsp;출고&nbsp;취소&nbsp;&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE __SET_BWART_GRI_ETC_CANC.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GRI_ETC_CANC.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC_CANC-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC_CANC-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC_CANC-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GRI_ETC_CANC-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GRI_ETC_CANC.<br />
+END-OF-DEFINITION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+**정상&nbsp;입&nbsp;출고&nbsp;&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE __SET_BWART_GRI.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GRI.<br />
+&nbsp;&nbsp;R_BWART_GRI-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GRI-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GRI-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GRI-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GRI.<br />
+END-OF-DEFINITION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-정상&nbsp;입&nbsp;출고&nbsp;취소&nbsp;&nbsp;이동유형&nbsp;MACRO<br />
+   </div>
+   <div class="code">
+DEFINE __SET_BWART_GRI_CANC.<br />
+&nbsp;&nbsp;CLEAR&nbsp;R_BWART_GRI_CANC.<br />
+&nbsp;&nbsp;R_BWART_GRI_CANC-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;R_BWART_GRI_CANC-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;R_BWART_GRI_CANC-LOW&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;R_BWART_GRI_CANC-HIGH&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;R_BWART_GRI_CANC.<br />
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;SELECTION-SCREEN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK BLOCK0 WITH FRAME ."TITLE text-004.<br />
+<br />
+SELECTION-SCREEN BEGIN OF BLOCK BLOCK1 WITH FRAME TITLE TEXT-004.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*PARAMETERS&nbsp;PA_DATUM&nbsp;TYPE&nbsp;SY-DATUM&nbsp;DEFAULT&nbsp;SY-DATUM.<br />
+   </div>
+   <div class="code">
+SELECT-OPTIONS so_date FOR vbak-erdat.<br />
+   </div>
+   <div class="codeComment">
+*SELECT-OPTIONS&nbsp;PA_DATUM&nbsp;FOR&nbsp;mkpf-budat&nbsp;MODIF&nbsp;ID&nbsp;m1&nbsp;OBLIGATORY.<br />
+*SELECT-OPTIONS&nbsp;so_erdat&nbsp;FOR&nbsp;vbak-erdat&nbsp;OBLIGATORY&nbsp;.<br />
+*PARAMETERS&nbsp;pa_werks&nbsp;LIKE&nbsp;marc-werks&nbsp;AS&nbsp;LISTBOX&nbsp;VISIBLE&nbsp;LENGTH&nbsp;10<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBLIGATORY&nbsp;&nbsp;.<br />
+   </div>
+   <div class="code">
+SELECT-OPTIONS SO_VKORG FOR MVKE-VKORG.<br />
+SELECT-OPTIONS SO_WERKS FOR LIPS-WERKS.<br />
+   </div>
+   <div class="codeComment">
+*SELECT-OPTIONS&nbsp;SO_LGORT&nbsp;FOR&nbsp;VBAP-LGORT.<br />
+   </div>
+   <div class="code">
+SELECT-OPTIONS SO_VSTEL FOR VBAP-VSTEL.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*SELECT-OPTIONS&nbsp;&nbsp;so_mtart&nbsp;for&nbsp;mara-mtart&nbsp;DEFAULT&nbsp;'FERT'&nbsp;NO&nbsp;INTERVALS&nbsp;.<br />
+*PARAMETERS&nbsp;pa_check&nbsp;as&nbsp;CHECKBOX&nbsp;.<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN   END OF BLOCK BLOCK1.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;BLOCK&nbsp;block4&nbsp;WITH&nbsp;FRAME&nbsp;TITLE&nbsp;text-002.<br />
+*<br />
+*<br />
+**PARAMETERS&nbsp;p_vari&nbsp;LIKE&nbsp;disvariant-variant.<br />
+*<br />
+*SELECTION-SCREEN&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;BLOCK&nbsp;block4.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN   END OF BLOCK BLOCK0.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

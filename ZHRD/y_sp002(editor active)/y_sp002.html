@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>Y_SP002</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: Y_SP002</h2>
+<h3> Description: Editor Active</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&nbsp;Program&nbsp;ID&nbsp;&nbsp;:&nbsp;Y_SP002<br />
+*&nbsp;Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Editor&nbsp;Active<br />
+*&nbsp;Created&nbsp;By&nbsp;&nbsp;:<br />
+*&nbsp;Create&nbsp;Date&nbsp;:<br />
+*&nbsp;Description&nbsp;:<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;Development&nbsp;/&nbsp;Modification&nbsp;History<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;YYYY.MM.DD&nbsp;&nbsp;:<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT Y_SP002 NO STANDARD PAGE HEADING.<br />
+<br />
+<br />
+DATA: BEGIN OF DESTI OCCURS 100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;MSXXLIST.<br />
+DATA: END OF DESTI.<br />
+<br />
+DATA: BEGIN OF USR_LIST OCCURS 1000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;UINFO.<br />
+DATA: END OF USR_LIST.<br />
+<br />
+DATA: PC_NAME LIKE USR_LIST-TERM.<br />
+<br />
+REFRESH DESTI.<br />
+CALL FUNCTION 'RFC_GET_LOCAL_SERVERS'<br />
+&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;HOSTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;DESTI<br />
+&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NOT_AVAILABLE&nbsp;=&nbsp;1.<br />
+<br />
+READ TABLE DESTI WITH KEY HOST = SY-HOST.<br />
+IF SY-SUBRC EQ 0.<br />
+&nbsp;&nbsp;REFRESH&nbsp;USR_LIST.<br />
+&nbsp;&nbsp;CALL FUNCTION 'THUSRINFO' DESTINATION DESTI-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USR_TABL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;USR_LIST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMUNICATION_FAILURE&nbsp;=&nbsp;17.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;USR_LIST&nbsp;WITH&nbsp;KEY&nbsp;BNAME&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PC_NAME&nbsp;=&nbsp;USR_LIST-TERM.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDIF.<br />
+<br />
+TYPES: BEGIN OF ITYPE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINE(89),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;ITYPE.<br />
+<br />
+DATA ITAB TYPE ITYPE OCCURS 0 WITH HEADER LINE.<br />
+<br />
+TABLES: TRDIR.<br />
+<br />
+PARAMETERS PROGRAM LIKE TRDIR-NAME.<br />
+PARAMETERS EXPERT AS CHECKBOX DEFAULT 'X'.<br />
+<br />
+<br />
+DATA PROG_TMP(80) TYPE C.<br />
+DATA PROG_BAK(80) TYPE C.<br />
+CONCATENATE 'z_tmp' SY-DATUM SY-UZEIT '_' SY-UNAME INTO PROG_TMP.<br />
+CONCATENATE 'z_bak' SY-DATUM SY-UZEIT '_' SY-UNAME INTO PROG_BAK.<br />
+<br />
+IF EXPERT = 'X'.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AB08'&nbsp;OR&nbsp;'HEDADM'&nbsp;OR&nbsp;'HIT01'&nbsp;OR&nbsp;'HBC01'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'HIT99'&nbsp;OR&nbsp;'HHR05'&nbsp;OR&nbsp;'HTEMP01'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I000(OO)&nbsp;WITH&nbsp;'※&nbsp;권한이&nbsp;없습니다!!!'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;REPORT&nbsp;PROGRAM&nbsp;INTO&nbsp;ITAB.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;PROG_BAK&nbsp;FROM&nbsp;ITAB.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;EDITOR-CALL&nbsp;FOR&nbsp;ITAB.<br />
+&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;PROGRAM&nbsp;FROM&nbsp;ITAB.<br />
+ENDIF.<br />
+<br />
+IF EXPERT = ''.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;READ&nbsp;REPORT&nbsp;PROGRAM&nbsp;INTO&nbsp;ITAB.<br />
+*&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;PROG_TMP&nbsp;FROM&nbsp;ITAB.<br />
+*&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;PROG_BAK&nbsp;FROM&nbsp;ITAB.<br />
+*&nbsp;&nbsp;EDITOR-CALL&nbsp;FOR&nbsp;REPORT&nbsp;PROG_TMP.<br />
+*&nbsp;&nbsp;READ&nbsp;REPORT&nbsp;PROG_TMP&nbsp;INTO&nbsp;ITAB.<br />
+*&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;PROGRAM&nbsp;FROM&nbsp;ITAB.<br />
+   </div>
+   <div class="code">
+ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▶&nbsp;PROGRAM&nbsp;&nbsp;ID<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;OO<br />
+*000&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

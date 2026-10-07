@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHRR0020_T01</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZHRR0020_T01</h2>
+<h3> Description: Include ZHRR0020_T01</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHRR0020_T01<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+INCLUDE: ole2incl.<br />
+TABLES : pernr, zhrt0001, sscrfields, zhrt0001_t.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*INFOTYPES<br />
+<br />
+   </div>
+   <div class="code">
+include <a href ="zhr_common_alv.html">zhr_common_alv</a>.<br />
+include <a href ="zhr_common_inc.html">zhr_common_inc</a>.<br />
+<br />
+CONSTANTS:  upload_stru(30)  VALUE 'ZHRT0001_T'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;excel&nbsp;form&nbsp;to&nbsp;upload<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF gt_excel_layout OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpos&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;field(50),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value(100),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gt_excel_layout.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-Excel&nbsp;관련<br />
+   </div>
+   <div class="code">
+DATA: g_application_ole TYPE ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_workbook&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_sheet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_cells&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_ranges&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_font&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_format&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_excel_cpos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*DATA:&nbsp;gt_excel_header&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcms_excel_header&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+   </div>
+   <div class="code">
+DATA : gt_data TYPE zhrt0001_t  OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data&nbsp;TYPE&nbsp;zhrt0001_t.<br />
+DATA: ok_code TYPE syucomm,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;saveok&nbsp;&nbsp;TYPE&nbsp;sy-ucomm.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*class&nbsp;선언<br />
+   </div>
+   <div class="code">
+CLASS lcl_event_receiver    DEFINITION DEFERRED.<br />
+DATA : event_receiver         TYPE REF TO lcl_event_receiver.<br />
+<br />
+DATA: gs_modi_cell        TYPE lvc_s_modi,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_modi_cell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_t_modi.<br />
+<br />
+DATA:  gt_gcell               TYPE lvc_t_styl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_gcell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_styl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_stable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_stbl.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;LT_ITAB&nbsp;MAIN&nbsp;TABLE<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF lt_itab OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zhrt0001/dictionary-zhrt0001.html">zhrt0001</a>.<br />
+DATA: zname  TYPE char15,         " 이름.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;work(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tprog&nbsp;LIKE&nbsp;pdpsp-tprog,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;org_tx&nbsp;TYPE&nbsp;orgtx&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;orgeh&nbsp;LIKE&nbsp;&nbsp;&nbsp;pa0001-orgeh,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cellstyle&nbsp;&nbsp;TYPE&nbsp;lvc_t_styl,<br />
+END OF  lt_itab.<br />
+DATA ls_itab LIKE lt_itab.<br />
+DATA: BEGIN OF i_pdpsp OCCURS 10.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;pdpsp.<br />
+DATA: END OF i_pdpsp.<br />
+DATA  gt_0001 TYPE TABLE OF zhrt0001 WITH HEADER LINE.<br />
+DATA :   gt_itab   LIKE  lt_itab OCCURS 0 WITH HEADER LINE.<br />
+DATA : gs_itab LIKE gt_itab.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;SELECT-OPTIONS<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK block1 WITH FRAME TITLE text-001.<br />
+PARAMETER: dataset  LIKE rlgrap-filename DEFAULT 'D:\Upload\*.xls'.<br />
+SELECTION-SCREEN   END OF BLOCK block1.<br />
+SELECTION-SCREEN: FUNCTION KEY 1.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

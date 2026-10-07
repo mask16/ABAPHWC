@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSE16N_SHOW_GRID_LINE</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSE16N_SHOW_GRID_LINE</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZSE16N_SHOW_GRID_LINE.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_ROW) OPTIONAL<br />
+*"     VALUE(I_COLUMN) OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zse16n_show_grid_line.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+data: wa_fieldcat type lvc_s_fcat.<br />
+data: ls_dfies    like dfies.<br />
+data: ld_tab      type DDOBJNAME.<br />
+data: ld_field    like dfies-lfieldname.<br />
+field-symbols: &ltf&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltwa_table&gt&nbsp;type&nbsp;any.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.In gt_fieldcat_out, I have all fields that are shown in this ALV<br />
+*.from table &ltall_table&gt.<br />
+*.Now display them in a popup.<br />
+* read table &ltall_table&gt index i_row assigning &ltwa_table&gt.<br />
+*.If we are in edit-mode, only &ltall_table_cell&gt contains all lines<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;if&nbsp;gd-edit&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table_cell&gt&nbsp;index&nbsp;i_row&nbsp;assigning&nbsp;&ltwa_table&gt.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table&gt&nbsp;index&nbsp;i_row&nbsp;assigning&nbsp;&ltwa_table&gt.<br />
+&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;refresh&nbsp;gt_detail.<br />
+&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_fieldcat&nbsp;into&nbsp;wa_fieldcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;gt_detail.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_tab&nbsp;&nbsp;&nbsp;=&nbsp;wa_fieldcat-ref_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_field&nbsp;=&nbsp;wa_fieldcat-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DDIF_FIELDINFO_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LFIELDNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_field<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DFIES_WA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_dfies<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;ls_dfies&nbsp;to&nbsp;gt_detail.<br />
+   </div>
+   <div class="codeComment">
+*........fixed type in table leads to missing text<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gt_detail-scrtext_l&nbsp;is&nbsp;initial.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_detail-scrtext_l&nbsp;=&nbsp;ls_dfies-fieldtext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assign&nbsp;component&nbsp;wa_fieldcat-fieldname&nbsp;of&nbsp;structure&nbsp;&ltwa_table&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;&ltf&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_detail-fieldname&nbsp;=&nbsp;wa_fieldcat-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_detail-tabname&nbsp;&nbsp;&nbsp;=&nbsp;wa_fieldcat-ref_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;&ltf&gt&nbsp;to&nbsp;gt_detail-low&nbsp;left-justified.<br />
+   </div>
+   <div class="codeComment">
+*....unconverted line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;&ltF&gt&nbsp;TO&nbsp;GT_DETAIL-LOW_noconv&nbsp;LEFT-JUSTIFIED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;NO&nbsp;EDIT&nbsp;MASK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;gt_detail.<br />
+&nbsp;&nbsp;endloop.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'TSWUSL_SHOW_DETAIL'<br />
+   </div>
+   <div class="codeComment">
+*   Exporting<br />
+*     e_row              = i_row<br />
+*     e_col              = i_column<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_SELFIELDS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_detail.<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Text elements<br />
+*----------------------------------------------------------<br />
+* 001 Deletion successful<br />
+* 002 Runtime<br />
+* 003 Number of hits<br />
+* 004 Table To Be Searched<br />
+* 005 Maximum No. of Entries<br />
+* 020 Enter a description:<br />
+* 030 Transport table entries<br />
+* 031 Do you want to transport the selected table entries?<br />
+* 111 Detail View<br />
+* 112 Details<br />
+* ANZ Number of deleted entries:<br />
+* CDD Delete change recording<br />
+* DCD Enter to-date<br />
+* DE1 Are you sure you want to delete?<br />
+* DET Number of entries<br />
+* ERD Delete<br />
+* ERI Insert<br />
+* ERM Change<br />
+* NO2 Deletion not executed<br />
+* NOT No change documents found<br />
+* OPT Choose option<br />
+* S01 Search for Field Names (Technical or Descriptive)<br />
+* S02 Not Found<br />
+* TO2 More<br />
+* TO3 Multiple entry<br />
+* TOR Multiple Entry With 'Or'-Relationship<br />
+* URL Enter URL<br />
+* V01 Variant already exists<br />
+* V02 Is variant to be overwritten?<br />
+* V03 Save variant<br />
+* V04 Enter the variant name<br />
+* V05 Is variant to be deleted?<br />
+* V06 Delete variant<br />
+* V10 Variant already exists<br />
+* V11 Should the variant be overwritten?<br />
+* V12 Save Variant<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: 00<br />
+*127   This function is not possible<br />
+*398   & & & &<br />
+*<br />
+* Message class: 42<br />
+*328   You do not have authorization for this function<br />
+*<br />
+* Message class: DB<br />
+*095   Excluding two values can lead to an incorrect selection<br />
+*635   The variant name & contains the illegal character &<br />
+*650   Lower limit is greater than upper limit<br />
+*<br />
+* Message class: E2<br />
+*004   Action canceled<br />
+*008   Internal error & in & (contact person in charge)<br />
+*<br />
+* Message class: GA<br />
+*138   Variants & were saved.<br />
+*213   Select an existing layout<br />
+*<br />
+* Message class: GA2<br />
+*401   You are not authorized to carry out the &1 transaction<br />
+*<br />
+* Message class: KP<br />
+*220   Program termination: Error in & routine<br />
+*<br />
+* Message class: KZ<br />
+*555   & & & &<br />
+*<br />
+* Message class: MO<br />
+*401   No database table exists for table cluster &<br />
+*402   Table & is not active in the Dictionary<br />
+*403   & is a structure, not a table<br />
+*404   No database view exists for view &<br />
+*405   No database table exists for table &<br />
+*408   You cannot display & with the standard tools<br />
+*417   You are not authorized to change this table<br />
+*418   A maintenance view exists for table &<br />
+*430   A data record with the specified key already exists<br />
+*<br />
+* Message class: TK<br />
+*617   No authorization to transport & & &<br />
+*<br />
+* Message class: WUSL<br />
+*001   Table &1 is not the correct category<br />
+*002   No values found<br />
+*101   Selected entries transferred in transport request<br />
+*103   No authorization for table changes<br />
+*104   No authorization to delete change documents<br />
+*105   Select entries<br />
+*106   No previous entry exists<br />
+*107   Technical settings have been saved<br />
+*111   SAP editing function is activated<br />
+*112   An error occurred while the changed data was being saved<br />
+*114   Numerous rows can cause performance problems<br />
+*115   Entry &1 locked<br />
+*116   Variant &1 was saved<br />
+*117   Variant &1, &2 does not exist<br />
+*118   Variant &1, &2 already exists<br />
+*119   No authorization to delete variant &1, &2<br />
+*120   Variant &1 deleted<br />
+*121   Error when writing change documents<br />
+*122   Maximum number of subroutine pools reached.<br />
+*123   Function code &1 could not be executed<br />
+*133   Large amounts of selection criteria can lead to termination of selection<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

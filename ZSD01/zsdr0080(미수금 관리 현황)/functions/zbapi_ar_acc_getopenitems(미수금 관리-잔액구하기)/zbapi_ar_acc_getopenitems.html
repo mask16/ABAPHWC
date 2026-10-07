@@ -1,0 +1,338 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZBAPI_AR_ACC_GETOPENITEMS</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZBAPI_AR_ACC_GETOPENITEMS</h2>
+<h3> Description: 미수금 관리-잔액구하기</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zbapi_ar_acc_getopenitems.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(COMPANYCODE) LIKE  BAPI3007_1-COMP_CODE<br />
+*"     REFERENCE(CUSTOMER) LIKE  BAPI3007_1-CUSTOMER<br />
+*"     REFERENCE(KEYDATE) LIKE  BAPI3007-KEY_DATE<br />
+*"  EXPORTING<br />
+*"     REFERENCE(RETURN) LIKE  BAPIRETURN STRUCTURE  BAPIRETURN<br />
+*"     REFERENCE(O_OUT) TYPE  DMBTR<br />
+*"     REFERENCE(O_IN) TYPE  DMBTR<br />
+*"     REFERENCE(O_REST) TYPE  DMBTR<br />
+*"     REFERENCE(O_AR) TYPE  DMBTR<br />
+*"  TABLES<br />
+*"      LINEITEMS STRUCTURE  BAPI3007_2 OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zbapi_ar_acc_getopenitems.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;RANGES&nbsp;ra_blart_in&nbsp;FOR&nbsp;bsid-blart.<br />
+&nbsp;&nbsp;RANGES&nbsp;ra_blart_out&nbsp;FOR&nbsp;bsid-blart.<br />
+   </div>
+   <div class="codeComment">
+*-입금 유형  MACRO<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DEFINE&nbsp;__set_blart_in.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ra_blart_in.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_in-sign&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_in-option&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_in-low&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_in-high&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;ra_blart_in.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+   </div>
+   <div class="codeComment">
+*-매출 유형 MACRO<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DEFINE&nbsp;__set_blart_out.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ra_blart_out.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_out-sign&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_out-option&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_out-low&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ra_blart_out-high&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;ra_blart_out.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+<br />
+&nbsp;&nbsp;__set_blart_in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;'DZ'.<br />
+&nbsp;&nbsp;__set_blart_out&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;'RV'&nbsp;,&nbsp;'RR'&nbsp;,&nbsp;'DL'.<br />
+<br />
+data lv_keydate type BAPI3007-KEY_DATE.<br />
+<br />
+&nbsp;CALL&nbsp;FUNCTION&nbsp;'RP_CALC_DATE_IN_INTERVAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;keydate<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;days&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'00'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;months&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'12'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signum&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'-'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;years&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'00'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calc_date&nbsp;=&nbsp;lv_keydate.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* CONCATENATE gv_spmon '01' INTO  lv_keydate.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'RP_LAST_DAY_OF_MONTHS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;day_in&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_keydate<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_day_of_month&nbsp;=&nbsp;lv_keydate<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;day_in_no_date&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;&nbsp;:&nbsp;o_rest1&nbsp;LIKE&nbsp;bapi3007_2-lc_amount,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o_out1&nbsp;&nbsp;LIKE&nbsp;bapi3007_2-lc_amount,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o_ar1&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;bapi3007_2-lc_amount,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o_in1&nbsp;&nbsp;&nbsp;LIKE&nbsp;bapi3007_2-lc_amount.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;o_out1&nbsp;,&nbsp;o_in1&nbsp;,&nbsp;o_ar1,&nbsp;o_rest1.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_AR_ACC_GETOPENITEMS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;companycode&nbsp;=&nbsp;companycode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;customer&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;customer<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keydate&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;keydate<br />
+   </div>
+   <div class="codeComment">
+*     NOTEDITEMS  = ' '<br />
+*     SECINDEX    = ' '<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;return<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lineitems&nbsp;&nbsp;&nbsp;=&nbsp;lineitems.<br />
+<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;return&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;&nbsp;lineitems&nbsp;BY&nbsp;doc_type&nbsp;.<br />
+<br />
+   </div>
+   <div class="codeComment">
+***** 받을 어음 구하기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lineitems&nbsp;&nbsp;where&nbsp;sp_gl_ind&nbsp;=&nbsp;'W'&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lineitems-db_cr_ind&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lineitems-lc_amount&nbsp;=&nbsp;&nbsp;lineitems-lc_amount&nbsp;*&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_ar1&nbsp;=&nbsp;o_ar1&nbsp;+&nbsp;lineitems-lc_amount.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+***** 받을 어음 구하기<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE&nbsp;&nbsp;lineitems&nbsp;WHERE&nbsp;sp_gl_ind&nbsp;&nbsp;=&nbsp;'F'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;&nbsp;sp_gl_ind&nbsp;&nbsp;=&nbsp;'M'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;&nbsp;sp_gl_ind&nbsp;&nbsp;=&nbsp;'W'&nbsp;.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+***** 미수금 구하기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lineitems&nbsp;&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lineitems-db_cr_ind&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lineitems-lc_amount&nbsp;=&nbsp;&nbsp;lineitems-lc_amount&nbsp;*&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_rest1&nbsp;=&nbsp;o_rest1&nbsp;+&nbsp;lineitems-lc_amount.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+***** 미수금 구하기<br />
+<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lineitems&nbsp;WHERE&nbsp;doc_type&nbsp;IN&nbsp;&nbsp;ra_blart_out&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lineitems-db_cr_ind&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lineitems-lc_amount&nbsp;=&nbsp;&nbsp;lineitems-lc_amount&nbsp;*&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_out1&nbsp;=&nbsp;o_out1&nbsp;+&nbsp;lineitems-lc_amount.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;o_in1&nbsp;&nbsp;=&nbsp;&nbsp;o_out1&nbsp;-&nbsp;o_rest1&nbsp;&nbsp;.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 1 년 이전 매출 합 구하기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;clear&nbsp;o_out1.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lineitems&nbsp;WHERE&nbsp;doc_type&nbsp;IN&nbsp;&nbsp;ra_blart_out<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;doc_date&nbsp;&lt=&nbsp;lv_keydate.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lineitems-db_cr_ind&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lineitems-lc_amount&nbsp;=&nbsp;&nbsp;lineitems-lc_amount&nbsp;*&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_out1&nbsp;=&nbsp;o_out1&nbsp;+&nbsp;lineitems-lc_amount.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+IF companycode = '2000'.<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'CNY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_rest1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_rest<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;ELSE.<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_rest1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;15<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_rest<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;ENDIF.<br />
+<br />
+&nbsp;IF&nbsp;companycode&nbsp;=&nbsp;'2000'.<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'CNY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_in1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_in<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_in1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;15<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_in<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;IF&nbsp;companycode&nbsp;=&nbsp;'2000'.<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'CNY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_out1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_out<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;ELSE.<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_out1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;15<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_out<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;ENDIF.<br />
+<br />
+&nbsp;IF&nbsp;companycode&nbsp;=&nbsp;'2000'.<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'CNY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_ar1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_ar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_external&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_ar1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_number_of_digits&nbsp;=&nbsp;15<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;amount_internal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;o_ar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;"RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_BATCH_SPLITS</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_BATCH_SPLITS</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zsd_batch_splits.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_VTWEG) TYPE  VTWEG<br />
+*"     VALUE(I_WADAT_IST) TYPE  WADAT_IST<br />
+*"  TABLES<br />
+*"      ITEM_DATA STRUCTURE  ZSDS0210<br />
+*"      RETURN STRUCTURE  BAPIRET2 OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zsd_batch_splits.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;ls_data_0100&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;zsds0210,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_header_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;bapiobdlvhdrchg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_header_control&nbsp;&nbsp;&nbsp;LIKE&nbsp;bapiobdlvhdrctrlchg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_techn_control&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;bapidlvcontrol,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_header_deadlines&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;bapidlvdeadln,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_header_deadlines&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lt_header_deadlines,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_item_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;bapiobdlvitemchg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lt_item_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_item_control&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;bapiobdlvitemctrlchg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_item_control&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lt_item_control,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_item_data_spl&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;/spe/bapiobdlvitemchg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lt_item_data_spl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_timestamp_utc&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;char15,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_lgort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lgort_d.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 1. 납품문서 위치 변경<br />
+<br />
+* 유통경로에 따른 저장위치<br />
+*  CASE i_vtweg.<br />
+*    WHEN '10' OR '30'.<br />
+*      lv_lgort = '9000'.<br />
+*    WHEN '20'.<br />
+*      lv_lgort = 'CY00'.<br />
+*  ENDCASE.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;item_data&nbsp;INDEX&nbsp;1&nbsp;INTO&nbsp;ls_data_0100.<br />
+   </div>
+   <div class="codeComment">
+* 헤더생성.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ls_header_data-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;ls_header_control-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;ls_techn_control-upd_ind&nbsp;=&nbsp;'U'.<br />
+<br />
+&nbsp;&nbsp;ls_header_deadlines-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;ls_header_deadlines-timetype&nbsp;=&nbsp;'WSHDRLFDAT'.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;i_wadat_ist&nbsp;'000000'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;lv_timestamp_utc.<br />
+&nbsp;&nbsp;ls_header_deadlines-timestamp_utc&nbsp;=&nbsp;lv_timestamp_utc.<br />
+&nbsp;&nbsp;ls_header_deadlines-timezone&nbsp;=&nbsp;'UTC+9'.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_header_deadlines&nbsp;TO&nbsp;lt_header_deadlines.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;item_data&nbsp;INTO&nbsp;ls_data_0100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_item_data,&nbsp;ls_item_control,&nbsp;ls_item_data_spl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-deliv_item&nbsp;=&nbsp;ls_data_0100-posnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-material&nbsp;=&nbsp;ls_data_0100-matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-fact_unit_nom&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-fact_unit_denom&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-base_uom&nbsp;=&nbsp;ls_data_0100-meins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-sales_unit&nbsp;=&nbsp;ls_data_0100-meins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_item_data&nbsp;TO&nbsp;lt_item_data.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_control-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_control-deliv_item&nbsp;=&nbsp;ls_data_0100-posnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_item_control&nbsp;TO&nbsp;lt_item_control.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl-deliv_item&nbsp;=&nbsp;ls_data_0100-posnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl-pick_denial&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl-stge_loc&nbsp;=&nbsp;ls_data_0100-lgort.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_item_data_spl&nbsp;TO&nbsp;lt_item_data_spl.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_OUTB_DELIVERY_CHANGE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_header_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_control&nbsp;&nbsp;&nbsp;=&nbsp;ls_header_control<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delivery&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_data_0100-vbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;techn_control&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_techn_control<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_deadlines&nbsp;=&nbsp;lt_header_deadlines<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;item_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_item_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;item_control&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_item_control<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;return<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;item_data_spl&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_item_data_spl.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;return&nbsp;WITH&nbsp;KEY&nbsp;type&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 2. 배치생성<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR:&nbsp;ls_header_data,&nbsp;ls_header_control,&nbsp;ls_techn_control,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_item_data,&nbsp;lt_item_control,&nbsp;lt_item_data_spl.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 헤더생성.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ls_header_data-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;ls_header_control-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;ls_techn_control-upd_ind&nbsp;=&nbsp;'U'.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;item_data&nbsp;INTO&nbsp;ls_data_0100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_item_data,&nbsp;ls_item_control,&nbsp;ls_item_data_spl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-material&nbsp;=&nbsp;ls_data_0100-matnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-batch&nbsp;=&nbsp;ls_data_0100-charg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-dlv_qty&nbsp;=&nbsp;ls_data_0100-dlv_qty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-dlv_qty_imunit&nbsp;=&nbsp;ls_data_0100-dlv_qty_imunit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-hieraritem&nbsp;=&nbsp;ls_data_0100-hieraritem.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-usehieritm&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-fact_unit_nom&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-fact_unit_denom&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-base_uom&nbsp;=&nbsp;ls_data_0100-meins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data-sales_unit&nbsp;=&nbsp;ls_data_0100-meins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_item_data&nbsp;TO&nbsp;lt_item_data.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_control-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_control-chg_delqty&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_item_control&nbsp;TO&nbsp;lt_item_control.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl-deliv_numb&nbsp;=&nbsp;ls_data_0100-vbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl-pick_denial&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_item_data_spl-stge_loc&nbsp;=&nbsp;ls_data_0100-lgort.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_item_data_spl&nbsp;TO&nbsp;lt_item_data_spl.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_OUTB_DELIVERY_CHANGE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_data&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_header_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_control&nbsp;=&nbsp;ls_header_control<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delivery&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_data_0100-vbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;techn_control&nbsp;&nbsp;=&nbsp;ls_techn_control<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;item_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_item_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;item_control&nbsp;&nbsp;&nbsp;=&nbsp;lt_item_control<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;return<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;item_data_spl&nbsp;&nbsp;=&nbsp;lt_item_data_spl.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;return&nbsp;WITH&nbsp;KEY&nbsp;type&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZSDM<br />
+*026   That is not authorized.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

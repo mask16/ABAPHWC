@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LSVIMF19</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LSVIMF19</h2>
+<h3> Description: Subroutines for activating profiles</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;VIM_MODIFY_VIEW_ENTRY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;update/insert&nbsp;entry,&nbsp;process&nbsp;all&nbsp;checks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&--------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_modify_view_entry USING value(vmve_exix) TYPE i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vmve_rc&nbsp;TYPE&nbsp;i.<br />
+&nbsp;&nbsp;DATA:&nbsp;h_ix&nbsp;TYPE&nbsp;i,&nbsp;h_act(1)&nbsp;TYPE&nbsp;c,&nbsp;hact2(1)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;TYPE&nbsp;fnam_____4.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltguid&gt&nbsp;TYPE&nbsp;ANY,&nbsp;&ltold_guid&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltguid_wa&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltextract_val&gt&nbsp;TYPE&nbsp;ANY,&nbsp;&lttotal_val&gt&nbsp;TYPE&nbsp;ANY.<br />
+&nbsp;&nbsp;CLEAR&nbsp;vmve_rc.<br />
+&nbsp;&nbsp;nextline&nbsp;=&nbsp;exind&nbsp;=&nbsp;vmve_exix.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;new:&nbsp;transfer&nbsp;of&nbsp;changed&nbsp;entries&nbsp;from&nbsp;EXTRACT&nbsp;into&nbsp;TOTAL&nbsp;via&nbsp;dynps<br />
+*&nbsp;...&nbsp;first:&nbsp;handle&nbsp;read-only&nbsp;fields&nbsp;and&nbsp;subset&nbsp;fields<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;x_header-subsetflag&nbsp;NE&nbsp;space&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-rdonlyflag&nbsp;NE&nbsp;space&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-adrnbrflag&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltxact&gt&nbsp;NE&nbsp;neuer_eintrag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;total&nbsp;WITH&nbsp;KEY&nbsp;&ltvim_xextract_key&gt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;WARNOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_act&nbsp;=&nbsp;&ltaction&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_act&nbsp;=&nbsp;&ltxact&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;WHERE&nbsp;readonly&nbsp;EQ&nbsp;rdonly<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;&nbsp;(&nbsp;readonly&nbsp;EQ&nbsp;subset&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keyflag&nbsp;EQ&nbsp;space&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltvim_extract_struc&gt&nbsp;TO&nbsp;&ltextract_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltxact&gt&nbsp;NE&nbsp;neuer_eintrag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltvim_total_struc&gt&nbsp;TO&nbsp;&lttotal_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltextract_val&gt&nbsp;=&nbsp;&lttotal_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extract+x_namtab-position(x_namtab-flength)&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total+x_namtab-position(x_namtab-flength).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltinitial&gt&nbsp;TO&nbsp;&lttotal_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltextract_val&gt&nbsp;=&nbsp;&lttotal_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extract+x_namtab-position(x_namtab-flength)&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltinitial&gt+x_namtab-position(x_namtab-flength).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hact2&nbsp;=&nbsp;&ltxact&gt.&nbsp;&ltxact&gt&nbsp;=&nbsp;h_act.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;extract&nbsp;INDEX&nbsp;vmve_exix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltxact&gt&nbsp;=&nbsp;hact2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;PERFORM&nbsp;move_extract_to_view_wa.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;...&nbsp;second:&nbsp;handle&nbsp;address&nbsp;number&nbsp;and&nbsp;GUID<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;vim_upgr_address_number.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-adrnbrflag&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-adrnbrflag&nbsp;=&nbsp;'N'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_upgr_address_number&nbsp;=&nbsp;&ltaddress_number&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltxact&gt&nbsp;NE&nbsp;neuer_eintrag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltaddress_number&gt&nbsp;=&nbsp;&ltvim_total_address_number&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&ltaddress_number&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-guidflag&nbsp;&lt&gt&nbsp;space&nbsp;AND&nbsp;&ltxact&gt&nbsp;&lt&gt&nbsp;neuer_eintrag.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;update&nbsp;only,&nbsp;GUID&nbsp;will&nbsp;be&nbsp;set&nbsp;in&nbsp;UPDATE_TAB&nbsp;for&nbsp;new&nbsp;entries<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;WHERE&nbsp;domname&nbsp;IN&nbsp;vim_guid_domain.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;x_header-maintview&nbsp;x_namtab-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;fieldname&nbsp;SEPARATED&nbsp;BY&nbsp;'-'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltvim_extract_struc&gt&nbsp;TO&nbsp;&ltguid&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltvim_total_struc&gt&nbsp;TO&nbsp;&ltold_guid&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;extract+x_namtab-position(x_namtab-flength)&nbsp;TO&nbsp;&ltguid&gt<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASTING&nbsp;TYPE&nbsp;(fieldname).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;total+x_namtab-position(x_namtab-flength)&nbsp;TO&nbsp;&ltold_guid&gt<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASTING&nbsp;TYPE&nbsp;(fieldname).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltguid&gt&nbsp;IS&nbsp;INITIAL&nbsp;AND&nbsp;&ltold_guid&gt&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;no&nbsp;GUID-value&nbsp;imported&nbsp;from&nbsp;remote&nbsp;system&nbsp;and&nbsp;GUID&nbsp;not&nbsp;yet&nbsp;set&nbsp;in<br />
+*&nbsp;current&nbsp;entry<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_make_guid&nbsp;USING&nbsp;x_namtab-viewfield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;(fieldname)&nbsp;TO&nbsp;&ltguid_wa&gt&nbsp;CASTING&nbsp;TYPE&nbsp;(fieldname).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltguid&gt&nbsp;=&nbsp;&ltguid_wa&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;(including&nbsp;event&nbsp;27)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;&ltguid&gt&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;use&nbsp;old&nbsp;GUID<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltguid&gt&nbsp;=&nbsp;&ltold_guid&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-frm_af_uid&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(x_header-frm_af_uid)&nbsp;IN&nbsp;PROGRAM&nbsp;(x_header-fpoolname)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&ltold_guid&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;&ltguid&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltvim_extract_struc&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Condition&nbsp;always&nbsp;FALSE&nbsp;-&nbsp;Internal&nbsp;Message&nbsp;0001699060&nbsp;-&nbsp;ACHACHADI<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;x_header-frm_af_uid&nbsp;&lt&gt&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;BOOL_OK<br />
+**&nbsp;overwrite&nbsp;old&nbsp;GUID&nbsp;with&nbsp;GUID&nbsp;from&nbsp;remote&nbsp;client...&nbsp;or&nbsp;not?<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(x_header-frm_af_uid)&nbsp;IN&nbsp;PROGRAM&nbsp;(x_header-fpoolname)<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&ltold_guid&gt<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;&ltguid&gt<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltvim_extract_struc&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;&ltxact&gt&nbsp;EQ&nbsp;neuer_eintrag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;status-action&nbsp;=&nbsp;hinzufuegen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltvim_extract_struc&gt&nbsp;=&nbsp;&ltinitial&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;NE&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-texttbexst&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltvim_xextract_text&gt&nbsp;=&nbsp;&lttext_initial_x&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltxact&gt&nbsp;=&nbsp;leer.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;status-action&nbsp;=&nbsp;aendern.&nbsp;&ltxact&gt&nbsp;=&nbsp;h_act.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;MODIFY&nbsp;extract&nbsp;INDEX&nbsp;vmve_exix.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;...third:&nbsp;call&nbsp;screen&nbsp;a&nbsp;la&nbsp;replace<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CASE&nbsp;status-type.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;einstufig.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_imp_call_screen&nbsp;USING&nbsp;liste.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;zweistufig.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltxact&gt&nbsp;EQ&nbsp;leer.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neuer&nbsp;=&nbsp;'J'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;process_detail_screen&nbsp;USING&nbsp;'C'.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;status-action&nbsp;=&nbsp;&ltstatus&gt-st_action&nbsp;=&nbsp;aendern.<br />
+&nbsp;&nbsp;IF&nbsp;ok_code&nbsp;EQ&nbsp;'IGN&nbsp;'.&nbsp;vmve_rc&nbsp;=&nbsp;4.&nbsp;CLEAR&nbsp;ok_code.&nbsp;EXIT.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;function&nbsp;EQ&nbsp;'ABR&nbsp;'.&nbsp;vmve_rc&nbsp;=&nbsp;8.&nbsp;CLEAR&nbsp;function.&nbsp;EXIT.&nbsp;ENDIF.<br />
+ENDFORM.                               "vim_modify_view_entry<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

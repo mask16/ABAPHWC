@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_BILL_PAYABLE</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_BILL_PAYABLE</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zsd_bill_payable.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_BUKRS) TYPE  VBRK-BUKRS<br />
+*"     REFERENCE(I_FKDAT) TYPE  SY-DATUM<br />
+*"  EXPORTING<br />
+*"     VALUE(E_PAYABLE) TYPE  CHAR01<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zsd_bill_payable.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;lt_t001b&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;t001b,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_t001b&nbsp;&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lt_t001b,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_version&nbsp;TYPE&nbsp;t001-periv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_period&nbsp;&nbsp;TYPE&nbsp;coep-perio,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_year&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;t009b-bdatj,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_perbl&nbsp;&nbsp;&nbsp;TYPE&nbsp;ce21000-perbl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_ferbl&nbsp;&nbsp;&nbsp;TYPE&nbsp;ce21000-perbl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_terbl&nbsp;&nbsp;&nbsp;TYPE&nbsp;ce21000-perbl.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;e_payable.<br />
+&nbsp;&nbsp;lv_version&nbsp;=&nbsp;'K4'.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'DETERMINE_PERIOD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_fkdat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version&nbsp;=&nbsp;lv_version<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;period&nbsp;&nbsp;=&nbsp;lv_period<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;year&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_year.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;lv_year&nbsp;lv_period<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;lv_perbl.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;frye1&nbsp;frpe1&nbsp;toye1&nbsp;tope1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_t001b<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t001b<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;i_bukrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;mkoar&nbsp;IN&nbsp;('+',&nbsp;'D',&nbsp;'S').<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_t001b&nbsp;INTO&nbsp;ls_t001b.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;lv_ferbl,&nbsp;lv_terbl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;ls_t001b-frye1&nbsp;ls_t001b-frpe1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;lv_ferbl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;ls_t001b-toye1&nbsp;ls_t001b-tope1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;lv_terbl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lv_perbl&nbsp;&gt=&nbsp;lv_ferbl&nbsp;AND&nbsp;lv_perbl&nbsp;&lt=&nbsp;lv_terbl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e_payable&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZSDM<br />
+*026   That is not authorized.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

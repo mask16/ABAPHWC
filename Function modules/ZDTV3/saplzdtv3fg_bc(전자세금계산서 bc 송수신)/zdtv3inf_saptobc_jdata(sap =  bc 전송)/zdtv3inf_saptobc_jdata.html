@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3INF_SAPTOBC_JDATA</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3INF_SAPTOBC_JDATA</h2>
+<h3> Description: SAP => BC 전송</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3INF_SAPTOBC_JDATA.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(IT_FCAT) TYPE  LVC_T_FCAT<br />
+*"  EXPORTING<br />
+*"     VALUE(ET_RESULT) TYPE REF TO  DATA<br />
+*"----------------------------------------------------------------------<br />
+** Dynamic Table Declarations<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3inf_saptobc_jdata.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+DATA :  gt_dyn_table     TYPE REF TO data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gw_dyn_line&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS_FCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LINE&nbsp;OF&nbsp;LVC_T_FCAT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Field Symbold Declaration<br />
+   </div>
+   <div class="code">
+FIELD-SYMBOLS: &ltgfs_line&gt,&ltgfs_line1&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltgfs_dyn_table&gt&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs1&gt.<br />
+<br />
+DATA :   gr_struct_typ   TYPE REF TO  cl_abap_datadescr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_dyntable_typ&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;&nbsp;cl_abap_tabledescr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_component&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cl_abap_structdescr=&gtcomponent,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_component&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cl_abap_structdescr=&gtcomponent_table.<br />
+<br />
+data: lt_comp TYPE STANDARD TABLE OF abap_compdescr.<br />
+data: ls_comp TYPE abap_compdescr.<br />
+DATA: lo_type TYPE REF TO cl_abap_elemdescr.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR:&nbsp;lt_comp[].<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_FCAT&nbsp;INTO&nbsp;IS_FCAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_comp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_comp-name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;IS_FCAT-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_comp-type_kind&nbsp;=&nbsp;'C'.&nbsp;"IS_FCAT-inttype.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"'C'.&nbsp;&nbsp;&nbsp;"Char&nbsp;field<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;IS_FCAT-inttype&nbsp;=&nbsp;'P'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_comp-length&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;16.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_comp-length&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;IS_FCAT-OUTPUTLEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;IS_FCAT-decimals&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_comp-decimals&nbsp;&nbsp;=&nbsp;IS_FCAT-decimals.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Numeric&nbsp;field&nbsp;with&nbsp;decimals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;ls_comp&nbsp;to&nbsp;lt_comp.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_component[].<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_comp&nbsp;INTO&nbsp;ls_comp.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;ls_comp-type_kind.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'g'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_string(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'XSTRING'.&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_xstring(&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*      WHEN 'F'.       lo_type = cl_abap_elemdescr=&gtget_f( ).<br />
+*      WHEN 'X'.       lo_type = cl_abap_elemdescr=&gtget_x( p_length = ls_comp-length ).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'P'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_p(&nbsp;p_length&nbsp;&nbsp;&nbsp;=&nbsp;ls_comp-length<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_decimals&nbsp;=&nbsp;ls_comp-decimals&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'I'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_i(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'D'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_d(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'T'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_t(&nbsp;&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'C'&nbsp;or&nbsp;'X'&nbsp;or&nbsp;'F'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_c(&nbsp;p_length&nbsp;=&nbsp;ls_comp-length&nbsp;).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'N'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo_type&nbsp;=&nbsp;cl_abap_elemdescr=&gtget_n(&nbsp;p_length&nbsp;=&nbsp;ls_comp-length&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_component.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_component-type&nbsp;=&nbsp;lo_type.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Field&nbsp;type<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_component-name&nbsp;=&nbsp;ls_comp-name.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Field&nbsp;name&nbsp;&nbsp;&nbsp;ex:&nbsp;FIELD1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_component&nbsp;TO&nbsp;gt_component.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Add&nbsp;entry&nbsp;to&nbsp;component&nbsp;table<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  CLEAR: gt_component[].<br />
+*  LOOP AT IT_FCAT.<br />
+*    CLEAR: ls_component.<br />
+*    ls_component-name = IS_FCAT-fieldname.<br />
+*    IF IS_FCAT-COLTEXT IS NOT INITIAL.<br />
+*      ls_component-type ?= cl_abap_datadescr=&gtdescribe_by_data( IS_FCAT-COLTEXT ).<br />
+*    ELSE.<br />
+*      ls_component-type ?= cl_abap_datadescr=&gtdescribe_by_data( IS_FCAT-scrtext_l ).<br />
+*    ENDIF.<br />
+*    APPEND ls_component TO gt_component.<br />
+*  ENDLOOP.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR:&nbsp;gr_struct_typ.<br />
+&nbsp;&nbsp;gr_struct_typ&nbsp;&nbsp;?=&nbsp;cl_abap_structdescr=&gtcreate(&nbsp;p_components&nbsp;=&nbsp;gt_component&nbsp;).<br />
+&nbsp;&nbsp;gr_dyntable_typ&nbsp;=&nbsp;cl_abap_tabledescr=&gtcreate(&nbsp;p_line_type&nbsp;=&nbsp;gr_struct_typ&nbsp;).<br />
+<br />
+&nbsp;&nbsp;CREATE&nbsp;DATA:&nbsp;gt_dyn_table&nbsp;TYPE&nbsp;HANDLE&nbsp;gr_dyntable_typ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gw_dyn_line&nbsp;&nbsp;TYPE&nbsp;HANDLE&nbsp;gr_struct_typ.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  ASSIGN gt_dyn_table-&gt* TO &ltgfs_dyn_table&gt.<br />
+*  ASSIGN gw_dyn_line-&gt*  TO &ltgfs_line&gt.<br />
+<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ET_RESULT&nbsp;=&nbsp;gt_dyn_table.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Text elements<br />
+*----------------------------------------------------------<br />
+* T00 .<br />
+* T90 &lt?xml version="1.0" encoding="UTF-8"?&gt&lt?xml-stylesheet type="text/xsl" href="SAP.XSL"?&gt<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

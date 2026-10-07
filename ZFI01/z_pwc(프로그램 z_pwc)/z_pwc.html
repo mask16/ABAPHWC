@@ -1,0 +1,1373 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>Z_PWC</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: Z_PWC</h2>
+<h3> Description: 프로그램 Z_PWC</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;&nbsp;용&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;도&nbsp;&nbsp;:&nbsp;BKPF/BSEG&nbsp;table&nbsp;data&nbsp;DOWNLOAD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;&nbsp;관련문서&nbsp;&nbsp;&nbsp;:&nbsp;삼일회계법인&nbsp;전표내역&nbsp;다운로드&nbsp;프로그램<br />
+*&nbsp;Modify&nbsp;1&nbsp;:&nbsp;프로젝트코드와&nbsp;코스트센터간&nbsp;구분자추가&nbsp;&nbsp;______20131216&nbsp;BY&nbsp;KJA<br />
+*&nbsp;Modify&nbsp;2&nbsp;:&nbsp;BA필드추가&nbsp;______________________________20131216&nbsp;BY&nbsp;KJA<br />
+*&nbsp;Modify&nbsp;3&nbsp;:&nbsp;데이터&nbsp;클렌징('|'',&nbsp;'/t',&nbsp;'/n',&nbsp;'/r'<br />
+*필드내&nbsp;데이터로&nbsp;출력되지&nbsp;않도록20221005BY&nbsp;LKS<br />
+*&nbsp;Modify&nbsp;4:&nbsp;LDGRP&nbsp;칼럼&nbsp;추가20221005&nbsp;BY&nbsp;LKS<br />
+*&nbsp;Modify&nbsp;5:&nbsp;BKPF-BSTAT&nbsp;조건&nbsp;추가('U'&nbsp;도&nbsp;출력되도록)20221005&nbsp;BY&nbsp;LKS<br />
+*&nbsp;Modify&nbsp;6:&nbsp;BKPF-BSTAT&nbsp;조건&nbsp;다시&nbsp;제거('U'&nbsp;도&nbsp;출력제외)20230427&nbsp;BY&nbsp;HSW<br />
+*&nbsp;Modify&nbsp;7:&nbsp;&&&nbsp;Operator대신&nbsp;Concatenate&nbsp;Operator&nbsp;사용20230720&nbsp;BY&nbsp;HSW<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+REPORT ZPWC_JE_ECC.<br />
+<br />
+TABLES : bkpf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bseg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;skat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t001.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Server&nbsp;download&nbsp;선언부분*******************************<br />
+   </div>
+   <div class="code">
+DATA: REPREL(10) TYPE C VALUE '1.0'.<br />
+DATA: STARTD type sy-datum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STARTT&nbsp;type&nbsp;sy-uzeit,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDD&nbsp;type&nbsp;sy-datum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDT&nbsp;type&nbsp;sy-uzeit,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZEILE(200).<br />
+<br />
+DATA: FILENAM(100),<br />
+   </div>
+   <div class="codeComment">
+*DATA:&nbsp;FILENAM&nbsp;type&nbsp;string&nbsp;&nbsp;,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENUM(4)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N_File_count&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_File_count1(1)&nbsp;TYPE&nbsp;N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_File_count2(2)&nbsp;TYPE&nbsp;N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_File_count3(3)&nbsp;TYPE&nbsp;N.<br />
+   </div>
+   <div class="codeComment">
+********************************************************<br />
+<br />
+*&nbsp;System&nbsp;information&nbsp;***********************************<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF kernel_version OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key(21)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data(69)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;kernel_version.<br />
+DATA: dbinfo TYPE dbrelinfo.<br />
+   </div>
+   <div class="codeComment">
+********************************************************<br />
+<br />
+*Log&nbsp;다운로드*****<br />
+   </div>
+   <div class="code">
+DATA: begin of itab_log occurs 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Zlog(200),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;itab_log.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*******************<br />
+<br />
+*&nbsp;BKPF/BSEG&nbsp;테이블&nbsp;데이터*******************************<br />
+<br />
+   </div>
+   <div class="code">
+DATA dtab TYPE bkpf OCCURS 0 WITH HEADER LINE.<br />
+<br />
+DATA : Begin of itab_header occurs 1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT1(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'COUNT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_1(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT2(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'Client',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_2(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT3(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'회사코드',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_3(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT86(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전표헤더',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_4(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT85(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'회계연도',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_5(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT4(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전표유형',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_6(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT5(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'증빙일',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_7(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT6(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전기일',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_8(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT7(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'회계기간',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_9(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT8(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'입력일',<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_10(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT9(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'입력시간',<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_47(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT10(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'변경일',&nbsp;"전표변경일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_48(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT11(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'생성자',&nbsp;"생성자<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_11(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT12(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'TCODE',&nbsp;"Tcode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_12(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT13(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'역분개',&nbsp;"stblg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_13(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT14(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'역분개연도',&nbsp;"stjah<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_14(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT15(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전표통화',&nbsp;"WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_15(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT16(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'환율',&nbsp;"KURSF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_16(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT17(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전표상태',&nbsp;"&nbsp;BSTAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_17(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT18(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'이전기간전기',&nbsp;"&nbsp;XRUEB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_18(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT19(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'거래',&nbsp;"&nbsp;GLVOR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_19(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT20(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'참조절차',&nbsp;"&nbsp;AWTYP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_20(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT21(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'현지통화',&nbsp;"&nbsp;HWAER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_21(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT22(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'역분개표시',&nbsp;"&nbsp;XSTOV<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_22(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT23(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'역분개사유',&nbsp;"STGRD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_23(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT24(16)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'임시전표생성자명',&nbsp;"PPNAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_24(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT25(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'역분개지시자',&nbsp;"XREVERSAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_25(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT26(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'원장',&nbsp;"XREVERSAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_26(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT27(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'세션명',&nbsp;"GRPID<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_49(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT27(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'XMWST',"CalculateTaxAuto<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_63(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT61(14)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'최종문서변경일',&nbsp;&nbsp;&nbsp;"UPDDT<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_64(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT62(14)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'회사간거래숫자',"BVORG<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_65(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT63(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'참조번호',"XBLNR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_66(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT64(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'STJAH',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_67(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT65(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'AWKEY',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_68(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT66(15)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'XREF1_HD',&nbsp;"<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_69(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT67(15)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'XREF2_HD',<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_27(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT28(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전표라인번호',&nbsp;"BUZEI<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_28(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT29(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'반제일',&nbsp;"AUGDT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_29(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT30(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'반제전표',&nbsp;"AUGBL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_30(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT31(14)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'반제전표입력일',&nbsp;"AUGCP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_51(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT32(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전기키',&nbsp;&nbsp;"BSCHL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_31(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT33(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'계정유형',&nbsp;&nbsp;"KOART<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_32(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT34(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'특별GL지시자',&nbsp;&nbsp;"UMSKZ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_33(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT35(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'차대변지시자',&nbsp;&nbsp;"SHKZG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_34(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT36(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'현지통화금액',&nbsp;"DMBTR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_35(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT37(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'전표통화금액',&nbsp;&nbsp;"WRBTR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_36(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT38(13)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'현지통화금액2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_37(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT40(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'계정코드',&nbsp;&nbsp;"HKONT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_38(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT41(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'PSWSL',<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_38(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT42(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'판매처',&nbsp;&nbsp;"KUNNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_39(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT43(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'구매처',&nbsp;&nbsp;"LIFNR<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_41(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT44(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'ZLSPR',&nbsp;&nbsp;"<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_42(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT45(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'XNEGP',&nbsp;&nbsp;"지시자:&nbsp;마이너스전기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_43(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT46(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'프로젝트코드',&nbsp;&nbsp;"PROJK(WBS)<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_44(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT47(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'MWSTS',&nbsp;"&nbsp;현지통화금액&nbsp;세액<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_50(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT48(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'WMWST',&nbsp;"&nbsp;전표통화금액&nbsp;세액<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_100(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT49(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'HWBAS',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_52(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT50(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'FWBAS',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_53(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',&nbsp;&nbsp;"temp<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT51(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'트랜잭션타입',&nbsp;"BEWAR&nbsp;&nbsp;"temp<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_54(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT52(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'CostCenter',&nbsp;"KOSTL<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_55(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT53(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'대금청구문서',&nbsp;"VBELN<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_56(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT54(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'영업오더',&nbsp;"VBEL2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_57(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT55(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'영업오더품목',&nbsp;"POSN2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_58(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT56(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'자산번호',&nbsp;"ANLN1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_59(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT57(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'자산서브번호',&nbsp;"ANLN2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_60(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT58(16)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'자산트랜잭션타입',&nbsp;"ANBWA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_61(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT59(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'자산화일자',&nbsp;"BZDAT<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_62(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT60(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'지급키기간',&nbsp;"ZTERM<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_70(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT68(18)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'특별GL트랜잭션유형',&nbsp;"UMSKS<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_71(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',&nbsp;&nbsp;&nbsp;"20131216&nbsp;Modify&nbsp;KJA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT69(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'BusinessArea',&nbsp;"GSBER<br />
+"20131216Modify KJA<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_72(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT70(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'Value&nbsp;date',"VALUT<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_73(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT71(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'AUFNR',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_74(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT72(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'지급방법',&nbsp;"ZLSCH<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_75(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT73(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'TR송장숫자',"REBZG<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_76(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT74(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'차후문서유형',"REBZT<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_77(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT75(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'MATNR',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_78(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT76(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'WERKS',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_79(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT77(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'MENGE',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_80(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT78(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'MEINS',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_81(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT79(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'구매오더',"<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_82(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT80(12)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'구매오더품목',"EBELP<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_83(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT81(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'VBEWA',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_84(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT82(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'DEPOT',<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_85(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT39(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'지정',&nbsp;&nbsp;"ZUONR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_45(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT83(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'헤더텍스트',"BKTXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_46(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTXT84(10)&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'품목텍스트',"SGTXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL_40(1)&nbsp;TYPE&nbsp;C&nbsp;value&nbsp;'|',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;itab_header.<br />
+<br />
+DATA : BEGIN OF itab OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count(10),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"COUNT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL1(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mandt&nbsp;LIKE&nbsp;bkpf-mandt,&nbsp;"클라이언트&nbsp;번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL2(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bukrs&nbsp;LIKE&nbsp;bkpf-bukrs,&nbsp;"회사코드<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL3(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;belnr&nbsp;LIKE&nbsp;bkpf-belnr,&nbsp;"전표번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL4(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gjahr&nbsp;LIKE&nbsp;bkpf-gjahr,&nbsp;"회계연도<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL5(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blart&nbsp;LIKE&nbsp;bkpf-blart,&nbsp;"전표유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL6(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bldat&nbsp;LIKE&nbsp;bkpf-bldat,&nbsp;"증빙일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL7(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;budat&nbsp;LIKE&nbsp;bkpf-budat,&nbsp;"전기일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL8(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;monat&nbsp;LIKE&nbsp;bkpf-monat,&nbsp;"회계기간<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL9(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cpudt&nbsp;LIKE&nbsp;bkpf-cpudt,&nbsp;"입력일<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL10(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CPUTM&nbsp;LIKE&nbsp;BKPF-CPUTM,&nbsp;"입력시간<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL11(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AEDAT&nbsp;LIKE&nbsp;BKPF-AEDAT,&nbsp;"전표변경일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL12(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;usnam&nbsp;LIKE&nbsp;bkpf-usnam,&nbsp;"생성자<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL13(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tcode&nbsp;LIKE&nbsp;bkpf-tcode,&nbsp;"Tcode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL14(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stblg&nbsp;LIKE&nbsp;bkpf-stblg,&nbsp;"역분개<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL15(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stjah&nbsp;LIKE&nbsp;bkpf-stjah,&nbsp;"역분개연도<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL16(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waers&nbsp;LIKE&nbsp;bkpf-waers,&nbsp;"전표통화<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL17(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kursf(15),&nbsp;"환율<br />
+FLAG_ALL18(1),<br />
+bstat LIKE bkpf-bstat, " 전표상태<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL19(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xrueb&nbsp;LIKE&nbsp;bkpf-xrueb,&nbsp;"&nbsp;이전기간&nbsp;전기&nbsp;지시자<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL20(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glvor&nbsp;LIKE&nbsp;bkpf-glvor,&nbsp;"&nbsp;거래<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL21(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;awtyp&nbsp;LIKE&nbsp;bkpf-awtyp,&nbsp;"&nbsp;참조절차<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL22(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hwaer&nbsp;LIKE&nbsp;bkpf-hwaer,&nbsp;"&nbsp;현지통화<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL23(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xstov&nbsp;LIKE&nbsp;bkpf-xstov,&nbsp;"&nbsp;역분개표시<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL24(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stgrd&nbsp;LIKE&nbsp;bkpf-stgrd,&nbsp;"역분개사유<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL25(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PPNAM&nbsp;LIKE&nbsp;BKPF-PPNAM,&nbsp;"임시전표&nbsp;생성자명<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL26(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xreversal&nbsp;LIKE&nbsp;bkpf-xreversal,&nbsp;"역분개지시자<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL27(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rldnr&nbsp;LIKE&nbsp;bkpf-rldnr,&nbsp;"원장<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL28(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GRPID&nbsp;like&nbsp;bkpf-GRPID,&nbsp;"그룹이름<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL28(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XMWST&nbsp;like&nbsp;bkpf-XMWST,&nbsp;"&nbsp;Calculate&nbsp;tax&nbsp;automatically<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL29(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDDT&nbsp;LIKE&nbsp;BKPF-UPDDT,&nbsp;"Date&nbsp;of&nbsp;the&nbsp;Last&nbsp;Document&nbsp;Update<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL30(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BVORG&nbsp;LIKE&nbsp;BKPF-BVORG,"No.of&nbsp;Cross-CompanyCodePosting&nbsp;Tr<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL31(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XBLNR&nbsp;LIKE&nbsp;BKPF-XBLNR,&nbsp;"Reference&nbsp;Document&nbsp;Number<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL32(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWKEY&nbsp;LIKE&nbsp;BKPF-AWKEY,&nbsp;"&nbsp;Object&nbsp;Key<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL33(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XREF1_HD&nbsp;LIKE&nbsp;BKPF-XREF1_HD,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL34(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XREF2_HD&nbsp;LIKE&nbsp;BKPF-XREF2_HD,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL35(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buzei&nbsp;LIKE&nbsp;bseg-buzei,&nbsp;"전표라인번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL36(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;augdt&nbsp;LIKE&nbsp;bseg-augdt,&nbsp;"반제일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL37(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;augbl&nbsp;LIKE&nbsp;bseg-augbl,&nbsp;"반제전표<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL38(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUGCP&nbsp;LIKE&nbsp;bseg-augcp,&nbsp;"반제전표입력일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL39(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bschl&nbsp;LIKE&nbsp;bseg-bschl,&nbsp;&nbsp;"전기키<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL40(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;koart&nbsp;LIKE&nbsp;bseg-koart,&nbsp;&nbsp;"계정유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL41(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;umskz&nbsp;LIKE&nbsp;bseg-umskz,&nbsp;&nbsp;"특별&nbsp;G/L&nbsp;지시자<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL42(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shkzg&nbsp;LIKE&nbsp;bseg-shkzg,&nbsp;&nbsp;"차변/대변&nbsp;지시자<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL43(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dmbtr(30),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"현지통화금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL44(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wrbtr(30),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"전표통화금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL45(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DMBE2(30),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"두&nbsp;번째&nbsp;현지통화로&nbsp;표시한&nbsp;금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL46(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hkont&nbsp;LIKE&nbsp;bseg-hkont,&nbsp;&nbsp;"계정코드<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL48(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pswsl&nbsp;LIKE&nbsp;bseg-pswsl,&nbsp;&nbsp;"총계정원장&nbsp;거래수치에&nbsp;대한&nbsp;갱신통화<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL49(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kunnr&nbsp;LIKE&nbsp;bseg-kunnr,&nbsp;&nbsp;"고객<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL50(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lifnr&nbsp;LIKE&nbsp;bseg-lifnr,&nbsp;&nbsp;"구매처<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL51(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zlspr&nbsp;LIKE&nbsp;bseg-zlspr,&nbsp;&nbsp;"Payment&nbsp;Block&nbsp;Key<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL52(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xnegp&nbsp;LIKE&nbsp;bseg-xnegp,&nbsp;&nbsp;"지시자:&nbsp;마이너스전기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL53(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;projk&nbsp;like&nbsp;BSEG-PROJK,&nbsp;&nbsp;"프로젝트코드(WBS)<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL54(1),&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;20131216&nbsp;Modify&nbsp;by&nbsp;KJA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MWSTS(30),&nbsp;"&nbsp;현지통화금액&nbsp;세액<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL55(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WMWST(30),&nbsp;"&nbsp;전표통화금액&nbsp;세액<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL56(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HWBAS(30),&nbsp;"Tax&nbsp;Base&nbsp;Amount&nbsp;in&nbsp;Local&nbsp;Currency<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL57(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FWBAS(30),&nbsp;"Tax&nbsp;Base&nbsp;Amount&nbsp;in&nbsp;Document&nbsp;Currency<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL58(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEWAR&nbsp;LIKE&nbsp;BSEG-BEWAR,&nbsp;"	Transaction&nbsp;Type<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL59(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KOSTL&nbsp;LIKE&nbsp;BSEG-KOSTL,&nbsp;"Cost&nbsp;Center<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL60(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VBELN&nbsp;LIKE&nbsp;BSEG-VBELN,&nbsp;"Billing&nbsp;Document<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL61(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VBEL2&nbsp;LIKE&nbsp;BSEG-VBEL2,&nbsp;"Sales&nbsp;Document<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL62(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POSN2&nbsp;LIKE&nbsp;BSEG-POSN2,&nbsp;"Sales&nbsp;Document&nbsp;Item<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL63(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANLN1&nbsp;LIKE&nbsp;BSEG-ANLN1,&nbsp;"Main&nbsp;Asset&nbsp;Number<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL64(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANLN2&nbsp;LIKE&nbsp;BSEG-ANLN2,&nbsp;"Asset&nbsp;Subnumber<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL65(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANBWA&nbsp;LIKE&nbsp;BSEG-ANBWA,&nbsp;"Asset&nbsp;Transaction&nbsp;Type<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL66(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BZDAT&nbsp;LIKE&nbsp;BSEG-BZDAT,&nbsp;"Asset&nbsp;value&nbsp;date<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL67(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZTERM&nbsp;LIKE&nbsp;BSEG-ZTERM,&nbsp;"Terms&nbsp;of&nbsp;payment&nbsp;key<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL68(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UMSKS&nbsp;LIKE&nbsp;BSEG-UMSKS,"Special&nbsp;G/L&nbsp;Transaction&nbsp;Type<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL69(1),<br />
+&nbsp;&nbsp;"20131216&nbsp;Modify&nbsp;KJA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GSBER&nbsp;LIKE&nbsp;BSEG-GSBER,"Business&nbsp;Area&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"20131216&nbsp;Modify&nbsp;KJA<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL70(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUT&nbsp;LIKE&nbsp;BSEG-VALUT,&nbsp;"Value&nbsp;date<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL71(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUFNR&nbsp;LIKE&nbsp;BSEG-AUFNR,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL72(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZLSCH&nbsp;LIKE&nbsp;BSEG-ZLSCH,"Payment&nbsp;Method<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL73(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REBZG&nbsp;LIKE&nbsp;BSEG-REBZG,"No.of&nbsp;the&nbsp;Invoice&nbsp;the&nbsp;TR&nbsp;Belongs&nbsp;to<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL74(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REBZT&nbsp;LIKE&nbsp;BSEG-REBZT,"Follow-On&nbsp;Document&nbsp;Type<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL75(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;LIKE&nbsp;BSEG-MATNR,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL76(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;LIKE&nbsp;BSEG-WERKS,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL77(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE(17),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL78(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEINS&nbsp;LIKE&nbsp;BSEG-MEINS,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL79(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EBELN&nbsp;LIKE&nbsp;BSEG-EBELN,"구매오더<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL80(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EBELP&nbsp;LIKE&nbsp;BSEG-EBELP,"구매오더품목<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL81(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VBEWA&nbsp;LIKE&nbsp;BSEG-VBEWA,"Flow&nbsp;Type<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL82(1),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEPOT&nbsp;LIKE&nbsp;BSEG-DEPOT&nbsp;,"Securities&nbsp;Account<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL83(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zuonr&nbsp;LIKE&nbsp;bseg-zuonr,&nbsp;&nbsp;"지정<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL84(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BKTXT&nbsp;LIKE&nbsp;BKPF-BKTXT,&nbsp;"전표헤더텍스트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL85(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SGTXT&nbsp;LIKE&nbsp;BSEG-SGTXT,&nbsp;&nbsp;"전표아이템텍스트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLAG_ALL86(1),<br />
+END OF itab.<br />
+<br />
+DATA : count(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cnt(10)&nbsp;&nbsp;type&nbsp;n.<br />
+<br />
+DATA : l_file_name LIKE  ibipparms-path,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_filename&nbsp;&nbsp;TYPE&nbsp;&nbsp;string.<br />
+<br />
+DATA: down_count type i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File_count&nbsp;type&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hd_count(10)&nbsp;type&nbsp;n.<br />
+DATA D_MSG_TEXT(50).<br />
+Data: ip_head(1) type C Value 'X'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Initialization&nbsp;step*<br />
+   </div>
+   <div class="code">
+INITIALIZATION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;definition&nbsp;of&nbsp;selection&nbsp;screen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;SELSCREEN.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-SELECTION-SCREEN&nbsp;----------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;/2(70)&nbsp;PHEAD1&nbsp;MODIF&nbsp;ID&nbsp;HD1.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;SKIP&nbsp;1.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;BLOCK&nbsp;b1&nbsp;WITH&nbsp;FRAME&nbsp;TITLE&nbsp;PPATHBC&nbsp;.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(26)&nbsp;PPATHT.<br />
+&nbsp;&nbsp;PARAMETERS:&nbsp;PATH(180)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C&nbsp;OBLIGATORY&nbsp;LOWER&nbsp;CASE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(26)&nbsp;PNUMBER.<br />
+&nbsp;&nbsp;PARAMETERS:&nbsp;P_NUMBER&nbsp;TYPE&nbsp;i&nbsp;OBLIGATORY.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;BLOCK&nbsp;b1.<br />
+<br />
+<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;BLOCK&nbsp;b2&nbsp;WITH&nbsp;FRAME&nbsp;TITLE&nbsp;PPATHBC2&nbsp;.<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;BUKRS_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;&nbsp;&nbsp;&nbsp;p_bukrs&nbsp;FOR&nbsp;bkpf-bukrs.&nbsp;&nbsp;&nbsp;"OBLIGATORY.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;GJAHR_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;&nbsp;&nbsp;&nbsp;p_gjahr&nbsp;FOR&nbsp;bkpf-gjahr.&nbsp;&nbsp;&nbsp;"OBLIGATORY.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;BELNR_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;s_belnr&nbsp;FOR&nbsp;&nbsp;bkpf-belnr.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;BUDAT_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;s_budat&nbsp;FOR&nbsp;&nbsp;bkpf-budat.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;BLDAT_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;s_bldat&nbsp;FOR&nbsp;&nbsp;bkpf-bldat.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;CPUDT_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;&nbsp;s_cpudt&nbsp;FOR&nbsp;&nbsp;bkpf-cpudt.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;BLART_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;s_blart&nbsp;FOR&nbsp;&nbsp;bkpf-blart.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;GLVOR_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;s_glvor&nbsp;FOR&nbsp;&nbsp;bkpf-glvor.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;AWTYP_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;s_awtyp&nbsp;for&nbsp;bkpf-awtyp.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;COMMENT&nbsp;5(12)&nbsp;TCODE_C.<br />
+&nbsp;&nbsp;SELECT-OPTIONS&nbsp;s_tcode&nbsp;for&nbsp;bkpf-tcode.<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;end&nbsp;OF&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;BLOCK&nbsp;b2.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-&nbsp;START-OF-SELECTION&nbsp;-------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*"추출시작날짜&nbsp;및&nbsp;시간을&nbsp;가져온다<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MOVE&nbsp;SY-DATUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;STARTD.<br />
+&nbsp;&nbsp;MOVE&nbsp;SY-UZEIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;STARTT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*회사코드를&nbsp;가져온다.<br />
+*&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;dtab[],&nbsp;itab[].<br />
+*&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;t001<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;=&nbsp;p_bukrs.<br />
+<br />
+*BKPF테이블에서&nbsp;입력된&nbsp;조건에&nbsp;맞는&nbsp;데이터를&nbsp;추출한다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;TABLE&nbsp;dtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bkpf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;IN&nbsp;p_bukrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;gjahr&nbsp;IN&nbsp;p_gjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;belnr&nbsp;IN&nbsp;s_belnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;budat&nbsp;IN&nbsp;s_budat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;blart&nbsp;IN&nbsp;s_blart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;bldat&nbsp;IN&nbsp;s_bldat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;cpudt&nbsp;IN&nbsp;s_cpudt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;glvor&nbsp;IN&nbsp;s_glvor&nbsp;"RFBU<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;awtyp&nbsp;IN&nbsp;s_awtyp&nbsp;"BKPF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;tcode&nbsp;IN&nbsp;s_tcode&nbsp;"Tcode<br />
+"                  AND BSTAT IN ('', 'U') "20220905 SELECT 조건 추가<br />
+"20230427 'U' 추가 조건 다시 제외<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BSTAT&nbsp;IN&nbsp;('')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORDER&nbsp;BY&nbsp;BELNR&nbsp;budat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;dtab,&nbsp;count.<br />
+<br />
+&nbsp;&nbsp;describe&nbsp;table&nbsp;dtab&nbsp;lines&nbsp;cnt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;BSEG에서&nbsp;BKPF에&nbsp;해당하는&nbsp;품목데이터를&nbsp;추출한다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;dtab.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;Hd_count&nbsp;=&nbsp;Hd_count&nbsp;+&nbsp;1.&nbsp;&nbsp;"&nbsp;최종&nbsp;Header&nbsp;data&nbsp;체크용<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Count&nbsp;=&nbsp;1일때&nbsp;헤더&nbsp;정보&nbsp;데이터를&nbsp;추가하여&nbsp;다운로드&nbsp;시킨다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ip_head&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;ITAB_HEADER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;PATH&nbsp;&nbsp;'BKPF_BSEG_Header.txt'&nbsp;INTO&nbsp;FILENAM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;ENCODING&nbsp;DEFAULT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;ENCODING&nbsp;UTF-8.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;MEssage&nbsp;zds.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;ENCODING&nbsp;NON-UNICODE<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;'File&nbsp;cannot&nbsp;be&nbsp;opened.&nbsp;Reason:',&nbsp;D_MSG_TEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ITAB_HEADER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSFER&nbsp;ITAB_HEADER&nbsp;TO&nbsp;FILENAM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLOSE&nbsp;DATASET&nbsp;FILENAM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ip_head.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;dtab&nbsp;TO&nbsp;itab.&nbsp;"헤더정보<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;bseg&nbsp;WHERE&nbsp;bukrs&nbsp;=&nbsp;itab-bukrs&nbsp;&nbsp;"품목정보<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;belnr&nbsp;=&nbsp;itab-belnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;=&nbsp;itab-gjahr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count&nbsp;=&nbsp;count&nbsp;+&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+*"&nbsp;Download&nbsp;internal&nbsp;table을&nbsp;입력된&nbsp;단위로&nbsp;단운로드&nbsp;처리하기위한&nbsp;count.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Down_count&nbsp;=&nbsp;down_count&nbsp;+&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;itab-count.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;bseg&nbsp;TO&nbsp;itab.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-ZUONR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-SGTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-USNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-GRPID&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-PPNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-BKTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-KOSTL&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-KUNNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'|'&nbsp;IN&nbsp;ITAB-LIFNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-ZUONR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-SGTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-USNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-GRPID&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-PPNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-BKTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-KOSTL&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-KUNNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/r'&nbsp;IN&nbsp;ITAB-LIFNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-ZUONR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-SGTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-USNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-GRPID&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-PPNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-BKTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-KOSTL&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-KUNNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/t'&nbsp;IN&nbsp;ITAB-LIFNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-ZUONR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-SGTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-USNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-GRPID&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-PPNAM&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-BKTXT&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-KOSTL&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-KUNNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'/n'&nbsp;IN&nbsp;ITAB-LIFNR&nbsp;WITH&nbsp;''.<br />
+"20220905'|' 구분자 제거<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;&nbsp;=&nbsp;itab-hkont<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;=&nbsp;itab-hkont.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;flag_make.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;itab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Memory&nbsp;부족&nbsp;에러&nbsp;발생&nbsp;방지하기&nbsp;위하여&nbsp;다음의&nbsp;로직을&nbsp;실행시키다.<br />
+*"입력된&nbsp;건이상이&nbsp;되었을때&nbsp;다운로드&nbsp;한다<br />
+*&nbsp;BKPF&nbsp;헤더데이터가&nbsp;최종이&nbsp;아닌경우는&nbsp;이&nbsp;로직을&nbsp;수행한다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;P_NUMBER&nbsp;LE&nbsp;DOWN_COUNT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;File로&nbsp;떨어트리도록&nbsp;한다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File_count&nbsp;=&nbsp;File_count&nbsp;+&nbsp;1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;파일Number&nbsp;앞에&nbsp;0&nbsp;처리<br />
+*&nbsp;2023.07.20,&nbsp;&&&nbsp;대신&nbsp;Concatenate&nbsp;사용<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;File_count&nbsp;LE&nbsp;9&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;&nbsp;FILE_COUNT&nbsp;to&nbsp;C_File_count1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'000'&nbsp;C_File_count1&nbsp;&nbsp;INTO&nbsp;FILENUM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;'000'&nbsp;&&&nbsp;file_count.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;File_count&nbsp;LE&nbsp;99&nbsp;and&nbsp;FILE_COUNT&nbsp;GE&nbsp;10.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;&nbsp;FILE_COUNT&nbsp;to&nbsp;C_File_count2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'00'&nbsp;C_File_count2&nbsp;&nbsp;INTO&nbsp;FILENUM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;'00'&nbsp;&&&nbsp;file_count.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;File_count&nbsp;LE&nbsp;999&nbsp;and&nbsp;FILE_COUNT&nbsp;GE&nbsp;100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;&nbsp;FILE_COUNT&nbsp;to&nbsp;C_File_count3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'0'&nbsp;C_File_count3&nbsp;&nbsp;INTO&nbsp;FILENUM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;'0'&nbsp;&&&nbsp;file_count.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;File_count&nbsp;LE&nbsp;9999&nbsp;and&nbsp;FILE_COUNT&nbsp;GE&nbsp;1000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;file_count.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;PATH&nbsp;&nbsp;'BKPF_BSEG_'&nbsp;Filenum&nbsp;'.txt'&nbsp;INTO&nbsp;FILENAM.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;ENCODING&nbsp;DEFAULT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open&nbsp;dataset&nbsp;FILENAM&nbsp;for&nbsp;output&nbsp;in&nbsp;legacy&nbsp;text&nbsp;mode&nbsp;.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;ENCODING&nbsp;NON-UNICODE.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;'File&nbsp;cannot&nbsp;be&nbsp;opened.&nbsp;Reason:',&nbsp;D_MSG_TEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ITAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSFER&nbsp;ITAB&nbsp;TO&nbsp;FILENAM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLOSE&nbsp;DATASET&nbsp;FILENAM.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear:&nbsp;itab,itab[].&nbsp;"Memory&nbsp;refresh<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Clear&nbsp;down_count.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;"다운로드설정된&nbsp;레코드&nbsp;갯수보다&nbsp;작고&nbsp;최종&nbsp;데이터인&nbsp;경우&nbsp;Download&nbsp;처리<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;(&nbsp;P_NUMBER&nbsp;GE&nbsp;DOWN_COUNT&nbsp;)&nbsp;and&nbsp;(&nbsp;hd_count&nbsp;=&nbsp;cnt&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*"&nbsp;File로&nbsp;떨어트리도록&nbsp;한다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File_count&nbsp;=&nbsp;File_count&nbsp;+&nbsp;1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;파일Number&nbsp;앞에&nbsp;0&nbsp;처리<br />
+*&nbsp;2023.07.20,&nbsp;&&&nbsp;대신&nbsp;Concatenate&nbsp;사용<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;File_count&nbsp;LE&nbsp;9&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;&nbsp;FILE_COUNT&nbsp;to&nbsp;C_File_count1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'000'&nbsp;C_File_count1&nbsp;&nbsp;INTO&nbsp;FILENUM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;'000'&nbsp;&&&nbsp;file_count.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;File_count&nbsp;LE&nbsp;99&nbsp;and&nbsp;FILE_COUNT&nbsp;GE&nbsp;10.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;&nbsp;FILE_COUNT&nbsp;to&nbsp;C_File_count2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'00'&nbsp;C_File_count2&nbsp;&nbsp;INTO&nbsp;FILENUM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;'00'&nbsp;&&&nbsp;file_count.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;File_count&nbsp;LE&nbsp;999&nbsp;and&nbsp;FILE_COUNT&nbsp;GE&nbsp;100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;&nbsp;FILE_COUNT&nbsp;to&nbsp;C_File_count3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'0'&nbsp;C_File_count3&nbsp;&nbsp;INTO&nbsp;FILENUM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;'0'&nbsp;&&&nbsp;file_count.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;File_count&nbsp;LE&nbsp;9999&nbsp;and&nbsp;FILE_COUNT&nbsp;GE&nbsp;1000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filenum&nbsp;=&nbsp;file_count.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;PATH&nbsp;&nbsp;'BKPF_BSEG_'&nbsp;Filenum&nbsp;'.txt'&nbsp;INTO&nbsp;FILENAM.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;ENCODING&nbsp;DEFAULT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;open&nbsp;dataset&nbsp;FILENAM&nbsp;for&nbsp;output&nbsp;in&nbsp;legacy&nbsp;text&nbsp;mode&nbsp;.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;FOR&nbsp;OUTPUT&nbsp;IN&nbsp;TEXT&nbsp;MODE&nbsp;ENCODING&nbsp;NON-UNICODE<br />
+*.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;'File&nbsp;cannot&nbsp;be&nbsp;opened.&nbsp;Reason:',&nbsp;D_MSG_TEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ITAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSFER&nbsp;ITAB&nbsp;TO&nbsp;FILENAM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLOSE&nbsp;DATASET&nbsp;FILENAM.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear:&nbsp;itab,itab[].&nbsp;"Memory&nbsp;refresh<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Clear&nbsp;down_count.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;itab.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*"추출종료일자&nbsp;및&nbsp;시간을&nbsp;가져온다<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MOVE&nbsp;SY-DATUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ENDD.<br />
+&nbsp;&nbsp;MOVE&nbsp;SY-UZEIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ENDT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*System&nbsp;information*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;Write:/1&nbsp;'[시스템&nbsp;정보]'.<br />
+&nbsp;&nbsp;CALL&nbsp;'SAPCORE'&nbsp;ID&nbsp;'ID'&nbsp;FIELD&nbsp;'VERSION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID&nbsp;'TABLE'&nbsp;FIELD&nbsp;kernel_version-*sys*.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;kernel_version&nbsp;INDEX&nbsp;11.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*R/3&nbsp;System,&nbsp;Name&nbsp;of&nbsp;Central&nbsp;Database&nbsp;System<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;Data:&nbsp;Log1(100).<br />
+&nbsp;&nbsp;write:/1&nbsp;'R/3&nbsp;시스템&nbsp;DB명:',&nbsp;SY-DBSYS.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'R/3&nbsp;시스템&nbsp;DB명:'&nbsp;SY-DBSYS&nbsp;into&nbsp;Log1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*R/3&nbsp;System,&nbsp;Name&nbsp;of&nbsp;Application&nbsp;Server<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;Data:Log2(100).<br />
+&nbsp;&nbsp;write:/1&nbsp;'R/3&nbsp;서버명:',&nbsp;&nbsp;SY-HOST.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'R/3&nbsp;서버명:'&nbsp;&nbsp;SY-HOST&nbsp;into&nbsp;Log2.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*R/3&nbsp;System,&nbsp;Operating&nbsp;System&nbsp;of&nbsp;Application&nbsp;Server<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;Data:Log3(100).<br />
+&nbsp;&nbsp;write:/1&nbsp;'R/3&nbsp;OS명:',&nbsp;&nbsp;SY-OPSYS.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'R/3&nbsp;OS명:'&nbsp;&nbsp;SY-OPSYS&nbsp;into&nbsp;Log3.<br />
+<br />
+&nbsp;&nbsp;Data:Log4(100).<br />
+&nbsp;&nbsp;write:/1&nbsp;'R/3&nbsp;시스템명:',&nbsp;SY-SYSID.&nbsp;&nbsp;"Name&nbsp;of&nbsp;SAP&nbsp;R/3&nbsp;System<br />
+&nbsp;&nbsp;Concatenate&nbsp;'R/3&nbsp;시스템명:'&nbsp;&nbsp;SY-SYSID&nbsp;into&nbsp;Log4.<br />
+<br />
+&nbsp;&nbsp;Data:Log5(100).<br />
+&nbsp;&nbsp;write:/1&nbsp;'R/3&nbsp;버젼:',&nbsp;&nbsp;SY-SAPRL.&nbsp;&nbsp;"R/3&nbsp;System,&nbsp;system&nbsp;release<br />
+&nbsp;&nbsp;Concatenate&nbsp;'R/3&nbsp;버젼:'&nbsp;&nbsp;SY-SAPRL&nbsp;into&nbsp;Log5.<br />
+<br />
+&nbsp;&nbsp;Data:Log6(200).<br />
+&nbsp;&nbsp;write:/1&nbsp;'처리자명:',&nbsp;&nbsp;SY-UNAME.&nbsp;&nbsp;"SAP&nbsp;System,&nbsp;User&nbsp;Logon&nbsp;Name<br />
+&nbsp;&nbsp;Concatenate&nbsp;'처리자명:'&nbsp;&nbsp;SY-UNAME&nbsp;into&nbsp;Log6.<br />
+<br />
+&nbsp;&nbsp;Data:Log7(200).<br />
+&nbsp;&nbsp;write:/1&nbsp;'접속서버IP:',&nbsp;kernel_version-data.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'접속서버IP:'&nbsp;SY-HOST&nbsp;into&nbsp;Log7.<br />
+<br />
+&nbsp;&nbsp;SKIP.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;종료&nbsp;message<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;Write:/1&nbsp;'[처리결과]'.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'Information:'&nbsp;FILENAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&gt&nbsp;최종파일까지&nbsp;서버상에&nbsp;다운로드&nbsp;완료'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;ZEILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;Write:/&nbsp;ZEILE.<br />
+&nbsp;&nbsp;SKIP.<br />
+<br />
+&nbsp;&nbsp;Data:&nbsp;Log8(100).<br />
+&nbsp;&nbsp;Write:/&nbsp;'데이터전체건수:',&nbsp;count.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'데이터전체건수:'&nbsp;count&nbsp;into&nbsp;Log8.<br />
+<br />
+&nbsp;&nbsp;Data:&nbsp;Log9(100).<br />
+&nbsp;&nbsp;Write:/&nbsp;'다운로드&nbsp;파일갯수:',&nbsp;Filenum.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'다운로드&nbsp;파일갯수:'&nbsp;Filenum&nbsp;into&nbsp;Log9.<br />
+<br />
+&nbsp;&nbsp;Data:&nbsp;Log10(100).<br />
+&nbsp;&nbsp;Data:&nbsp;Log11(100).<br />
+&nbsp;&nbsp;Write:/&nbsp;'시작일자:',&nbsp;STARTD,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'시작시간:',&nbsp;STARTT.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'시작일자:'&nbsp;STARTD&nbsp;into&nbsp;Log10.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'시작시간:'&nbsp;STARTT&nbsp;into&nbsp;Log11.<br />
+<br />
+&nbsp;&nbsp;Data:&nbsp;Log12(100).<br />
+&nbsp;&nbsp;Data:&nbsp;Log13(100).<br />
+&nbsp;&nbsp;Write:/&nbsp;'종료일자:',&nbsp;ENDD,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'종료시간:',&nbsp;ENDT.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'종료일자:'&nbsp;ENDD&nbsp;into&nbsp;Log12.<br />
+&nbsp;&nbsp;Concatenate&nbsp;'종료시간:'&nbsp;ENDT&nbsp;into&nbsp;Log13.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*System&nbsp;정보&nbsp;Log&nbsp;다운로드*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;move&nbsp;Log1&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log2&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log3&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log4&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log5&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log6&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log7&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;ZEILE&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+<br />
+&nbsp;&nbsp;move&nbsp;Log8&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log9&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log10&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log11&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log12&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+&nbsp;&nbsp;move&nbsp;Log13&nbsp;to&nbsp;itab_log-zlog.<br />
+&nbsp;&nbsp;append&nbsp;itab_log.<br />
+<br />
+&nbsp;&nbsp;Clear&nbsp;:&nbsp;itab_log.<br />
+<br />
+&nbsp;CONCATENATE&nbsp;PATH&nbsp;&nbsp;'BKPF_BSEG_DL_Log_file_'&nbsp;sy-datum&nbsp;sy-uzeit&nbsp;'.txt'<br />
+INTO FILENAM.<br />
+<br />
+OPEN DATASET FILENAM FOR OUTPUT IN TEXT MODE ENCODING DEFAULT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;OPEN&nbsp;DATASET&nbsp;FILENAM&nbsp;for&nbsp;output&nbsp;in&nbsp;legacy&nbsp;text&nbsp;mode&nbsp;.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;'File&nbsp;cannot&nbsp;be&nbsp;opened.&nbsp;Reason:',&nbsp;D_MSG_TEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;Exit.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ITAB_log.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSFER&nbsp;ITAB_log&nbsp;TO&nbsp;FILENAM.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CLOSE&nbsp;DATASET&nbsp;FILENAM.<br />
+<br />
+Write:/1 '로그파일다운로드 완료:', FILENAM.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CURRENCY_AMOUNT_IDOC_TO_SAP<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ITAB1_HWBAS&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_C_WAERS_KRW&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_ZFIT0004_HWBAS&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM currency_amount_idoc_to_sap  USING    p_idoc_amt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_sap_amt.<br />
+&nbsp;&nbsp;CALL FUNCTION 'CURRENCY_AMOUNT_IDOC_TO_SAP'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currency&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;idoc_amount&nbsp;=&nbsp;p_idoc_amt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sap_amount&nbsp;&nbsp;=&nbsp;p_sap_amt.<br />
+<br />
+ENDFORM.                    " CURRENCY_AMOUNT_IDOC_TO_SAP<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;FLAG_MAKE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM flag_make .<br />
+&nbsp;&nbsp;itab-FLAG_ALL1&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL2&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL3&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL4&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL5&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL6&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL7&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL8&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL9&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;itab-FLAG_ALL10&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;itab-FLAG_ALL11&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL12&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL13&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL14&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL15&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL16&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL17&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL18&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL19&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL20&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL21&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL22&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL23&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL24&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL25&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL26&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL27&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL28&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;itab-FLAG_ALL29&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL30&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL31&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL32&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL33&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL34&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;itab-FLAG_ALL35&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL36&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL37&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL38&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL39&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL40&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL41&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL42&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL43&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL44&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL45&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL46&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;itab-FLAG_ALL47&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL48&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;itab-FLAG_ALL49&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL50&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;itab-FLAG_ALL51&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL52&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;itab-FLAG_ALL53&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;itab-FLAG_ALL54&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL55&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL56&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL57&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL58&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="code">
+&nbsp;itab-FLAG_ALL59&nbsp;=&nbsp;'|'.&nbsp;&nbsp;&nbsp;"&nbsp;20131216&nbsp;Modify&nbsp;By&nbsp;KJa<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;itab-FLAG_ALL60&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL61&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL62&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL63&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL64&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL65&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL66&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL67&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL68&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="code">
+&nbsp;itab-FLAG_ALL69&nbsp;=&nbsp;'|'.&nbsp;&nbsp;&nbsp;"20131216&nbsp;Modify&nbsp;By&nbsp;KJa<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;itab-FLAG_ALL70&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL71&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL72&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL73&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL74&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL75&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL76&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL77&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL78&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL79&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL80&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL81&nbsp;=&nbsp;'|'.<br />
+*&nbsp;&nbsp;itab-FLAG_ALL82&nbsp;=&nbsp;'|'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;itab-FLAG_ALL83&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL84&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL85&nbsp;=&nbsp;'|'.<br />
+&nbsp;&nbsp;itab-FLAG_ALL86&nbsp;=&nbsp;'|'.<br />
+ENDFORM.                    " FLAG_MAKE<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SELSCREEN<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SELSCREEN .<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;TITLE<br />
+*&nbsp;&nbsp;-----<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CONCATENATE&nbsp;'BKPF&nbsp;BSEG&nbsp;table&nbsp;download'&nbsp;REPREL&nbsp;INTO&nbsp;PHEAD1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+<br />
+&nbsp;&nbsp;MOVE&nbsp;'Parameter를&nbsp;...'&nbsp;&nbsp;&nbsp;TO&nbsp;PPATHBC.<br />
+&nbsp;&nbsp;MOVE&nbsp;'원하는&nbsp;조건값..'&nbsp;TO&nbsp;PPATHBC2.<br />
+&nbsp;&nbsp;MOVE&nbsp;'서버다운로드&nbsp;PATH&nbsp;지정'&nbsp;&nbsp;TO&nbsp;PPATHT.<br />
+&nbsp;&nbsp;MOVE&nbsp;'파일내&nbsp;데이터&nbsp;갯수&nbsp;지정'&nbsp;TO&nbsp;PNUMBER.<br />
+&nbsp;&nbsp;MOVE&nbsp;'회사코드'&nbsp;TO&nbsp;BUKRS_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'회계연도'&nbsp;TO&nbsp;GJAHR_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'회계전표'&nbsp;TO&nbsp;BELNR_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'전기일'&nbsp;TO&nbsp;BUDAT_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'증빙일'&nbsp;TO&nbsp;BLDAT_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'입력일'&nbsp;TO&nbsp;CPUDT_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'전표유형'&nbsp;TO&nbsp;BLART_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'거래'&nbsp;TO&nbsp;GLVOR_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'참조절차'&nbsp;TO&nbsp;AWTYP_C.<br />
+&nbsp;&nbsp;MOVE&nbsp;'트랜잭션코드'&nbsp;TO&nbsp;TCODE_C.<br />
+<br />
+ENDFORM.                    " SELSCREEN<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

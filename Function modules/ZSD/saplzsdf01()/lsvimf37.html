@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LSVIMF37</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LSVIMF37</h2>
+<h3> Description: Subroutines for activating profiles</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;FILL_EXTRACT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;........&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM FILL_EXTRACT.<br />
+&nbsp;&nbsp;DATA:&nbsp;REC&nbsp;LIKE&nbsp;SY-SUBRC&nbsp;VALUE&nbsp;9,&nbsp;TOTAL_SAFE(4096)&nbsp;TYPE&nbsp;C,&nbsp;INDEI&nbsp;TYPE&nbsp;I,&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HF&nbsp;TYPE&nbsp;I&nbsp;VALUE&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltBEGDATE_MASK&gt.<br />
+&nbsp;&nbsp;REFRESH:&nbsp;EXTRACT.&nbsp;CLEAR&nbsp;EXTRACT.<br />
+&nbsp;&nbsp;CLEAR&nbsp;VIM_MAINKEY.<br />
+&nbsp;&nbsp;TRANSLATE&nbsp;VIM_NO_MAINKEY_EXISTS&nbsp;USING&nbsp;VIM_NO_MKEY_NOT_PROCSD_PATT.<br />
+&nbsp;&nbsp;IF&nbsp;X_HEADER-DELMDTFLAG&nbsp;NE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&ltVIM_NEW_BEGDATE&gt&nbsp;TO&nbsp;&ltBEGDATE_MASK&gt&nbsp;TYPE&nbsp;'C'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;TOTAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;NORMAL_SELECT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;X_HEADER-DELMDTFLAG&nbsp;NE&nbsp;SPACE&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VIM_IGNORE_COLLAPSED_MAINKEYS&nbsp;EQ&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CHECK_AND_MODIFY_MAINKEY_TAB&nbsp;USING&nbsp;REC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;REC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VIM_COLL_MAINKEYS_BEG_IX&nbsp;=&nbsp;VIM_LAST_COLL_MAINKEYS_IX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;REC&nbsp;LT&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;REC&nbsp;EQ&nbsp;4.&nbsp;REC&nbsp;=&nbsp;9.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXTRACT&nbsp;=&nbsp;TOTAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;EXTRACT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;VIM_COLL_MAINKEYS_BEG_IX&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;REC&nbsp;NE&nbsp;9&nbsp;AND&nbsp;REC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;MOD_EXTRACT_AND_MAINKEY_TAB&nbsp;USING&nbsp;'A'&nbsp;0.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;EXTRACT&nbsp;LINES&nbsp;MAXLINES.<br />
+&nbsp;&nbsp;MARK_EXTRACT&nbsp;=&nbsp;MARK_TOTAL.<br />
+&nbsp;&nbsp;STATUS-DATA&nbsp;=&nbsp;GESAMTDATEN.<br />
+&nbsp;&nbsp;TITLE-DATA&nbsp;&nbsp;=&nbsp;GESAMTDATEN.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&ltSTATUS&gt-SELECTED.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&ltSTATUS&gt-DISPL_MODE&nbsp;=&nbsp;EXPANDED.&nbsp;"default&nbsp;display&nbsp;mode<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;MAXLINES&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;VIM_SEND_SV005_OR_SV766&nbsp;USING&nbsp;'766'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RESET'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;FUNCTION&nbsp;NE&nbsp;'DELE'&nbsp;AND&nbsp;FUNCTION&nbsp;NE&nbsp;'SAVE'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"HWR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;X_HEADER-SELECTION&nbsp;EQ&nbsp;SPACE&nbsp;AND&nbsp;FILL_EXTR_FIRST_PROC&nbsp;EQ&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;VIM_OC_INST&nbsp;IS&nbsp;INITIAL<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;data&nbsp;access&nbsp;restricted?<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;(&nbsp;(&nbsp;&ltSTATUS&gt-ST_ACTION&nbsp;=&nbsp;AENDERN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NOT&nbsp;VIM_OC_INST-&gtOC_SELCRIT_MAINT_TAB&nbsp;IS&nbsp;INITIAL&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;(&nbsp;'ST'&nbsp;CS&nbsp;&ltSTATUS&gt-ST_ACTION<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NOT&nbsp;VIM_OC_INST-&gtOC_SELCRIT_READ_TAB&nbsp;IS&nbsp;INITIAL&nbsp;)&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S766(SV).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;Eingeschr#nkte&nbsp;Anzeige&nbsp;von&nbsp;Datens#tzen.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S065(SV).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"keine&nbsp;Eintr#ge&nbsp;vorhanden<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'X'&nbsp;TO&nbsp;FILL_EXTR_FIRST_PROC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&ltTABLE1&gt.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"GKPR/1045371<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S004(SV).&nbsp;"keine&nbsp;Eintr#ge&nbsp;gem#ß&nbsp;Selektion&nbsp;gefunden<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"HWR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;ELSEIF&nbsp;maxlines&nbsp;EQ&nbsp;1.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ELSEIF&nbsp;MAXLINES&nbsp;EQ&nbsp;1&nbsp;AND&nbsp;FUNCTION&nbsp;NE&nbsp;'CMPR'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"822766<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;VIM_MAINTAIN_SINGLE_SET.&nbsp;&nbsp;&nbsp;&nbsp;"UFint2329966/2000<br />
+&nbsp;&nbsp;ELSEIF&nbsp;NOT&nbsp;VIM_OC_INST&nbsp;IS&nbsp;INITIAL&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;FUNCTION&nbsp;NE&nbsp;'DELE'&nbsp;AND&nbsp;FUNCTION&nbsp;NE&nbsp;'SAVE'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;data&nbsp;access&nbsp;restricted?<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;(&nbsp;&ltSTATUS&gt-ST_ACTION&nbsp;=&nbsp;AENDERN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NOT&nbsp;VIM_OC_INST-&gtOC_SELCRIT_MAINT_TAB&nbsp;IS&nbsp;INITIAL&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;(&nbsp;'ST'&nbsp;CS&nbsp;&ltSTATUS&gt-ST_ACTION<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NOT&nbsp;VIM_OC_INST-&gtOC_SELCRIT_READ_TAB&nbsp;IS&nbsp;INITIAL&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;VIM_SEND_SV005_OR_SV766&nbsp;USING&nbsp;'766'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SENDIT'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;Eingeschr#nkte&nbsp;Anzeige&nbsp;von&nbsp;Datens#tzen.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;VIM_SEND_SV005_OR_SV766&nbsp;USING&nbsp;'766'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RESET'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "fill_extract<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

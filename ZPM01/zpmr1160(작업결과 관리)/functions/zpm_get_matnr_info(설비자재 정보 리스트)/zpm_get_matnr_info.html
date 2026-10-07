@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPM_GET_MATNR_INFO</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZPM_GET_MATNR_INFO</h2>
+<h3> Description: 설비자재 정보 리스트</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZPM_GET_MATNR_INFO.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_MATNR) TYPE  MATNR OPTIONAL<br />
+*"     VALUE(I_WERKS) TYPE  WERKS_D OPTIONAL<br />
+*"     VALUE(I_LGORT) TYPE  LGORT_D OPTIONAL<br />
+*"     VALUE(I_CHARG) TYPE  CHARG_D OPTIONAL<br />
+*"     VALUE(I_MTART) TYPE  MTART DEFAULT 'ERSA'<br />
+*"     VALUE(I_BUKRS) TYPE  BUKRS DEFAULT '1000'<br />
+*"     VALUE(I_RSNUM) TYPE  RSNUM OPTIONAL<br />
+*"     VALUE(I_WPLAN) TYPE  ZPMT0140-WPLANN OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_INFO) TYPE  ZPMS0003<br />
+*"  TABLES<br />
+*"      T_DATA STRUCTURE  ZPMS0003 OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zpm_get_matnr_info.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;&nbsp;:&nbsp;LS_DATA&nbsp;TYPE&nbsp;ZPMS0003,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_DATA&nbsp;TYPE&nbsp;ZPMS0003&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA&nbsp;&nbsp;:&nbsp;L_WAERS&nbsp;TYPE&nbsp;T001-WAERS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;LT_MATNR&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;TYPE&nbsp;ZPMS0003-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;LT_MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RSNUM&nbsp;TYPE&nbsp;RESB-RSNUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;LT_RESB&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;LIKE&nbsp;RESB-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHARG&nbsp;LIKE&nbsp;RESB-CHARG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BDMNG&nbsp;LIKE&nbsp;RESB-BDMNG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;LT_RESB,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_WPLAN&nbsp;TYPE&nbsp;ZPMT0140-WPLANN.<br />
+<br />
+&nbsp;&nbsp;RANGES:&nbsp;R_MATNR&nbsp;FOR&nbsp;ZPMS0003-MATNR,&nbsp;R_WERKS&nbsp;FOR&nbsp;ZPMS0003-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_LGORT&nbsp;FOR&nbsp;ZPMS0003-LGORT,&nbsp;R_CHARG&nbsp;FOR&nbsp;ZPMS0003-CHARG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_MTART&nbsp;FOR&nbsp;MARA-MTART.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LS_DATA,&nbsp;LT_DATA,&nbsp;LT_DATA[],&nbsp;L_WAERS,&nbsp;LT_MATNR,&nbsp;LT_MATNR[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_MATNR,&nbsp;R_MATNR[],&nbsp;R_WERKS,&nbsp;R_WERKS[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_LGORT,&nbsp;R_LGORT[],&nbsp;R_CHARG,&nbsp;R_CHARG[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R_MTART,&nbsp;R_MTART[].<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;T001<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;=&nbsp;I_BUKRS.<br />
+<br />
+&nbsp;&nbsp;L_RSNUM&nbsp;=&nbsp;I_RSNUM.<br />
+&nbsp;&nbsp;L_WPLAN&nbsp;=&nbsp;I_WPLAN.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;R_MATNR&nbsp;=&nbsp;'IEQ'.&nbsp;R_MATNR-LOW&nbsp;=&nbsp;I_MATNR.&nbsp;APPEND&nbsp;R_MATNR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_WERKS&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;R_WERKS&nbsp;=&nbsp;'IEQ'.&nbsp;R_WERKS-LOW&nbsp;=&nbsp;I_WERKS.&nbsp;APPEND&nbsp;R_WERKS.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_LGORT&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;R_LGORT&nbsp;=&nbsp;'IEQ'.&nbsp;R_LGORT-LOW&nbsp;=&nbsp;I_LGORT.&nbsp;APPEND&nbsp;R_LGORT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_CHARG&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;R_CHARG&nbsp;=&nbsp;'IEQ'.&nbsp;R_CHARG-LOW&nbsp;=&nbsp;I_CHARG.&nbsp;APPEND&nbsp;R_CHARG.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_MTART&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;R_MTART&nbsp;=&nbsp;'IEQ'.&nbsp;R_MTART-LOW&nbsp;=&nbsp;I_MTART.&nbsp;APPEND&nbsp;R_MTART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;R_MTART,&nbsp;R_MTART[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;A~MATNR&nbsp;E~MAKTX&nbsp;A~WERKS&nbsp;B~NAME1&nbsp;A~CHARG&nbsp;A~LGORT&nbsp;C~LGOBE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A~CLABS&nbsp;D~MEINS&nbsp;F~VERPR&nbsp;F~PEINH&nbsp;D~BISMT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MCHB&nbsp;AS&nbsp;A&nbsp;INNER&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T001W&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;B~WERKS&nbsp;=&nbsp;A~WERKS&nbsp;INNER&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T001L&nbsp;AS&nbsp;C<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;C~LGORT&nbsp;=&nbsp;A~LGORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~WERKS&nbsp;=&nbsp;A~WERKS&nbsp;INNER&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MARA&nbsp;AS&nbsp;D<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;D~MATNR&nbsp;=&nbsp;A~MATNR&nbsp;INNER&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKT&nbsp;AS&nbsp;E<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;E~MATNR&nbsp;=&nbsp;A~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~SPRAS&nbsp;=&nbsp;SY-LANGU&nbsp;INNER&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBEW&nbsp;AS&nbsp;F<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;F~MATNR&nbsp;=&nbsp;A~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;f~BWKEY&nbsp;=&nbsp;a~werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;F~BWTAR&nbsp;=&nbsp;A~CHARG&nbsp;inner&nbsp;join<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MARD&nbsp;as&nbsp;g<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on&nbsp;a~MATNR&nbsp;=&nbsp;g~matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;a~WERKS&nbsp;=&nbsp;g~werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;a~LGORT&nbsp;=&nbsp;g~lgort<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;g~LVORM&nbsp;=&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~MATNR&nbsp;IN&nbsp;R_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~WERKS&nbsp;IN&nbsp;R_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~LGORT&nbsp;IN&nbsp;R_LGORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~CHARG&nbsp;IN&nbsp;R_CHARG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;D~MTART&nbsp;IN&nbsp;R_MTART.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;LT_DATA&nbsp;BY&nbsp;WERKS&nbsp;MATNR&nbsp;CHARG&nbsp;LGORT.<br />
+&nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;LT_DATA.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;L_WPLAN&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LT_RESB,&nbsp;LT_RESB[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;A~MATNR&nbsp;A~CHARG&nbsp;A~BDMNG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_RESB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;RESB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AS&nbsp;A&nbsp;INNER&nbsp;JOIN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZPMT0090&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~RSNUM&nbsp;&nbsp;=&nbsp;&nbsp;B~RSNUM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;B~WPLANN&nbsp;=&nbsp;&nbsp;L_WPLAN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~RSNUM&nbsp;&nbsp;&lt&gt&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~MATNR&nbsp;&nbsp;&nbsp;&nbsp;IN&nbsp;R_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~CHARG&nbsp;&nbsp;&nbsp;&nbsp;IN&nbsp;R_CHARG.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;L_RSNUM&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LT_RESB,&nbsp;LT_RESB[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;MATNR&nbsp;CHARG&nbsp;BDMNG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_RESB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;RESB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;RSNUM&nbsp;=&nbsp;&nbsp;L_RSNUM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MATNR&nbsp;IN&nbsp;R_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;CHARG&nbsp;IN&nbsp;R_CHARG.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_MATNR-MATNR&nbsp;=&nbsp;LT_DATA-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LT_MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_DATA-WAERS&nbsp;=&nbsp;L_WAERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_DATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;XBDART,&nbsp;XBDART[].<br />
+&nbsp;&nbsp;XBDART-SIGN&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;XBDART-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;XBDART-LOW&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'AR'.<br />
+&nbsp;&nbsp;APPEND&nbsp;XBDART.<br />
+&nbsp;&nbsp;XBDART-LOW&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'MR'.<br />
+&nbsp;&nbsp;APPEND&nbsp;XBDART.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_MATNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;XTAB1,&nbsp;XTAB1[].<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'MB_ADD_RESERVATION_QUANTITIES'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_MATNR&nbsp;=&nbsp;LT_MATNR-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_XLOEK&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_KZEAR&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_KZWSO&nbsp;=&nbsp;KZWSO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ALRK014884&nbsp;SW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XTAB1&nbsp;&nbsp;&nbsp;=&nbsp;XTAB1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XWERKS&nbsp;&nbsp;=&nbsp;MS_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XBDART&nbsp;&nbsp;=&nbsp;XBDART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;XTAB1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_DATA-BDMNG&nbsp;=&nbsp;XTAB1-BDMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_DATA&nbsp;TRANSPORTING&nbsp;BDMNG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;XTAB1-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;WERKS&nbsp;=&nbsp;XTAB1-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;LGORT&nbsp;=&nbsp;XTAB1-LGORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;CHARG&nbsp;=&nbsp;XTAB1-CHARG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_DATA-QUANT&nbsp;=&nbsp;LT_DATA-CLABS&nbsp;-&nbsp;LT_DATA-BDMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_RESB&nbsp;WITH&nbsp;KEY&nbsp;MATNR&nbsp;=&nbsp;LT_DATA-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHARG&nbsp;=&nbsp;LT_DATA-CHARG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_DATA-QUANT&nbsp;=&nbsp;LT_DATA-QUANT&nbsp;+&nbsp;LT_RESB-BDMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_DATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_DATA&nbsp;INTO&nbsp;LS_DATA&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_INFO&nbsp;=&nbsp;LS_DATA.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;T_DATA[]&nbsp;=&nbsp;LT_DATA[].<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZPMM<br />
+*000   &<br />
+*001   & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

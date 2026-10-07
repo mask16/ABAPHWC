@@ -1,0 +1,1110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHR_COMM</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZHR_COMM</h2>
+<h3> Description: [HR] HR Common</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHR_COMM<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+*[&nbsp;Code&nbsp;&&nbsp;Text&nbsp;]=======================================================*<br />
+*======================================================================*<br />
+*▶&nbsp;조직&nbsp;Text<br />
+*&nbsp;1&gt<br />
+*SELECT&nbsp;SINGLE&nbsp;ORGTX<br />
+*&nbsp;&nbsp;FROM&nbsp;T527X<br />
+*&nbsp;&nbsp;INTO&nbsp;GS_TAB-ORGTX<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ORGEH&nbsp;=&nbsp;P0001-ORGEH<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;PN-ENDDA<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;PN-ENDDA.<br />
+*<br />
+*&nbsp;2&gt<br />
+*SELECT&nbsp;SINGLE&nbsp;STEXT<br />
+*&nbsp;&nbsp;FROM&nbsp;HRP1000<br />
+*&nbsp;&nbsp;INTO&nbsp;GS_TAB-STEXT<br />
+*&nbsp;WHERE&nbsp;PLVAR&nbsp;=&nbsp;'01'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;OTYPE&nbsp;=&nbsp;'O'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;LANGU&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;OBJID&nbsp;=&nbsp;P0001-ORGEH<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;PN-ENDDA<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;PN-ENDDA.<br />
+*<br />
+*&nbsp;3&gt<br />
+*CALL&nbsp;FUNCTION&nbsp;'HRWPC_RFC_ORGEH_TEXT_GET'<br />
+*&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ORGEH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P0001-ORGEH<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;BEGDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PN-BEGDA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PN-ENDDA<br />
+*&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ORGEH_TEXT1&nbsp;=&nbsp;GS_TAB-SHORT&nbsp;&nbsp;&nbsp;"조직&nbsp;Short&nbsp;Text&nbsp;(ORG_INTEGRATION&nbsp;=&nbsp;'X')<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ORGEH_TEXT2&nbsp;=&nbsp;GS_TAB-STEXT.&nbsp;&nbsp;"조직&nbsp;Full&nbsp;Text<br />
+*======================================================================*<br />
+*▶&nbsp;고용상태&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_STAT2 OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATV&nbsp;TYPE&nbsp;STATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT1&nbsp;TYPE&nbsp;TEXT40,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_STAT2.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T529U<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_STAT2<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;STATN&nbsp;=&nbsp;'2'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_STAT2&nbsp;WITH&nbsp;KEY&nbsp;STATV&nbsp;=&nbsp;P0000-STAT2.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-STAT2&nbsp;=&nbsp;GT_STAT2-TEXT1.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;사원그룹&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_PERSG OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSG&nbsp;TYPE&nbsp;PERSG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTEXT&nbsp;TYPE&nbsp;PGTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_PERSG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T501T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_PERSG<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_PERSG&nbsp;WITH&nbsp;KEY&nbsp;PERSG&nbsp;=&nbsp;P0001-PERSG.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-PERSG&nbsp;=&nbsp;P0001-PERSG.<br />
+*&nbsp;&nbsp;GS_TAB-PGTXT&nbsp;=&nbsp;GT_PERSG-PTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;사원하위그룹&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_PERSK OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSK&nbsp;TYPE&nbsp;PERSK,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTEXT&nbsp;TYPE&nbsp;PKTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_PERSK.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T503T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_PERSK<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_PERSK&nbsp;WITH&nbsp;KEY&nbsp;PERSK&nbsp;=&nbsp;P0001-PERSK.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-PERSK&nbsp;=&nbsp;GS_TAB-PERSK.<br />
+*&nbsp;&nbsp;GS_TAB-PKTXT&nbsp;=&nbsp;GT_PERSK-PTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;사업영역&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_GSBER OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GSBER&nbsp;TYPE&nbsp;GSBER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GTEXT&nbsp;TYPE&nbsp;GTEXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_GSBER.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;TGSBT<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_GSBER<br />
+*&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_GSBER&nbsp;WITH&nbsp;KEY&nbsp;GSBER&nbsp;=&nbsp;P0001-GSBER.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_TAB-GTEXT&nbsp;=&nbsp;GT_GSBER-GTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;인사영역&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_WERKS OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSA&nbsp;TYPE&nbsp;PERSA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME1&nbsp;TYPE&nbsp;PBTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_WERKS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T500P<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_WERKS<br />
+*&nbsp;WHERE&nbsp;MOLGA&nbsp;=&nbsp;'41'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_WERKS&nbsp;WITH&nbsp;KEY&nbsp;PERSA&nbsp;=&nbsp;PERNR-WERKS.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-NAME1&nbsp;=&nbsp;GT_WERKS-NAME1.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;인사하위영역&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_BTRTL OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;TYPE&nbsp;PERSA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BTRTL&nbsp;TYPE&nbsp;BTRTL_001P,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BTEXT&nbsp;TYPE&nbsp;BTRTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_BTRTL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T001P<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_BTRTL<br />
+*&nbsp;WHERE&nbsp;MOLGA&nbsp;=&nbsp;'41'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_BTRTL&nbsp;WITH&nbsp;KEY&nbsp;WERKS&nbsp;=&nbsp;PERNR-WERKS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BTRTL&nbsp;=&nbsp;PERNR-BTRTL.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-BTEXT&nbsp;=&nbsp;GT_BTRTL-BTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;코스트센터&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_KOSTL OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KOSTL&nbsp;TYPE&nbsp;KOSTL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KTEXT&nbsp;TYPE&nbsp;KTEXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_KOSTL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;CSKT<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_KOSTL<br />
+*&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;DATBI&nbsp;&gt=&nbsp;PN-ENDDA.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_KOSTL&nbsp;WITH&nbsp;KEY&nbsp;KOSTL&nbsp;=&nbsp;GS_TAB-KOSTL.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-KTEXT&nbsp;=&nbsp;GT_KOSTL-KTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;직무&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_STELL OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STELL&nbsp;TYPE&nbsp;STELL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STLTX&nbsp;TYPE&nbsp;STLTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_STELL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T513S<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_STELL<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;PN-ENDDA.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_STELL&nbsp;WITH&nbsp;KEY&nbsp;STELL&nbsp;=&nbsp;P0001-STELL.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-STLTX&nbsp;=&nbsp;GT_STELL-STLTX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;포지션&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_PLANS OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLANS&nbsp;TYPE&nbsp;PLANS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PLSTX&nbsp;TYPE&nbsp;PLSTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_PLANS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T528T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_PLANS<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;OTYPE&nbsp;=&nbsp;'S'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;PN-BEGDA<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;PN-BEGDA.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_PLANS&nbsp;WITH&nbsp;KEY&nbsp;PLANS&nbsp;=&nbsp;P0001-PLANS.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_TAB-PLSTX&nbsp;=&nbsp;GT_PLANS-PLSTX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;발령유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_MASSN OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MASSN&nbsp;TYPE&nbsp;MASSN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MNTXT&nbsp;TYPE&nbsp;MNTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_MASSN.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T529T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_MASSN<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_MASSN&nbsp;WITH&nbsp;KEY&nbsp;MASSN&nbsp;=&nbsp;P0302-MASSN.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-MASSN&nbsp;=&nbsp;GT_MASSN-MASSN.<br />
+*&nbsp;&nbsp;GS_TAB-MNTXT&nbsp;=&nbsp;GT_MASSN-MNTXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;발령사유&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_MASSG OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MASSN&nbsp;TYPE&nbsp;MASSN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MASSG&nbsp;TYPE&nbsp;MASSG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MGTXT&nbsp;TYPE&nbsp;MGTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_MASSG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T530T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_MASSG<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;P0302&nbsp;WITH&nbsp;KEY&nbsp;MASSN&nbsp;=&nbsp;'A1'.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_MASSG&nbsp;WITH&nbsp;KEY&nbsp;MASSN&nbsp;=&nbsp;P0302-MASSN<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MASSG&nbsp;=&nbsp;P0302-MASSG.<br />
+*&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;GS_TAB-MGTXT&nbsp;=&nbsp;GT_MASSG-MGTXT.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;학력(학위)&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_SLABS OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SLABS&nbsp;TYPE&nbsp;SLABS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STEXT&nbsp;TYPE&nbsp;SATXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_SLABS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T519T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_SLABS<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_SLABS&nbsp;WITH&nbsp;KEY&nbsp;SLABS&nbsp;=&nbsp;P0022-SLABS.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_0022-STEXT&nbsp;=&nbsp;GT_SLABS-STEXT.<br />
+*ENDIF.<br />
+<br />
+*▶&nbsp;학력_1&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_SLART OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SLART&nbsp;TYPE&nbsp;SLART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STEXT&nbsp;TYPE&nbsp;SLTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_SLART.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T517T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_SLART<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_SLART&nbsp;WITH&nbsp;KEY&nbsp;SLART&nbsp;=&nbsp;P0021-FASAR.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_0021-STEXT&nbsp;=&nbsp;GT_SLART-STEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;전공&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_FAART OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FAART&nbsp;TYPE&nbsp;FACHR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FTEXT&nbsp;TYPE&nbsp;FRTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_FAART.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T517X<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_FAART<br />
+*&nbsp;WHERE&nbsp;LANGU&nbsp;=&nbsp;'3'.<br />
+*======================================================================*<br />
+*▶&nbsp;학교소재지&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_BLAND OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BLAND&nbsp;TYPE&nbsp;REGIO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEZEI&nbsp;TYPE&nbsp;BEZEI20,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_BLAND.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T005U<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_BLAND<br />
+*&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;LAND1&nbsp;=&nbsp;'KR'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_BLAND&nbsp;WITH&nbsp;KEY&nbsp;BLAND&nbsp;=&nbsp;P0022-STATE.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_0022-BEZEI&nbsp;=&nbsp;GT_BLAND-BEZEI.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;도시&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_STATE OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BLAND&nbsp;TYPE&nbsp;REGIO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEZEI&nbsp;TYPE&nbsp;BEZEI20,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_STATE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*======================================================================*<br />
+*▶&nbsp;국가&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_LAND1 OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LAND1&nbsp;TYPE&nbsp;LAND1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LANDX&nbsp;TYPE&nbsp;LANDX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_LAND1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_LAND1<br />
+*&nbsp;&nbsp;FROM&nbsp;T005T<br />
+*&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_LAND1&nbsp;WITH&nbsp;KEY&nbsp;LAND1&nbsp;=&nbsp;P9009-LAND.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-LANDX&nbsp;=&nbsp;GT_LAND1-LANDX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;포상유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_AWDTP OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWDTP&nbsp;TYPE&nbsp;T5R02-AWDTP,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWDTX&nbsp;TYPE&nbsp;T5R02-AWDTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_AWDTP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T5R02<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_AWDTP<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOLGA&nbsp;=&nbsp;'41'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_AWDTP&nbsp;WITH&nbsp;KEY&nbsp;AWDTP&nbsp;=&nbsp;P0183-AWDTP.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_0183-AWDTX&nbsp;=&nbsp;GT_AWDTP-AWDTX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;징계유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_PUNTY OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PUNTY&nbsp;TYPE&nbsp;PKR_PUNTY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PUNTX&nbsp;TYPE&nbsp;PKR_PUNTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_PUNTY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T7KRD1<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_PUNTY<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_PUNTY&nbsp;WITH&nbsp;KEY&nbsp;PUNTY&nbsp;=&nbsp;P0545-PUNTY.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-PUNTX&nbsp;=&nbsp;GT_PUNTY-PUNTX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;계급&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_MRANK OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MRANK&nbsp;TYPE&nbsp;PKR_MILRK,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RKTXT&nbsp;TYPE&nbsp;PKR_MILRX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_MRANK.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T7KRM1<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_MRANK<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_MRANK&nbsp;WITH&nbsp;KEY&nbsp;MRANK&nbsp;=&nbsp;P0555-MRANK.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-RKTXT&nbsp;=&nbsp;GT_MRANK-RKTXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;병역유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_SERTY OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SERTY&nbsp;TYPE&nbsp;PKR_MILST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SERTX&nbsp;TYPE&nbsp;PKR_MILSX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_SERTY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T7KRM3<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_SERTY<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_SERTY&nbsp;WITH&nbsp;KEY&nbsp;SERTY&nbsp;=&nbsp;P0555-SERTY.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-SERTX&nbsp;=&nbsp;GT_SERTY-SERTX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;보직분류&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_JOBCL OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOBCL&nbsp;TYPE&nbsp;PKR_MILJC,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JBTXT&nbsp;TYPE&nbsp;PKR_MILJX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_JOBCL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T7KRM5<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_JOBCL<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_JOBCL&nbsp;WITH&nbsp;KEY&nbsp;JOBCL&nbsp;=&nbsp;P0555-JOBCL.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-JBTXT&nbsp;=&nbsp;GT_JOBCL-JBTXT.&nbsp;&nbsp;"병과<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;변경사유(전역사유)&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_PREAS OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;TYPE&nbsp;INFTY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PREAS&nbsp;TYPE&nbsp;PREAS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RTEXT&nbsp;TYPE&nbsp;PRTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_PREAS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T530F<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_PREAS<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;INFTY&nbsp;=&nbsp;'0555'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_PREAS&nbsp;WITH&nbsp;KEY&nbsp;PREAS&nbsp;=&nbsp;P0555-PREAS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;=&nbsp;'0555'.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-PRTXT&nbsp;=&nbsp;GT_PREAS-PRTXT.&nbsp;&nbsp;"구분(전역사유)<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;가족관계&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_AUSPR OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUSPR&nbsp;TYPE&nbsp;AUSPR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATEXT&nbsp;TYPE&nbsp;TEXT20,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_AUSPR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_AUSPR<br />
+*&nbsp;&nbsp;FROM&nbsp;T577S<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOLGA&nbsp;=&nbsp;'41'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_AUSPR&nbsp;WITH&nbsp;KEY&nbsp;AUSPR&nbsp;=&nbsp;P0021-KDSVH.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-ATEXT&nbsp;=&nbsp;GT_AUSPR-ATEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;부양가족유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_DPTYP OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DPTYP	TYPE&nbsp;PKR_DPTY1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DPTYX&nbsp;TYPE&nbsp;PKR_DPTYX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_DPTYP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_DPTYP<br />
+*&nbsp;&nbsp;FROM&nbsp;T7KR39T<br />
+*&nbsp;WHERE&nbsp;LANGU&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;=&nbsp;'99991231'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_DPTYP&nbsp;WITH&nbsp;KEY&nbsp;DPTYP&nbsp;=&nbsp;P0540-DPTYP.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-DPTYX&nbsp;=&nbsp;GT_DPTYP-DPTYX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;종교&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_KONFE OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KONFE&nbsp;TYPE&nbsp;KONFE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KTEXT&nbsp;TYPE&nbsp;KNFTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_KONFE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T516T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_KONFE<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_KONFE&nbsp;WITH&nbsp;KEY&nbsp;KONFE&nbsp;=&nbsp;P0002-KONFE.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-KTEXT&nbsp;=&nbsp;GT_KONFE-KTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;결혼여부&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_FAMST OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FAMST&nbsp;TYPE&nbsp;FAMST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FTEXT&nbsp;TYPE&nbsp;FATXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_FAMST.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T502T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_FAMST<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_FAMST&nbsp;WITH&nbsp;KEY&nbsp;FAMST&nbsp;=&nbsp;P0002-FAMST.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-FATXT&nbsp;=&nbsp;GT_FAMST-FTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;담당직무(이전직장)&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_TAETE OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TAETE&nbsp;TYPE&nbsp;TAETE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LTEXT&nbsp;TYPE&nbsp;TEXT25,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_TAETE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T513C<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_TAETE<br />
+*&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_TAETE&nbsp;WITH&nbsp;KEY&nbsp;TAETE&nbsp;=&nbsp;P0023-TAETE.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_0023-LTEXT&nbsp;=&nbsp;GT_TAETE-LTEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;하위유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_SUBTY OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTY&nbsp;TYPE&nbsp;SUBTY_591A,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STEXT&nbsp;TYPE&nbsp;SBTTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_SUBTY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_SUBTY<br />
+*&nbsp;&nbsp;FROM&nbsp;T591S<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;INFTY&nbsp;=&nbsp;'0021'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_SUBTY&nbsp;WITH&nbsp;KEY&nbsp;SUBTY&nbsp;=&nbsp;GS_TAB-SUBTY.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-STEXT&nbsp;=&nbsp;GT_SUBTY-STEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;호봉유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_TRFAR OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRFAR&nbsp;TYPE&nbsp;TRFAR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TARTX&nbsp;TYPE&nbsp;TARTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_TRFAR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T510A<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_TRFAR<br />
+*&nbsp;WHERE&nbsp;MOLGA&nbsp;=&nbsp;'41'.<br />
+*======================================================================*<br />
+*▶&nbsp;은행&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_BANKL OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BANKL&nbsp;TYPE&nbsp;BANKK,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BANKA&nbsp;TYPE&nbsp;BANKA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_BANKL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;BNKA<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_BANKL<br />
+*&nbsp;WHERE&nbsp;BANKS&nbsp;=&nbsp;'KR'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_BANKL&nbsp;WITH&nbsp;KEY&nbsp;BANKL&nbsp;=&nbsp;GS_TAB-BANKL.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-BANKA&nbsp;=&nbsp;GT_BANKL-BANKA.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;임금유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_LGART OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGART&nbsp;TYPE&nbsp;LGART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGTXT&nbsp;TYPE&nbsp;LGTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_LGART.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;1&gt<br />
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T512T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_LGART<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOLGA&nbsp;=&nbsp;'41'.<br />
+*<br />
+*&nbsp;2&gt<br />
+*SELECT&nbsp;A~LGART&nbsp;LGTXT<br />
+*&nbsp;&nbsp;FROM&nbsp;T512T&nbsp;AS&nbsp;A&nbsp;JOIN&nbsp;T512W&nbsp;AS&nbsp;B<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~LGART&nbsp;=&nbsp;B~LGART<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;A~MOLGA&nbsp;=&nbsp;B~MOLGA<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_LGART<br />
+*&nbsp;WHERE&nbsp;A~MOLGA&nbsp;=&nbsp;'41'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;=&nbsp;PN-ENDDA.<br />
+*<br />
+*&nbsp;3&gt<br />
+*SELECT&nbsp;T512W~LGART&nbsp;LGTXT<br />
+*&nbsp;&nbsp;FROM&nbsp;T512W&nbsp;JOIN&nbsp;T512T<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;T512W~LGART&nbsp;=&nbsp;T512T~LGART<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;T512W~MOLGA&nbsp;=&nbsp;T512T~MOLGA<br />
+*&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;GT_LGART<br />
+*&nbsp;WHERE&nbsp;T512W~MOLGA&nbsp;=&nbsp;'41'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;SY-DATUM<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;SY-DATUM.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_LGART&nbsp;WITH&nbsp;KEY&nbsp;LGART&nbsp;=&nbsp;P0015-LGART.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-LGTXT&nbsp;=&nbsp;GT_LGART-LGTXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;비정기급여사유&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_OCRSN OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCRSN&nbsp;TYPE&nbsp;PAY_OCRSN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCRTX&nbsp;TYPE&nbsp;PAY_OCRTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_OCRSN.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T52OCRT<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_OCRSN<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOLGA&nbsp;=&nbsp;'41'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_OCRSN&nbsp;WITH&nbsp;KEY&nbsp;OCRSN&nbsp;=&nbsp;RGDIR-OCRSN.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-OCRTX&nbsp;=&nbsp;GT_OCRSN-OCRTX.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;급여영역&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_ABKRS OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ABKRS&nbsp;TYPE&nbsp;ABKRS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATEXT&nbsp;TYPE&nbsp;ABKTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_ABKRS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T549T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_ABKRS<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_ABKRS&nbsp;WITH&nbsp;KEY&nbsp;ABKRS&nbsp;=&nbsp;GT_TAB-ABKRS.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_TAB-ABKTX&nbsp;=&nbsp;GT_ABKRS-ATEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;급여&nbsp;계산&nbsp;매개변수&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_T511K OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KONST&nbsp;TYPE&nbsp;ABRKN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KWERT&nbsp;TYPE&nbsp;ABRWT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_T511K.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T511K<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_T511K<br />
+*&nbsp;WHERE&nbsp;MOLGA&nbsp;=&nbsp;'41'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;PN-BEGDA<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;PN-ENDDA.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_T511K&nbsp;WITH&nbsp;KEY&nbsp;KONST&nbsp;=&nbsp;P_KONST.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-KWERT&nbsp;=&nbsp;GT_T511K-KWERT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;상수평가&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_T510K OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGART&nbsp;TYPE&nbsp;LGART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERT1&nbsp;TYPE&nbsp;PAD_AMT7S,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_T510K.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T510K<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_T510K<br />
+*&nbsp;WHERE&nbsp;MOLGA&nbsp;=&nbsp;'41'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;PN-BEGDA<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;PN-ENDDA.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_T510K&nbsp;WITH&nbsp;KEY&nbsp;LGART&nbsp;=&nbsp;P_LGART.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-BETRG&nbsp;=&nbsp;GT_510K-WERT1.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;근무일정규칙&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_SCHKZ OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZEITY&nbsp;TYPE&nbsp;DZEITY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SCHKZ&nbsp;TYPE&nbsp;SCHKN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RTEXT&nbsp;TYPE&nbsp;RETEXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_SCHKZ.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T508S<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_SCHKZ<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOFID&nbsp;=&nbsp;'KR'&nbsp;&nbsp;"공휴일&nbsp;달력<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOSID&nbsp;=&nbsp;'41'.<br />
+<br />
+*DATA:&nbsp;L_ZEITY&nbsp;TYPE&nbsp;DZEITY.<br />
+*<br />
+*SELECT&nbsp;SINGLE&nbsp;ZEITY<br />
+*&nbsp;&nbsp;FROM&nbsp;T503<br />
+*&nbsp;&nbsp;INTO&nbsp;L_ZEITY&nbsp;&nbsp;"사원하위그룹그룹핑<br />
+*&nbsp;WHERE&nbsp;PERSG&nbsp;=&nbsp;P0001-PERSG<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;PERSK&nbsp;=&nbsp;P0001-PERSK.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_SCHKZ&nbsp;WITH&nbsp;KEY&nbsp;SCHKZ&nbsp;=&nbsp;P0007-SCHKZ<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZEITY&nbsp;=&nbsp;L_ZEITY.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-SCHKZ&nbsp;=&nbsp;GT_SCHKZ-SCHKZ.<br />
+*&nbsp;&nbsp;GS_TAB-RETEXT&nbsp;=&nbsp;GT_SCHKZ-RTEXT.<br />
+*ENDIF.<br />
+<br />
+*▶&nbsp;근무일정에&nbsp;대한&nbsp;사원하위그룹&nbsp;그룹핑&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_ZEITY OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSG&nbsp;TYPE&nbsp;PERSG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSK&nbsp;TYPE&nbsp;PERSK,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZEITY&nbsp;TYPE&nbsp;DZEITY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_ZEITY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T503<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_ZEITY<br />
+*&nbsp;WHERE&nbsp;MOLGA&nbsp;=&nbsp;''.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_ZEITY&nbsp;WITH&nbsp;KEY&nbsp;PERSG&nbsp;=&nbsp;WPBP-PERSG<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSK&nbsp;=&nbsp;WPBP-PERSK.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;L_ZEITY&nbsp;=&nbsp;GT_ZEITY-ZEITY.<br />
+*ENDIF.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;PSP&nbsp;WITH&nbsp;KEY&nbsp;DATUM&nbsp;=&nbsp;ZL-DATUM.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_SCHKZ&nbsp;WITH&nbsp;KEY&nbsp;SCHKZ&nbsp;=&nbsp;PSP-ZMODN<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZEITY&nbsp;=&nbsp;L_ZEITY.<br />
+*&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;gs_tab-RETEXT&nbsp;=&nbsp;GT_SCHKZ-RTEXT.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;일일근무일정&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_TPROG OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TPROG&nbsp;TYPE&nbsp;TPROG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TTEXT&nbsp;TYPE&nbsp;TPTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_TPROG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T550S<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_TPROG<br />
+*&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOTPR&nbsp;=&nbsp;'41'.&nbsp;&nbsp;"일일근무일정에&nbsp;대한&nbsp;인사하위영역&nbsp;그룹핑<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_TPROG&nbsp;WITH&nbsp;KEY&nbsp;TPROG&nbsp;=&nbsp;PSP-TPROG.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;LT_TAB-TPTXT&nbsp;=&nbsp;GT_TPROG-TTEXT.&nbsp;&nbsp;"근무형태(일일근무일정)<br />
+*ENDIF.<br />
+*======================================================================*<br />
+*▶&nbsp;휴무/근무&nbsp;유형&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_AWART OCCURS 10,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWART&nbsp;TYPE&nbsp;AWART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATEXT&nbsp;TYPE&nbsp;ABWTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_AWART.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T554T<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_AWART<br />
+*&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;AND&nbsp;MOABW&nbsp;=&nbsp;'41'.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_AWART&nbsp;WITH&nbsp;KEY&nbsp;AWART&nbsp;=&nbsp;P2001-AWART.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-ATEXT&nbsp;=&nbsp;GT_AWART-ATEXT.<br />
+*ENDIF.<br />
+*======================================================================*<br />
+<br />
+*======================================================================*<br />
+*▶&nbsp;직위/직급/직책&nbsp;Text<br />
+*DATA:&nbsp;BEGIN&nbsp;OF&nbsp;GT_ZIK&nbsp;OCCURS&nbsp;10,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ART&nbsp;TYPE&nbsp;DZSART,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITEL&nbsp;TYPE&nbsp;TTLIN,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TTOUT&nbsp;TYPE&nbsp;TTOUT,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_ZIK.<br />
+*<br />
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T535N<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_ZIK<br />
+*&nbsp;WHERE&nbsp;ART&nbsp;IN&nbsp;('S',&nbsp;'V',&nbsp;'T').<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_ZIK&nbsp;WITH&nbsp;KEY&nbsp;ART&nbsp;=&nbsp;'S'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITEL&nbsp;=&nbsp;P0001-ZZIKS.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-ZIKST&nbsp;=&nbsp;GT_ZIK-TTOUT.&nbsp;&nbsp;"직위<br />
+*ENDIF.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_ZIK&nbsp;WITH&nbsp;KEY&nbsp;ART&nbsp;=&nbsp;'V'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITEL&nbsp;=&nbsp;P0001-ZZIKV.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-ZIKVT&nbsp;=&nbsp;GT_ZIK-TTOUT.&nbsp;&nbsp;"직급<br />
+*ENDIF.<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_ZIK&nbsp;WITH&nbsp;KEY&nbsp;ART&nbsp;=&nbsp;'T'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITEL&nbsp;=&nbsp;P0001-ZZIKT.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GS_TAB-ZIKTT&nbsp;=&nbsp;GT_ZIK-TTOUT.&nbsp;&nbsp;"직책<br />
+*ENDIF.<br />
+*======================================================================*<br />
+<br />
+*[&nbsp;MACRO&nbsp;]=============================================================*<br />
+   </div>
+   <div class="code">
+DEFINE &CR. "Clear & Refresh<br />
+&nbsp;&nbsp;CLEAR:&nbsp;&1,&nbsp;&1[].<br />
+END-OF-DEFINITION.<br />
+<br />
+DEFINE &RANGE_EQ. "Range(IEQ)<br />
+&nbsp;&nbsp;&1-SIGN&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&1-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&1-LOW&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;APPEND&nbsp;&1.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;COLLECT&nbsp;&1.<br />
+   </div>
+   <div class="code">
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&RANGE_BT&nbsp;R_FLD&nbsp;R_FLD-LOW&nbsp;R_FLD-HIGH.<br />
+   </div>
+   <div class="code">
+DEFINE &RANGE_BT. "Range(IBT)<br />
+&nbsp;&nbsp;&1-SIGN&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&1-OPTION&nbsp;=&nbsp;'BT'.<br />
+&nbsp;&nbsp;&1-LOW&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&1-HIGH&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;APPEND&nbsp;&1.<br />
+END-OF-DEFINITION.<br />
+<br />
+DEFINE &PIMSG. "Progress_Indicator_Message<br />
+&nbsp;&nbsp;DATA:&nbsp;L_TEXT(100).<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;&1&nbsp;'&nbsp;('&nbsp;&2&nbsp;')&nbsp;처리중입니다&nbsp;!'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_TEXT&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;&nbsp;&nbsp;=&nbsp;L_TEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;=&nbsp;0.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'SAPGUI_PROGRESS_INDICATOR'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;=&nbsp;&1.<br />
+   </div>
+   <div class="code">
+END-OF-DEFINITION.<br />
+<br />
+DEFINE &SET_CURR_TO_CHAR.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&2.<br />
+&nbsp;&nbsp;WRITE&nbsp;&1&nbsp;TO&nbsp;&2&nbsp;CURRENCY&nbsp;'KRW'.<br />
+&nbsp;&nbsp;CALL FUNCTION 'CLOI_PUT_SIGN_IN_FRONT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;=&nbsp;&2.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;IF&nbsp;&1&nbsp;&lt&nbsp;0.<br />
+**&nbsp;(-)&nbsp;부호처리<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'CLOI_PUT_SIGN_IN_FRONT'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;=&nbsp;&2.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;IF&nbsp;&2&nbsp;&lt&gt&nbsp;SPACE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;FIND&nbsp;','&nbsp;IN&nbsp;&2.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;WHILE&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;','&nbsp;WITH&nbsp;SPACE&nbsp;INTO&nbsp;&2.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIND&nbsp;','&nbsp;IN&nbsp;&2.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDWHILE.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CONDENSE&nbsp;&2&nbsp;NO-GAPS.<br />
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*======================================================================*<br />
+<br />
+*[&nbsp;METIA&nbsp;Only&nbsp;]========================================================*<br />
+*▶직책&nbsp;Text<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF GT_TITEL OCCURS 10,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ART&nbsp;TYPE&nbsp;DZSART,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITEL&nbsp;TYPE&nbsp;TTLIN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TTOUT&nbsp;TYPE&nbsp;TTOUT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_TITEL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECT&nbsp;*<br />
+*&nbsp;&nbsp;FROM&nbsp;T535N<br />
+*&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_TITEL<br />
+*&nbsp;WHERE&nbsp;ART&nbsp;=&nbsp;'T'.&nbsp;&nbsp;"직책<br />
+*<br />
+*READ&nbsp;TABLE&nbsp;GT_TITEL&nbsp;WITH&nbsp;KEY&nbsp;TITEL&nbsp;=&nbsp;P0001-TITEL.<br />
+*IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;GT_TAB-TTOUT&nbsp;=&nbsp;GT_TITEL-TTOUT.<br />
+*ENDIF.<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+*======================================================================*<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,1217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSDR9200</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZSDR9200</h2>
+<h3> Description: 판가 업로드</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;&nbsp;ZSDR9200<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zsdr9200 MESSAGE-ID zsdm.<br />
+<br />
+TYPE-POOLS kcde.<br />
+TABLES: sscrfields.<br />
+<br />
+DATA: it_dd03l LIKE dd03l OCCURS 0 WITH HEADER LINE.<br />
+<br />
+DATA: gs_t681  LIKE t681,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_t682i&nbsp;LIKE&nbsp;t682i&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_t681e&nbsp;LIKE&nbsp;t681e&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+DATA: xls_data TYPE STANDARD TABLE OF kcde_intern_struc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+FIELD-SYMBOLS: &ltit_tab&gt TYPE STANDARD TABLE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;BDC&nbsp;table<br />
+   </div>
+   <div class="code">
+DATA: bdc_data   LIKE bdcdata OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_msgtab&nbsp;&nbsp;LIKE&nbsp;bdcmsgcoll&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_options&nbsp;LIKE&nbsp;ctu_params.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;for&nbsp;ALV&nbsp;list<br />
+   </div>
+   <div class="code">
+TYPE-POOLS: slis.<br />
+<br />
+DATA: gt_list_top_of_page TYPE slis_t_listheader.<br />
+<br />
+DATA: g_repid        LIKE sy-repid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_fieldcat&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_t_fieldcat_alv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_layout_alv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_t_sortinfo_alv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;disvariant,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_events&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_t_event,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_print&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_print_alv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_keyinfo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_keyinfo_alv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_formname&nbsp;VALUE&nbsp;'STATUS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_user_command&nbsp;TYPE&nbsp;slis_formname&nbsp;VALUE&nbsp;'USER_COMMAND',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_pos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK bk1 WITH FRAME.<br />
+PARAMETERS: p_kschl TYPE kschl OBLIGATORY.<br />
+PARAMETERS: p_fname TYPE string DEFAULT 'C:\' OBLIGATORY.<br />
+SELECTION-SCREEN SKIP.<br />
+PARAMETERS: p_datab TYPE sy-datum DEFAULT sy-datum OBLIGATORY.<br />
+PARAMETERS: p_datbi TYPE sy-datum DEFAULT '99991231' OBLIGATORY.<br />
+SELECTION-SCREEN SKIP.<br />
+PARAMETERS: p_mode LIKE ctu_params-dismode DEFAULT 'N' OBLIGATORY.<br />
+SELECTION-SCREEN END OF BLOCK bk1.<br />
+<br />
+SELECTION-SCREEN: FUNCTION KEY 1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**<br />
+   </div>
+   <div class="code">
+INITIALIZATION.<br />
+&nbsp;&nbsp;PERFORM&nbsp;initialization.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_fname.<br />
+&nbsp;&nbsp;PERFORM&nbsp;value_request_filename.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN.<br />
+&nbsp;&nbsp;PERFORM&nbsp;display_layout.<br />
+&nbsp;&nbsp;PERFORM&nbsp;file_exist_check.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_cond_table.<br />
+&nbsp;&nbsp;IF&nbsp;gs_t681&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;generate_internal_table&nbsp;USING&nbsp;'&nbsp;'.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;file_upload.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;list_process.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;value_request_filename<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM value_request_filename .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;filetable,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_return&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtfile_open_dialog<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;window_title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Upload&nbsp;excel&nbsp;file'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default_filename&nbsp;=&nbsp;'*.xls'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;multiselection&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_table&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_file<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_return.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;l_return&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s000&nbsp;WITH&nbsp;'User&nbsp;Cancelled&nbsp;File&nbsp;Upload.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_file&nbsp;INTO&nbsp;p_fname.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " value_request_filename<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;file_exist_check<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM file_exist_check .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_result&nbsp;TYPE&nbsp;c.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-ucomm&nbsp;=&nbsp;'ONLI'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_result&nbsp;=&nbsp;cl_gui_frontend_services=&gtfile_exist(&nbsp;p_fname&nbsp;).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_result&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e000&nbsp;WITH&nbsp;p_fname&nbsp;'does&nbsp;not&nbsp;exist!&nbsp;Check&nbsp;file&nbsp;name..'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " file_exist_check<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;file_upload<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM file_upload .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_filename&nbsp;TYPE&nbsp;rlgrap-filename,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_index&nbsp;TYPE&nbsp;i.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs&gt&nbsp;TYPE&nbsp;any,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltls_line&gt,&nbsp;&ltfs_from&gt,&nbsp;&ltfs_to&gt.<br />
+<br />
+<br />
+&nbsp;&nbsp;l_filename&nbsp;=&nbsp;p_fname.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'KCD_EXCEL_OLE_TO_INT_CONVERT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_filename<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_begin_col&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_begin_row&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_end_col&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;50<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_end_row&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;60000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;intern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;xls_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inconsistent_parameters&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upload_ole&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s000&nbsp;WITH&nbsp;'File&nbsp;upload&nbsp;error!'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;xls_data&nbsp;BY&nbsp;row&nbsp;col.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;LOCAL&nbsp;COPY&nbsp;OF&nbsp;INITIAL&nbsp;LINE&nbsp;OF&nbsp;&ltit_tab&gt&nbsp;TO&nbsp;&ltls_line&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'DATAB'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_from&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'DATBI'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_to&gt.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;xls_data.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;xls_data-row&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;xls_data-col&nbsp;TO&nbsp;l_index.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;l_index&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;xls_data-value&nbsp;TO&nbsp;&ltfs&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;row.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltfs_from&gt&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs_from&gt&nbsp;=&nbsp;p_datab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltfs_to&gt&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs_to&gt&nbsp;=&nbsp;p_datbi.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltit_tab&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&nbsp;&ltls_line&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtgui_upload<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_fname&nbsp;&nbsp;&nbsp;".txt&nbsp;file&nbsp;only<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filetype&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'ASC'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;has_field_separator&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filelength&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_filelength<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_data[]<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_open_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_read_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_batch&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;invalid_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_authority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unknown_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bad_data_format&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_not_allowed&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;separator_not_allowed&nbsp;=&nbsp;9<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_too_long&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;10<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unknown_dp_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;11<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_denied&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;12<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dp_out_of_memory&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;13<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;disk_full&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;14<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dp_timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;15<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_supported_by_gui&nbsp;&nbsp;=&nbsp;16<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_no_gui&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;17<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;99.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " file_upload<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;list_process<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM list_process .<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_layout.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_fieldcat.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_title.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_events.<br />
+&nbsp;&nbsp;PERFORM&nbsp;display_data_list.<br />
+<br />
+ENDFORM.                    " list_process<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;set_layout<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM set_layout.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;gs_layout.<br />
+<br />
+&nbsp;&nbsp;gs_layout-colwidth_optimize&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout-zebra&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout-box_fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'SEL'.<br />
+<br />
+ENDFORM.                               " SET_LAYOUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_FIELDCAT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM set_fieldcat.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_fieldcat&nbsp;TYPE&nbsp;slis_fieldcat_alv.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_fieldcat,&nbsp;g_pos.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_dd03l&nbsp;WHERE&nbsp;keyflag&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_list_field_cat&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_dd03l-fieldname&nbsp;''&nbsp;it_dd03l-datatype<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_dd03l-tabname&nbsp;it_dd03l-fieldname&nbsp;''&nbsp;it_dd03l-leng&nbsp;''.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;make_list_field_cat&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'DATAB'&nbsp;&nbsp;&nbsp;&nbsp;'시작일자(YYYYMMDD)'&nbsp;&nbsp;'DATS'&nbsp;''&nbsp;''&nbsp;''&nbsp;'10'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'DATBI'&nbsp;&nbsp;&nbsp;&nbsp;'종료일자(YYYYMMDD)'&nbsp;&nbsp;'DATS'&nbsp;''&nbsp;''&nbsp;''&nbsp;'10'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'VALUE'&nbsp;&nbsp;&nbsp;&nbsp;'금액'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'CHAR'&nbsp;''&nbsp;''&nbsp;''&nbsp;'15'&nbsp;'R',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONWA'&nbsp;&nbsp;&nbsp;&nbsp;'통화'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'CUKY'&nbsp;''&nbsp;''&nbsp;''&nbsp;'8'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KPEIN'&nbsp;&nbsp;&nbsp;&nbsp;'가격단위(당)'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'CHAR'&nbsp;''&nbsp;''&nbsp;''&nbsp;'15'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KMEIN'&nbsp;&nbsp;&nbsp;&nbsp;'수량단위'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'UNIT'&nbsp;''&nbsp;''&nbsp;''&nbsp;'8'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'MESSAGE'&nbsp;&nbsp;'Message'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'CHAR'&nbsp;''&nbsp;''&nbsp;''&nbsp;'20'&nbsp;''.<br />
+<br />
+ENDFORM.                               " set_fieldcat<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;make_list_field_cat<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM make_list_field_cat  USING    p_fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_rddic<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_datatype<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_ref_tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_ref_fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cfieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_outputlen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_just.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_fieldcat&nbsp;TYPE&nbsp;slis_fieldcat_alv.<br />
+<br />
+&nbsp;&nbsp;ls_fieldcat-fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_fieldname.<br />
+&nbsp;&nbsp;ls_fieldcat-reptext_ddic&nbsp;&nbsp;=&nbsp;p_rddic.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;ls_fieldcat-tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_tabname.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ls_fieldcat-datatype&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_datatype.<br />
+&nbsp;&nbsp;ls_fieldcat-ref_tabname&nbsp;&nbsp;&nbsp;=&nbsp;p_ref_tabname.<br />
+&nbsp;&nbsp;ls_fieldcat-ref_fieldname&nbsp;=&nbsp;p_ref_fieldname.<br />
+&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_outputlen.<br />
+&nbsp;&nbsp;ls_fieldcat-cfieldname&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_cfieldname.<br />
+&nbsp;&nbsp;ls_fieldcat-just&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_just.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;ls_fieldcat&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;g_pos&nbsp;=&nbsp;g_pos&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-col_pos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_pos.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_fieldcat&nbsp;TO&nbsp;&nbsp;gt_fieldcat.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                               " make_list_field_cat<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_TITLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM set_title.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_listheader&nbsp;TYPE&nbsp;slis_listheader.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;ls_listheader,&nbsp;gt_list_top_of_page[].<br />
+<br />
+&nbsp;&nbsp;ls_listheader-info&nbsp;=&nbsp;'Upload&nbsp;Price'.<br />
+&nbsp;&nbsp;ls_listheader-typ&nbsp;&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_listheader&nbsp;TO&nbsp;gt_list_top_of_page.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;ls_listheader.<br />
+&nbsp;&nbsp;ls_listheader-typ&nbsp;&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;ls_listheader-key&nbsp;=&nbsp;'시작일자(YYYYMMDD)&nbsp;:'.<br />
+&nbsp;&nbsp;WRITE&nbsp;p_datab&nbsp;TO&nbsp;ls_listheader-info(10).<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_listheader&nbsp;TO&nbsp;gt_list_top_of_page.<br />
+<br />
+ENDFORM.                               " SET_TITLE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;set_events<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM set_events.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_event&nbsp;&nbsp;TYPE&nbsp;slis_alv_event.<br />
+<br />
+&nbsp;&nbsp;ls_event-name&nbsp;=&nbsp;'TOP_OF_PAGE'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Event&nbsp;name<br />
+&nbsp;&nbsp;ls_event-form&nbsp;=&nbsp;'ALV_TOP_OF_PAGE'.&nbsp;&nbsp;&nbsp;"&nbsp;Perform<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_event&nbsp;TO&nbsp;gt_events.<br />
+<br />
+ENDFORM.                               " set_events<br />
+   </div>
+   <div class="codeComment">
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;alv_top_of_page<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM alv_top_of_page.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_list_commentary&nbsp;=&nbsp;gt_list_top_of_page.<br />
+<br />
+ENDFORM.                               "alv_top_of_page<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DISPLAY_DATA_LIST<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM display_data_list.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gs_print.<br />
+&nbsp;&nbsp;gs_print-no_print_selinfos&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_print-no_coverpage&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_print-no_print_listinfos&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;g_repid&nbsp;=&nbsp;sy-repid.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_program&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_repid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_pf_status_set&nbsp;=&nbsp;g_status<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_user_command&nbsp;&nbsp;=&nbsp;g_user_command<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_layout<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_fieldcat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_events&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_events<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_print&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_print<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&ltit_tab&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;program_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+ENDFORM.                               " DISPLAY_DATA_LIST<br />
+<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;........&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;rt_extab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM status USING rt_extab TYPE slis_t_extab.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_extab&nbsp;TYPE&nbsp;slis_extab.<br />
+<br />
+&nbsp;&nbsp;SET&nbsp;PF-STATUS&nbsp;'STATUS'&nbsp;EXCLUDING&nbsp;rt_extab.<br />
+<br />
+ENDFORM.                               "status<br />
+   </div>
+   <div class="codeComment">
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;user_command<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtR_UCOMM&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtRS_SELFIELDtext<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM user_command USING r_ucomm LIKE sy-ucomm<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_selfield.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;r_ucomm.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'RUN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;update_price.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rs-refresh&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+ENDFORM.                               "user_command<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;update_price<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM update_price .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_price(13),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_datab(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_datbi(10),<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_key_cnt&nbsp;TYPE&nbsp;i,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_acc_seq(1)&nbsp;TYPE&nbsp;n,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_kolnr&nbsp;TYPE&nbsp;t682z-kolnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tot_acc_seq&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_dynnr(4)&nbsp;TYPE&nbsp;n,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tabix(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_selkz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fn(30).<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltls_line&gt,&nbsp;&ltfs_key&gt,&nbsp;&ltfs_sel&gt,&nbsp;&ltfs_value&gt,&nbsp;&ltfs_konwa&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs_kpein&gt,&nbsp;&ltfs_kmein&gt,&nbsp;&ltfs_from&gt,&nbsp;&ltfs_to&gt,&nbsp;&nbsp;&ltfs_msg&gt.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_bdc_options.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;LOCAL&nbsp;COPY&nbsp;OF&nbsp;INITIAL&nbsp;LINE&nbsp;OF&nbsp;&ltit_tab&gt&nbsp;TO&nbsp;&ltls_line&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'SEL'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_sel&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'VALUE'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_value&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'KONWA'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_konwa&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'KPEIN'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_kpein&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'KMEIN'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_kmein&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'DATAB'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_from&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'DATBI'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_to&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'MESSAGE'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt&nbsp;TO&nbsp;&ltfs_msg&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;it_dd03l&nbsp;LINES&nbsp;l_key_cnt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;it_t682i&nbsp;LINES&nbsp;l_tot_acc_seq.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;it_t682i&nbsp;WITH&nbsp;KEY&nbsp;kotabnr&nbsp;=&nbsp;gs_t681-kotabnr.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_acc_seq&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_kolnr&nbsp;&nbsp;&nbsp;=&nbsp;it_t682i-kolnr.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_acc_seq&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'1'&nbsp;gs_t681-kotabnr&nbsp;INTO&nbsp;l_dynnr.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltit_tab&gt&nbsp;INTO&nbsp;&ltls_line&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltfs_sel&gt&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltfs_value&gt&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;bdc_data,&nbsp;bdc_data[],&nbsp;it_msgtab.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;dynpro&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'100',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RV13A-KSCHL'&nbsp;&nbsp;&nbsp;&nbsp;p_kschl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=ANTA'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_tot_acc_seq&nbsp;&gt&nbsp;1.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;Access&nbsp;sequence가&nbsp;2개&nbsp;이상인&nbsp;경우&nbsp;선택하는&nbsp;화면<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;Access&nbsp;sequence&nbsp;is&nbsp;more&nbsp;than&nbsp;2,&nbsp;select&nbsp;proper&nbsp;access&nbsp;seq.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;dynpro&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLV14A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'100'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_t682i.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;l_selkz.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_acc_seq&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_selkz&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tabix&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'RV130-SELKZ('&nbsp;l_tabix&nbsp;')'&nbsp;INTO&nbsp;l_fn.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;dynpro&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;&nbsp;l_fn&nbsp;&nbsp;l_selkz.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;dynpro&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=WEIT'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;dynpro&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_dynnr.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;set&nbsp;key&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_dd03l.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;it_t681e.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;it_t681e&nbsp;WITH&nbsp;KEY&nbsp;sefeld&nbsp;=&nbsp;it_dd03l-fieldname.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_t681e-fsetyp&nbsp;=&nbsp;'A'.&nbsp;&nbsp;&nbsp;&nbsp;"key&nbsp;field&nbsp;in&nbsp;header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'KOMG-'&nbsp;it_dd03l-fieldname&nbsp;INTO&nbsp;l_fn.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"key&nbsp;field&nbsp;in&nbsp;item<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'KOMG-'&nbsp;it_dd03l-fieldname&nbsp;'(01)'&nbsp;INTO&nbsp;l_fn.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;it_dd03l-fieldname&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltls_line&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&ltfs_key&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;dynpro&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;&nbsp;l_fn&nbsp;&nbsp;&ltfs_key&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;&ltfs_from&gt&nbsp;TO&nbsp;l_datab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;&ltfs_to&gt&nbsp;&nbsp;&nbsp;TO&nbsp;l_datbi.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;set&nbsp;value<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;dynpro&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KONP-KBETR(01)'&nbsp;&nbsp;&ltfs_value&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KONP-KONWA(01)'&nbsp;&nbsp;&ltfs_konwa&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KONP-KPEIN(01)'&nbsp;&nbsp;&ltfs_KPEIN&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KONP-KMEIN(01)'&nbsp;&nbsp;&ltfs_KMEIN&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RV13A-DATAB(01)'&nbsp;l_datab,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RV13A-DATBI(01)'&nbsp;l_datbi,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=SICH'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'VK11'&nbsp;USING&nbsp;bdc_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPTIONS&nbsp;FROM&nbsp;gs_options<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;it_msgtab.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;it_msgtab&nbsp;WITH&nbsp;KEY&nbsp;msgid&nbsp;=&nbsp;'VK'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgnr&nbsp;=&nbsp;'023'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_msgtab&nbsp;WHERE&nbsp;msgtyp&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;msgtyp&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;msgtyp&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_msgtab.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"to&nbsp;get&nbsp;the&nbsp;last&nbsp;message<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;build_message&nbsp;CHANGING&nbsp;&ltfs_msg&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;&ltit_tab&gt&nbsp;FROM&nbsp;&ltls_line&gt.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " update_price<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;set_bdc_options<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM set_bdc_options .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;initialize&nbsp;BDC&nbsp;options..<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;gs_options-dismode&nbsp;=&nbsp;p_mode.<br />
+&nbsp;&nbsp;gs_options-updmode&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;gs_options-defsize&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_options-racommit&nbsp;=&nbsp;'X'.<br />
+<br />
+ENDFORM.                    " set_bdc_options<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;build_message<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_L_ERR_MSG&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_message  CHANGING p_msg.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'MESSAGE_TEXT_BUILD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_msgtab-msgid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_msgtab-msgnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_msgtab-msgv1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_msgtab-msgv2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_msgtab-msgv3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_msgtab-msgv4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message_text_output&nbsp;=&nbsp;p_msg.<br />
+<br />
+ENDFORM.                    " build_message<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;dynpro<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_DYNBEGIN&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_VALUE&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM dynpro  USING    p_dynbegin<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_value.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;bdc_data.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;p_dynbegin&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;bdc_data-program&nbsp;&nbsp;=&nbsp;p_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;bdc_data-dynpro&nbsp;&nbsp;&nbsp;=&nbsp;p_value.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;bdc_data-dynbegin&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;bdc_data-fnam&nbsp;=&nbsp;p_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;bdc_data-fval&nbsp;=&nbsp;p_value.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;APPEND&nbsp;bdc_data.<br />
+<br />
+ENDFORM.                               " DYNPRO<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;get_cond_table<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_cond_table .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_kozgf&nbsp;TYPE&nbsp;t685-kozgf.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;kozgf&nbsp;INTO&nbsp;l_kozgf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t685<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;kvewe&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;kappl&nbsp;=&nbsp;'V'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;kschl&nbsp;=&nbsp;p_kschl.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'RV_GET_CONDITION_TABLES'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;condition_use&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;application&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'V'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;condition_type&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_kschl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;access_sequence&nbsp;&nbsp;&nbsp;=&nbsp;l_kozgf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;display_always&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;table_t681&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_t681<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_selection_done&nbsp;=&nbsp;4.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_t681.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s001&nbsp;WITH&nbsp;'Cancelled'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;STOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;it_t682i[].<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;get&nbsp;access&nbsp;sequence<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;TABLE&nbsp;it_t682i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t682i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;kvewe&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;kappl&nbsp;=&nbsp;'V'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;kozgf&nbsp;=&nbsp;l_kozgf.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;it_t682i&nbsp;BY&nbsp;kotabnr&nbsp;kolnr.<br />
+&nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;it_t682i&nbsp;COMPARING&nbsp;kotabnr.<br />
+&nbsp;&nbsp;SORT&nbsp;it_t682i&nbsp;BY&nbsp;kolnr.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR:&nbsp;it_t681e[].<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;TABLE&nbsp;it_t681e<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t681e<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;kvewe&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;kotabnr&nbsp;=&nbsp;gs_t681-kotabnr.<br />
+<br />
+ENDFORM.                    " get_cond_table<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;generate_internal_table<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM generate_internal_table  USING    p_layout.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ld_ref1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat&nbsp;&nbsp;LIKE&nbsp;lvc_s_fcat&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;it_dd03l[].<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;TABLE&nbsp;it_dd03l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;dd03l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tabname&nbsp;=&nbsp;gs_t681-kotab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;keyflag&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;it_dd03l&nbsp;BY&nbsp;position.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_dd03l.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_dd03l-fieldname&nbsp;=&nbsp;'MANDT'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_dd03l-fieldname&nbsp;=&nbsp;'KAPPL'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_dd03l-fieldname&nbsp;=&nbsp;'KSCHL'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_dd03l-fieldname&nbsp;=&nbsp;'KFRST'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_dd03l-fieldname&nbsp;=&nbsp;'DATBI'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;it_dd03l.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;lt_alv_cat[].<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_dd03l.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_layout&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'30'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-ref_table&nbsp;=&nbsp;it_dd03l-tabname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-ref_field&nbsp;=&nbsp;it_dd03l-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;it_dd03l-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'15'.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'VALUE'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CUKY'.<br />
+&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'8'.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'KONWA'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'15'.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'KPEIN'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'UNIT'.<br />
+&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'8'.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'KMEIN'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;IF&nbsp;p_layout&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'30'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-ref_table&nbsp;=&nbsp;'A304'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-ref_field&nbsp;=&nbsp;'DATBI'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'DATAB'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;IF&nbsp;p_layout&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'30'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-ref_table&nbsp;=&nbsp;'A304'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_alv_cat-ref_field&nbsp;=&nbsp;'DATBI'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'DATBI'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'30'.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'MESSAGE'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;lt_alv_cat.<br />
+&nbsp;&nbsp;lt_alv_cat-datatype&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;lt_alv_cat-intlen&nbsp;=&nbsp;'01'.<br />
+&nbsp;&nbsp;lt_alv_cat-fieldname&nbsp;=&nbsp;'SEL'.<br />
+&nbsp;&nbsp;APPEND&nbsp;lt_alv_cat.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_alv_table_create=&gtcreate_dynamic_table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;=&nbsp;lt_alv_cat[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ep_table&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_ref1.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;ld_ref1-&gt*&nbsp;TO&nbsp;&ltit_tab&gt.<br />
+<br />
+ENDFORM.                    " generate_internal_table<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;display_layout<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM display_layout .<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;sscrfields-ucomm.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'FC01'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;download_layout.<br />
+<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+ENDFORM.                    " display_layout<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;download_layout<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM download_layout .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_filename&nbsp;&nbsp;&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_path&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fullpath&nbsp;&nbsp;&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_filelength&nbsp;TYPE&nbsp;i.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs_val&gt,&nbsp;&ltfs_line&gt.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_cond_table.<br />
+&nbsp;&nbsp;IF&nbsp;gs_t681&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;generate_internal_table&nbsp;USING&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;LOCAL&nbsp;COPY&nbsp;OF&nbsp;INITIAL&nbsp;LINE&nbsp;OF&nbsp;&ltit_tab&gt&nbsp;TO&nbsp;&ltfs_line&gt.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_dd03l.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;it_dd03l-fieldname&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltfs_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;scrtext_m&nbsp;INTO&nbsp;&ltfs_val&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;dd04t<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;rollname&nbsp;=&nbsp;it_dd03l-rollname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ddlanguage&nbsp;=&nbsp;sy-langu.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'VALUE'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltfs_val&gt.<br />
+&nbsp;&nbsp;&ltfs_val&gt&nbsp;=&nbsp;'금액'.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'KONWA'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltfs_val&gt.<br />
+&nbsp;&nbsp;&ltfs_val&gt&nbsp;=&nbsp;'통화'.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'KPEIN'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltfs_val&gt.<br />
+&nbsp;&nbsp;&ltfs_val&gt&nbsp;=&nbsp;'가격단위(당)'.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'KMEIN'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltfs_val&gt.<br />
+&nbsp;&nbsp;&ltfs_val&gt&nbsp;=&nbsp;'수량단위'.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'DATBI'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltfs_val&gt.<br />
+&nbsp;&nbsp;&ltfs_val&gt&nbsp;=&nbsp;'종료일자(YYYYMMDD)'.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'DATAB'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltfs_val&gt.<br />
+&nbsp;&nbsp;&ltfs_val&gt&nbsp;=&nbsp;'시작일자(YYYYMMDD)'.<br />
+&nbsp;&nbsp;APPEND&nbsp;&ltfs_line&gt&nbsp;TO&nbsp;&ltit_tab&gt.<br />
+<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtfile_save_dialog<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;window_title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Download&nbsp;excel&nbsp;file'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default_file_name&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'*.xls'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_filename<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_path<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fullpath&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_fullpath<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cntl_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_no_gui&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_supported_by_gui&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0&nbsp;OR&nbsp;l_filename&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s001&nbsp;WITH&nbsp;'User&nbsp;Cancelled&nbsp;Layout&nbsp;Download.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtgui_download<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;&nbsp;&nbsp;=&nbsp;l_fullpath<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filetype&nbsp;&nbsp;&nbsp;=&nbsp;'DAT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filelength&nbsp;=&nbsp;l_filelength<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_tab&nbsp;&nbsp;&nbsp;=&nbsp;&ltit_tab&gt.<br />
+<br />
+&nbsp;&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;'DO&nbsp;NOT&nbsp;DELETE&nbsp;Column&nbsp;Title'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'when&nbsp;you&nbsp;save&nbsp;XLS&nbsp;document!'.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtexecute<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_fullpath<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;synchronous&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cntl_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_no_gui&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bad_parameter&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_not_found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path_not_found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_extension_unknown&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_execute_failed&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;synchronous_failed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_supported_by_gui&nbsp;&nbsp;&nbsp;=&nbsp;9.<br />
+<br />
+&nbsp;&nbsp;UNASSIGN&nbsp;&ltit_tab&gt.<br />
+<br />
+ENDFORM.                    " download_layout<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;initialization<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM initialization .<br />
+<br />
+&nbsp;&nbsp;sscrfields-functxt_01&nbsp;=&nbsp;'@49@&nbsp;Download&nbsp;File&nbsp;Layout'.<br />
+<br />
+ENDFORM.                    " initialization<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_DATAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;시작&nbsp;일자<br />
+*&nbsp;P_DATBI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;종료&nbsp;일자<br />
+*&nbsp;P_FNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;파일<br />
+*&nbsp;P_KSCHL&nbsp;D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*&nbsp;P_MODE&nbsp;D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;ZSDM<br />
+*000&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&<br />
+*001&nbsp;&nbsp;&nbsp;성공적으로&nbsp;저장하였습니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

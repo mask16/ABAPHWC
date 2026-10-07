@@ -1,0 +1,656 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LZDTV3FG_ARTOP</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LZDTV3FG_ARTOP</h2>
+<h3> Description: 매출세금계산서 상태 BC 전송</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION-POOL ZDTV3FG_AR MESSAGE-ID ZDTV3M.<br />
+<br />
+TYPE-POOLS : ZDTV3.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;공용변수<br />
+   </div>
+   <div class="code">
+DATA : G_FLAG   ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SPACE&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_ERROR&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_CHK&nbsp;&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_DDEMODE&nbsp;TYPE&nbsp;DDEMODE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_CNT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_TEXT(100),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_BUKRS&nbsp;&nbsp;TYPE&nbsp;BUKRS.<br />
+<br />
+TABLES : T001 .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;TABLE&nbsp;선언<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_AR_EXT   ,              "추가정보<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AR_HEAD&nbsp;&nbsp;,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Head<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AR_ITEM&nbsp;&nbsp;,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ITEM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AR_PAYM&nbsp;&nbsp;,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"결재방법<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AR_STAT&nbsp;&nbsp;,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"상태<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_ERR_CODE&nbsp;,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"전송에&nbsp;대한오류코드<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_PROG_FIED,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"프로그램별&nbsp;필더상태&nbsp;값<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_PROG_TAB&nbsp;,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"프로그램관리<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_STATUS&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_PROG_BUTN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_TAX_HEAD&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_TAX_STAT&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AP_STAT&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_CHK_STAT&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_FUNCTION&nbsp;.<br />
+<br />
+TABLES : DD03L.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*마감관리<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_CLOSED.<br />
+   </div>
+   <div class="codeComment">
+*ITAB.<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF GT_CLOSED OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_CLOSED-BUKRS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BUPLA&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_CLOSED_SU-BUPLA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLOSED&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_CLOSED-CLOSED,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEP&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_CLOSED-EXCEP,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FRDAT&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_CLOSED-FRDAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TODAT&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_CLOSED-TODAT,<br />
+&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_CLOSED.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;일반변수<br />
+   </div>
+   <div class="code">
+DATA : G_CLOSED LIKE ZDTV3T_CLOSED-CLOSED.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;상수<br />
+   </div>
+   <div class="code">
+CONSTANTS : G_ALL(4) VALUE '*'.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*회사관리&nbsp;일반변수<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_COMPANY .<br />
+<br />
+DATA : GS_ZDTV3T_COMPANY LIKE ZDTV3T_COMPANY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*전역변수&nbsp;ITAB<br />
+   </div>
+   <div class="code">
+DATA : GT_AR_HEAD  LIKE ZDTV3T_AR_HEAD  OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_ITEM&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AR_ITEM&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_PAYM&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AR_PAYM&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_EXT&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AR_EXT&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_EXT_D&nbsp;LIKE&nbsp;ZDTV3T_AR_EXT_D&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_STAT&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AR_STAT&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AP_STAT&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_STAT&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_TRAN&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AR_TRAN&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,&nbsp;"ADD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TRAN_HD&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_TRAN_HD&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,&nbsp;"ADD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TRAN_IM&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_TRAN_IM&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,&nbsp;"ADD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TRAN_EX&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_TRAN_EXT&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,&nbsp;"ADD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_RETURN&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_RETURN&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+DATA : GT_AR_STAT_RT LIKE ZDTV3T_AR_STAT   OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AP_STAT_RT&nbsp;LIKE&nbsp;ZDTV3T_AP_STAT&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_INFSTATUS&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_INFRETURN&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_INFRETURN&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_INFRETURN&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+DATA : GT_TAX_HEAD   LIKE ZDTV3T_TAX_HEAD OCCURS 0 WITH HEADER LINE ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAX_STAT&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_TAX_STAT&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE&nbsp;.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*전역변수&nbsp;구조<br />
+   </div>
+   <div class="code">
+DATA : GS_AR_STAT    LIKE ZDTV3T_AR_STAT   ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_RETURN&nbsp;&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_INFRETURN&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_INFRETURN&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_TAX_HEAD&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_TAX_HEAD&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_TAX_STAT&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_TAX_STAT&nbsp;&nbsp;.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*전역변수&nbsp;FIELD<br />
+   </div>
+   <div class="code">
+DATA : G_STATUS LIKE ZDTV3T_AR_HEAD-STATUS.<br />
+<br />
+DATA : G_TABIX1 LIKE SY-TABIX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_TABIX2&nbsp;LIKE&nbsp;SY-TABIX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_TABIX3&nbsp;LIKE&nbsp;SY-TABIX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_TABIX4&nbsp;LIKE&nbsp;SY-TABIX.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;생성자정보...<br />
+   </div>
+   <div class="code">
+DATA : G_ERDAT LIKE SY-DATUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_ERZET&nbsp;LIKE&nbsp;SY-UZEIT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_ERNAM&nbsp;LIKE&nbsp;SY-UNAME.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*MACRO&nbsp;LOCK<br />
+   </div>
+   <div class="code">
+DATA : GT_LOCK    LIKE SEQG3 OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_LOCK_KEY&nbsp;LIKE&nbsp;SEQG3-GARG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_NUMBER&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-TABIX&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SUBRC&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-SUBRC&nbsp;.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;BC&nbsp;Interface&nbsp;구조정의<br />
+   </div>
+   <div class="code">
+DATA :<br />
+&nbsp;GT_HEAD_INF&nbsp;LIKE&nbsp;ZDTV3S_HEAD_INF&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE&nbsp;,<br />
+&nbsp;GT_ITEM_INF&nbsp;LIKE&nbsp;ZDTV3S_ITEM_INF&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE&nbsp;,<br />
+&nbsp;GT_PAYM_INF&nbsp;LIKE&nbsp;ZDTV3S_PAYM_INF&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE&nbsp;,<br />
+&nbsp;GT_EXT_INF&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_EXT_INF&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE&nbsp;,<br />
+&nbsp;GT_AR_TRAN_INF&nbsp;LIKE&nbsp;ZDTV3S_AR_TRAN_INF&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,"ADD<br />
+&nbsp;GT_TRAN_HD_INF&nbsp;LIKE&nbsp;ZDTV3S_TRAN_HD_INF&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,"ADD<br />
+&nbsp;GT_TRAN_IM_INF&nbsp;LIKE&nbsp;ZDTV3S_TRAN_IM_INF&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE."ADD<br />
+<br />
+DATA : GS_XML     TYPE ZDTV3S_XML_INF,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_XML&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3T_XML_INF,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_XML_P&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3T_AP_XML,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_XML_R&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3T_AR_XML,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_XML_P&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZDTV3T_AP_XML,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_XML_R&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZDTV3T_AR_XML.<br />
+<br />
+DATA :<br />
+&nbsp;GT_NTS&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_INFNTS_RECE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE&nbsp;.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ASP&nbsp;업체정보<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_ASP_CODE.<br />
+DATA : G_ASP_CODE LIKE ZDTV3T_ASP_CODE-ASP_CODE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;RETURN&nbsp;MESSAGE&nbsp;TABLE<br />
+   </div>
+   <div class="code">
+DEFINE : DT_RETURN .<br />
+&nbsp;&nbsp;CLEAR&nbsp;&1.<br />
+&nbsp;&nbsp;&1-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&1-CODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;&1-INV_SEQ&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&1-MSGV1&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;&1-MSGV2&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;&1-MSGV3&nbsp;&nbsp;&nbsp;=&nbsp;&7.<br />
+&nbsp;&nbsp;&1-MSGV4&nbsp;&nbsp;&nbsp;=&nbsp;&8.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;ERROR_CODE_TEXT&nbsp;INTO&nbsp;&1-MESSAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_ERR_CODE<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ERROR_CODE&nbsp;EQ&nbsp;&3.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&5&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&6&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&7&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&8&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;&1-MSGV1&nbsp;&1-MSGV2&nbsp;&1-MSGV3&nbsp;&1-MSGV4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;APPEND&nbsp;&1.<br />
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;RETURN&nbsp;MESSAGE&nbsp;STRECTURE<br />
+   </div>
+   <div class="code">
+DEFINE : DS_RETURN.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&1.<br />
+&nbsp;&nbsp;&1-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&1-CODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;&1-INV_SEQ&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&1-MSGV1&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;&1-MSGV2&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;&1-MSGV3&nbsp;&nbsp;&nbsp;=&nbsp;&7.<br />
+&nbsp;&nbsp;&1-MSGV4&nbsp;&nbsp;&nbsp;=&nbsp;&8.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;ERROR_CODE_TEXT&nbsp;INTO&nbsp;&1-MESSAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_ERR_CODE<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ERROR_CODE&nbsp;EQ&nbsp;&3.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&5&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&6&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&7&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&8&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;사업장정보<br />
+   </div>
+   <div class="code">
+TABLES :  J_1BBRANCH .<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;주소정보<br />
+   </div>
+   <div class="code">
+TABLES : ADRC.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;공급자&nbsp;종사업장관리<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_COMP_MIN.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;공급자&nbsp;담당자정보관리<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_COMP_PERS , ZDTV3T_COMP_PASP.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;공급받는자&nbsp;정보<br />
+   </div>
+   <div class="code">
+TABLES : KNA1 .<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;공급받는자&nbsp;ASP&nbsp;업체정보<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_CUST_ASP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;공급받는자&nbsp;종사업장&nbsp;관리<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_CUST_MIN.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;공급받는자&nbsp;담당자정보<br />
+   </div>
+   <div class="code">
+TABLES : KNB1,ZDTV3T_CUST_PERS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;DATA&nbsp;VALUE&nbsp;CHECK.<br />
+   </div>
+   <div class="code">
+DATA : GT_PROG_FIED LIKE ZDTV3T_PROG_FIED OCCURS 0 WITH HEADER LINE.<br />
+DATA : GT_DD03L     LIKE DD03L OCCURS 0 WITH HEADER LINE.<br />
+DATA : G_DDETEXT    TYPE DDTEXT .<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;금액확인.<br />
+   </div>
+   <div class="code">
+DATA : G_TOTAL  TYPE ZDTV3E_GRANDTOTAL.<br />
+DATA : G_INVAMT TYPE ZDTV3E_GOOD_INVAMOUNT ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_TAXAMT&nbsp;TYPE&nbsp;ZDTV3E_GOOD_TAXAMOUNT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;정보가져오기...<br />
+   </div>
+   <div class="code">
+DATA : GS_OUT_SU   TYPE ZDTV3_COMP ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SU_MIN&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_SU_MIN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_OUT_IP&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3_CUST&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_SU_PERS&nbsp;&nbsp;TYPE&nbsp;ZDTV3_SU_PERS&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_SU_ASP&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3_ASP_LOGIN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_IP_PERS1&nbsp;TYPE&nbsp;ZDTV3_IP_PERS1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_IP_PERS2&nbsp;TYPE&nbsp;ZDTV3_IP_PERS2.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;매출&nbsp;전자세금계산서&nbsp;상태&nbsp;만들기...<br />
+   </div>
+   <div class="code">
+DEFINE : DT_STATUS.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GT_AR_STAT-BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;GT_AR_STAT-BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;GT_AR_STAT-ISSUE_DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;GT_AR_STAT-INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;IF&nbsp;G_OLD_INV_SEQ&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;MAX(&nbsp;STAT_SEQ&nbsp;)&nbsp;INTO&nbsp;GT_AR_STAT-STAT_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_STAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_AR_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GT_AR_STAT-STAT_SEQ&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_STAT-STAT_SEQ&nbsp;=&nbsp;'00001'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;FOR&nbsp;UPDATE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_STAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_AR_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STAT_SEQ&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-STAT_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_STAT-STAT_SEQ&nbsp;=&nbsp;GT_AR_STAT-STAT_SEQ&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;GT_AR_STAT&nbsp;BY&nbsp;STAT_SEQ&nbsp;DESCENDING&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_AR_STAT&nbsp;INDEX&nbsp;1&nbsp;INTO&nbsp;GS_AR_STAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;FOR&nbsp;UPDATE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_STAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_AR_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STAT_SEQ&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AR_STAT-STAT_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_STAT-STAT_SEQ&nbsp;=&nbsp;GS_AR_STAT-STAT_SEQ&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_AR_STAT-STAT_SEQ&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;GT_AR_STAT-STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;GT_AR_STAT-PROC_STEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;GT_AR_STAT-ERROR_CODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&7.<br />
+&nbsp;&nbsp;GT_AR_STAT-ERROR_CODE_TEXT&nbsp;=&nbsp;&8.<br />
+&nbsp;&nbsp;GT_AR_STAT-REASON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&9.<br />
+&nbsp;&nbsp;GT_AR_STAT-ERDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;GT_AR_STAT-ERZET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;GT_AR_STAT-ERNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;APPEND&nbsp;GT_AR_STAT.<br />
+&nbsp;&nbsp;G_CHK&nbsp;=&nbsp;'X'.<br />
+END-OF-DEFINITION .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;AP&nbsp;상태값만들기.<br />
+   </div>
+   <div class="code">
+DEFINE : DT_AP_STATUS.<br />
+&nbsp;&nbsp;GT_AP_STAT-BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;GT_AP_STAT-BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;GT_AP_STAT-ISSUE_DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;GT_AP_STAT-INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;SELECT&nbsp;MAX(&nbsp;STAT_SEQ&nbsp;)&nbsp;INTO&nbsp;GT_AP_STAT-STAT_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AP_STAT<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AP_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_AP_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AP_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AP_STAT-INV_SEQ.<br />
+&nbsp;&nbsp;IF&nbsp;GT_AP_STAT-STAT_SEQ&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_AP_STAT-STAT_SEQ&nbsp;=&nbsp;'00001'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;FOR&nbsp;UPDATE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AP_STAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AP_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_AP_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AP_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AP_STAT-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STAT_SEQ&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_AP_STAT-STAT_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_AP_STAT-STAT_SEQ&nbsp;=&nbsp;GT_AP_STAT-STAT_SEQ&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;GT_AP_STAT-STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;GT_AP_STAT-PROC_STEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;GT_AP_STAT-ERROR_CODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&7.<br />
+&nbsp;&nbsp;GT_AP_STAT-ERROR_CODE_TEXT&nbsp;=&nbsp;&8.<br />
+&nbsp;&nbsp;GT_AP_STAT-REASON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&9.<br />
+&nbsp;&nbsp;GT_AP_STAT-ERDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;GT_AP_STAT-ERZET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;GT_AP_STAT-ERNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;APPEND&nbsp;GT_AP_STAT.<br />
+&nbsp;&nbsp;G_CHK&nbsp;=&nbsp;'X'.<br />
+END-OF-DEFINITION .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;상태값&nbsp;전송.<br />
+   </div>
+   <div class="code">
+DATA : GT_INPUT     LIKE ZDTV3S_INFSTATUS OCCURS 0 WITH HEADER LINE.<br />
+DATA : GT_PROG_BUTN LIKE ZDTV3T_PROG_BUTN OCCURS 0 WITH HEADER LINE ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_FUNCTION&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_FUNCTION&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;EMAIL/SMS&nbsp;전송<br />
+   </div>
+   <div class="code">
+DATA : GT_SEND_MAIL LIKE ZDTV3S_SEND_MAIL OCCURS 0 WITH HEADER LINE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;상태점검&nbsp;전송<br />
+   </div>
+   <div class="code">
+DATA : GS_IN_STATUS LIKE ZDTV3S_CHECK_STATUS.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : GT_INFSEND LIKE ZDTV3S_INFSEND OCCURS 0 WITH HEADER LINE.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : G_BUTTON TYPE ZDTV3E_BUTTON.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;잠금<br />
+   </div>
+   <div class="code">
+DATA : GS_MSG LIKE ZDTV3S_RETURN.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+RANGES : R_INV_SEQ FOR ZDTV3T_AR_HEAD-INV_SEQ.<br />
+   </div>
+   <div class="codeComment">
+*전자세금계산서&nbsp;상태&nbsp;관리<br />
+   </div>
+   <div class="code">
+DATA : GT_STATUS LIKE ZDTV3T_STATUS OCCURS 0 WITH HEADER LINE.<br />
+DATA : G_INV_TYPE TYPE ZDTV3E_INV_TYPE. "AR,AP<br />
+DATA : G_PROGRAM  TYPE ZDTV3E_PROGRAM.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : OLD_INV_SEQ TYPE ZDTV3E_INV_SEQ.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;즉시전송구분/실시간전송구분<br />
+   </div>
+   <div class="code">
+DATA : G_SEND    TYPE CHAR1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_UPDMODE&nbsp;TYPE&nbsp;CTU_UPDATE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;세금계산서번호<br />
+   </div>
+   <div class="code">
+RANGES: R_STATUS FOR ZDTV3T_AR_HEAD-STATUS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;재발행시&nbsp;삭제해야할&nbsp;INV_SEQ<br />
+   </div>
+   <div class="code">
+DATA : G_OLD_INV_SEQ TYPE ZDTV3E_INV_SEQ.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;국세청&nbsp;전송.<br />
+   </div>
+   <div class="code">
+DATA : GT_NTS_DATA LIKE ZDTV3S_INFNTS_SEND OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_NTS_DATA&nbsp;LIKE&nbsp;ZDTV3S_INFNTS_SEND&nbsp;.<br />
+<br />
+DATA : G_NTS_FLAG	TYPE ZDTV3E_NTS_SEND_FLAG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;국세청전송&nbsp;상태&nbsp;만들기...<br />
+   </div>
+   <div class="code">
+DEFINE : DT_TAX_STATUS.<br />
+&nbsp;&nbsp;GT_TAX_STAT-BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;GT_TAX_STAT-BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;GT_TAX_STAT-ISSUE_DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;GT_TAX_STAT-INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;IF&nbsp;G_OLD_INV_SEQ&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;MAX(&nbsp;STAT_SEQ&nbsp;)&nbsp;INTO&nbsp;GT_TAX_STAT-STAT_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_TAX_STAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_TAX_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GT_TAX_STAT-STAT_SEQ&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAX_STAT-STAT_SEQ&nbsp;=&nbsp;'00001'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;FOR&nbsp;UPDATE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_TAX_STAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_TAX_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STAT_SEQ&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-STAT_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAX_STAT-STAT_SEQ&nbsp;=&nbsp;GT_TAX_STAT-STAT_SEQ&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;GT_TAX_STAT&nbsp;BY&nbsp;STAT_SEQ&nbsp;DESCENDING&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_TAX_STAT&nbsp;INDEX&nbsp;1&nbsp;INTO&nbsp;GS_AR_STAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;FOR&nbsp;UPDATE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_TAX_STAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_DATE&nbsp;EQ&nbsp;GT_TAX_STAT-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STAT_SEQ&nbsp;&nbsp;&nbsp;EQ&nbsp;GT_TAX_STAT-STAT_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAX_STAT-STAT_SEQ&nbsp;=&nbsp;GS_TAX_STAT-STAT_SEQ&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAX_STAT-STAT_SEQ&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;GT_TAX_STAT-NTS_SEND_FLAG&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;GT_TAX_STAT-ERROR_CODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;GT_TAX_STAT-ERROR_CODE_TEXT&nbsp;=&nbsp;&7.<br />
+&nbsp;&nbsp;GT_TAX_STAT-ERDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;GT_TAX_STAT-ERZET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;GT_TAX_STAT-ERNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;APPEND&nbsp;GT_TAX_STAT.<br />
+END-OF-DEFINITION .<br />
+<br />
+DATA : LCL_RTN TYPE REF TO CX_SY_OPEN_SQL_DB.<br />
+DATA : G_RESULT TYPE STRING.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;삭제를&nbsp;위함.<br />
+   </div>
+   <div class="code">
+DATA : G_DEL_INV_SEQ TYPE ZDTV3E_INV_SEQ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_NBC(1).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Not&nbsp;BC<br />
+   </div>
+   <div class="codeComment">
+*<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

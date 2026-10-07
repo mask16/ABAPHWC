@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHRF_GROUPWARE_0010</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZHRF_GROUPWARE_0010</h2>
+<h3> Description: 징계 품의</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zhrf_groupware_0010.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(IV_0010) TYPE  ZHRF_GROUP_0010 OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_ERROR) TYPE  BAPIRETURN1<br />
+*"     VALUE(E_RETURN) TYPE  CHAR5<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zhrf_groupware_0010.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;&nbsp;&nbsp;gs_0545&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;p0545,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_return1&nbsp;&nbsp;&nbsp;LIKE&nbsp;bapireturn1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_key1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;bapipakey.<br />
+&nbsp;&nbsp;DATA&nbsp;&nbsp;&nbsp;&nbsp;lv_return&nbsp;&nbsp;LIKE&nbsp;&nbsp;bapireturn1&nbsp;.<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_enq_del&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;seqg3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_enq_read&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;seqg7,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lw_enq_read&nbsp;TYPE&nbsp;seqg7,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lw_enq_del&nbsp;&nbsp;TYPE&nbsp;seqg3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_subrc&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;DATA&nbsp;l_numver&nbsp;TYPE&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;DATA&nbsp;i_subrc&nbsp;TYPE&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;DATA&nbsp;l_garg&nbsp;TYPE&nbsp;eqegraarg.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;error_table&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr(010),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사원번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;begda(010),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;시작일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;punty(005),&nbsp;"&nbsp;징계처분&nbsp;유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgtext(100),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;error_table.<br />
+DATA : lt_messtab LIKE bdcmsgcoll OCCURS 0 WITH HEADER LINE.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;record&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr(010),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사번<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;begda(010),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;시작일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endda(010),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;종료일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;punty(003),&nbsp;"&nbsp;징계처분&nbsp;유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;punrs&nbsp;TYPE&nbsp;pkr_punar,&nbsp;"&nbsp;사유<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;punar&nbsp;TYPE&nbsp;pkr_punar,&nbsp;"&nbsp;징계권자&nbsp;&nbsp;"&nbsp;2013.02.18&nbsp;주석&nbsp;open<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text1&nbsp;TYPE&nbsp;itxtz&nbsp;&nbsp;&nbsp;&nbsp;,&nbsp;"&nbsp;주석<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text2&nbsp;TYPE&nbsp;itxtz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text3&nbsp;TYPE&nbsp;itxtz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;record.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;&nbsp;&nbsp;&nbsp;record_s&nbsp;&nbsp;LIKE&nbsp;record.<br />
+<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;iv_0010&nbsp;&nbsp;TO&nbsp;&nbsp;record_s.<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUE_READ2'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gclient&nbsp;=&nbsp;sy-mandt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gname&nbsp;&nbsp;&nbsp;=&nbsp;'PREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;guname&nbsp;&nbsp;=&nbsp;'*'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_enq_read.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;lt_enq_read[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;sy-mandt&nbsp;iv_0010-pernr&nbsp;INTO&nbsp;&nbsp;l_garg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_enq_read&nbsp;INTO&nbsp;lw_enq_read&nbsp;WHERE&nbsp;gname&nbsp;EQ&nbsp;'PREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;garg&nbsp;&nbsp;CS&nbsp;&nbsp;l_garg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;lw_enq_read&nbsp;TO&nbsp;lw_enq_del.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;lw_enq_del&nbsp;TO&nbsp;lt_enq_del.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUE_DELETE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_upd_requests&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subrc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_subrc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_enq_del.<br />
+&nbsp;&nbsp;DATA&nbsp;lv_pernr&nbsp;LIKE&nbsp;prel-pernr.<br />
+&nbsp;&nbsp;lv_pernr&nbsp;=&nbsp;iv_0010-pernr.<br />
+<br />
+&nbsp;&nbsp;SUBMIT&nbsp;zhrb0545&nbsp;&nbsp;AND&nbsp;RETURN&nbsp;&nbsp;WITH&nbsp;&nbsp;record_s&nbsp;&nbsp;=&nbsp;record_s.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;lt_messtab,&nbsp;lt_messtab[].<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUE_READ2'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gclient&nbsp;=&nbsp;sy-mandt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gname&nbsp;&nbsp;&nbsp;=&nbsp;'PREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;guname&nbsp;&nbsp;=&nbsp;'*'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_enq_read.<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreign_lock&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;CLEAR&nbsp;l_return1&nbsp;.<br />
+&nbsp;&nbsp;IMPORT&nbsp;memory_abap&nbsp;TO&nbsp;error_table&nbsp;&nbsp;FROM&nbsp;MEMORY&nbsp;ID&nbsp;'ZHR0002'.<br />
+&nbsp;&nbsp;FREE&nbsp;MEMORY&nbsp;ID&nbsp;'ZHR0002'.<br />
+&nbsp;&nbsp;IF&nbsp;error_table[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;&nbsp;error_table&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_return1-message&nbsp;&nbsp;=&nbsp;error_table-msgtext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_return&nbsp;=&nbsp;'T1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"실패.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_return&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;e_error&nbsp;&nbsp;=&nbsp;&nbsp;l_return1&nbsp;.<br />
+<br />
+<br />
+&nbsp;CALL&nbsp;FUNCTION&nbsp;'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;lv_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreign_lock&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*    CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+*      EXPORTING<br />
+*        pernr          = gs_0545-pernr<br />
+*      EXCEPTIONS<br />
+*        foreign_lock   = 1<br />
+*        system_failure = 2<br />
+*        OTHERS         = 3.<br />
+<br />
+<br />
+*    MOVE-CORRESPONDING es_0010 TO gs_0545.<br />
+*    CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+*      EXPORTING<br />
+*        pernr          = gs_0545-pernr<br />
+*      EXCEPTIONS<br />
+*        foreign_lock   = 1<br />
+*        system_failure = 2.<br />
+*<br />
+*    IF sy-subrc = 1.<br />
+*      CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+*        EXPORTING<br />
+*          pernr          = gs_0545-pernr<br />
+*        EXCEPTIONS<br />
+*          foreign_lock   = 1<br />
+*          system_failure = 2<br />
+*          OTHERS         = 3.<br />
+*    ENDIF.<br />
+*<br />
+*<br />
+*    CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+*      EXPORTING<br />
+*        infty     = '0545'<br />
+*        number    = gs_0545-pernr<br />
+*        record    = gs_0545<br />
+*        operation = 'INS'<br />
+*      IMPORTING<br />
+*        return    = l_return1   "LIKE  BAPIRETURN1<br />
+*        key       = l_key1.     " LIKE  BAPIPAKEY<br />
+*<br />
+*    IF l_return1 IS NOT INITIAL.<br />
+**        it_tab-zmessage  =  l_return1-message.<br />
+*    ENDIF.<br />
+*<br />
+*<br />
+*<br />
+*    CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+*      EXPORTING<br />
+*        pernr          = gs_0545-pernr<br />
+*      EXCEPTIONS<br />
+*        foreign_lock   = 1<br />
+*        system_failure = 2<br />
+*        OTHERS         = 3.<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

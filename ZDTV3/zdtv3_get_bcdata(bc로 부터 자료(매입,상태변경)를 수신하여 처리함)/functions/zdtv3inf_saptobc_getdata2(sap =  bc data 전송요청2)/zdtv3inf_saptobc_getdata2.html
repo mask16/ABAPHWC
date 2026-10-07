@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3INF_SAPTOBC_GETDATA2</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3INF_SAPTOBC_GETDATA2</h2>
+<h3> Description: SAP =  BC DATA 전송요청2</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zdtv3inf_saptobc_getdata2.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(BUKRS) TYPE  BUKRS<br />
+*"     VALUE(DEST) TYPE  RFCDEST<br />
+*"  EXPORTING<br />
+*"     VALUE(IT_XML) TYPE  ZDTV3T_XML_INF<br />
+*"  TABLES<br />
+*"      HEAD STRUCTURE  ZDTV3S_HEAD_INF<br />
+*"      ITEM STRUCTURE  ZDTV3S_ITEM_INF<br />
+*"      PAYM STRUCTURE  ZDTV3S_PAYM_INF OPTIONAL<br />
+*"      RETURN STRUCTURE  ZDTV3S_INFRETURN OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3inf_saptobc_getdata2.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;l_type&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_message&nbsp;TYPE&nbsp;bapi_msg.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;it_send&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bukrs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bukrs.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;END&nbsp;OF&nbsp;it_send.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;it_return&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zdtv3s_head_inf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;item&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zdtv3s_item_inf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paym&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zdtv3s_paym_inf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;it_return.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;is_xml&nbsp;TYPE&nbsp;zdtv3s_xml_inf.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_xml&nbsp;TYPE&nbsp;zdtv3s_xml_inf2.<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_xml&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;ls_xml.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_xml2&nbsp;TYPE&nbsp;ZDTV3S_XML_INF.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltwa_head&gt&nbsp;TYPE&nbsp;zdtv3s_head_inf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltwa_paym&gt&nbsp;TYPE&nbsp;zdtv3s_paym_inf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltwa_item_tab&gt&nbsp;TYPE&nbsp;table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltwa_item&gt&nbsp;TYPE&nbsp;zdtv3s_item_inf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltwa_xml&gt&nbsp;&nbsp;TYPE&nbsp;zdtv3s_xml_inf.<br />
+<br />
+&nbsp;&nbsp;it_send-bukrs&nbsp;=&nbsp;bukrs.<br />
+&nbsp;&nbsp;APPEND&nbsp;it_send.&nbsp;CLEAR&nbsp;it_send.<br />
+<br />
+   </div>
+   <div class="codeComment">
+** S) 2021.07.22 - #24395 UniTAX 4.0 로직 수정(DEST 파라미터 추가)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;it_send[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;call function <a href ="../zdtv3inf_saptobc_json(SAP =  BC 전송)/zdtv3inf_saptobc_json.html">'ZDTV3INF_SAPTOBC_JSON'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_func&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'1026'<br />
+   </div>
+   <div class="codeComment">
+*       I_RET_STRU = 'ZDTV3S_INFRETURN'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_dest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;dest<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_type<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e_message&nbsp;&nbsp;=&nbsp;l_message<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_data&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_send<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ot_return&nbsp;&nbsp;=&nbsp;it_return<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ot_xml&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_xml.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+** E) 2021.07.22 - #24395 UniTAX 4.0 로직 수정<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_return.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_return-head&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;it_return-head&nbsp;TO&nbsp;&ltwa_head&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;&ltwa_head&gt&nbsp;TO&nbsp;head.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;head.&nbsp;CLEAR&nbsp;head.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"ITEM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_return-item&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;it_return-item&nbsp;TO&nbsp;&ltwa_item_tab&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltwa_item_tab&gt&nbsp;IS&nbsp;ASSIGNED.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltwa_item_tab&gt&nbsp;ASSIGNING&nbsp;&ltwa_item&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;&ltwa_item&gt&nbsp;TO&nbsp;item.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;item.&nbsp;CLEAR&nbsp;item.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"PAYM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_return-paym&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;it_return-paym&nbsp;TO&nbsp;&ltwa_paym&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;&ltwa_paym&gt&nbsp;TO&nbsp;paym.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;paym.&nbsp;CLEAR&nbsp;paym.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;if&nbsp;lt_xml[]&nbsp;is&nbsp;not&nbsp;initial.<br />
+   </div>
+   <div class="codeComment">
+** S) 2023.04.26 UNIPOST<br />
+*    move-corresponding lt_xml[] to it_xml[].<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_xml&nbsp;INTO&nbsp;ls_xml.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;ls_xml&nbsp;to&nbsp;ls_xml2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;ls_xml2&nbsp;INTO&nbsp;TABLE&nbsp;it_xml.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+** E) 2023.04.26 UNIPOST<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;endif.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

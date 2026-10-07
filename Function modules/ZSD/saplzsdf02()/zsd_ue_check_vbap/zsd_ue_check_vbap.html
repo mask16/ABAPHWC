@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_UE_CHECK_VBAP</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_UE_CHECK_VBAP</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZSD_UE_CHECK_VBAP.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_VBAK) TYPE  VBAK<br />
+*"     REFERENCE(I_VBAP) TYPE  VBAP<br />
+*"----------------------------------------------------------------------<br />
+<br />
+*/S_자재코드 원가 검증_천준필_20180329<br />
+
+<div class="codeComment">*       <a href ="global-zsd_ue_check_vbap.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;V_VPRSV&nbsp;TYPE&nbsp;MBEW-VPRSV,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_VERPR&nbsp;TYPE&nbsp;MBEW-VERPR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_STPRS&nbsp;TYPE&nbsp;MBEW-STPRS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_LVORM1&nbsp;TYPE&nbsp;MARA-LVORM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_LVORM2&nbsp;TYPE&nbsp;MARC-LVORM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_MTART&nbsp;TYPE&nbsp;MARA-MTART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_KTOKD&nbsp;TYPE&nbsp;KNA1-KTOKD,&nbsp;&nbsp;"업체계정그룹<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_SPART&nbsp;TYPE&nbsp;MARA-SPART,&nbsp;&nbsp;"제품군<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_SUBRC&nbsp;TYPE&nbsp;SY-SUBRC.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/S_장기재고 코드 입력 시 재고현황 조회_천준필_20181210<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;T_LSTOCK&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZMMT0350,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S_LSTOCK&nbsp;TYPE&nbsp;ZMMT0350.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;V_LTEXT&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_MENGE&nbsp;TYPE&nbsp;CHAR20,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_MATNR&nbsp;TYPE&nbsp;MATNR,<br />
+   </div>
+   <div class="codeComment">
+*/E<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_PRCTR&nbsp;TYPE&nbsp;MARC-PRCTR.<br />
+<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;V_VPRSV,&nbsp;V_VERPR,&nbsp;V_STPRS,&nbsp;V_SUBRC,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_LVORM1,&nbsp;V_LVORM2,&nbsp;V_MTART.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/S_장기재고 코드 입력 시 재고현황 조회_천준필_20181210<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;I_VBAP-MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL&nbsp;AND&nbsp;I_VBAP-KWMENG&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;T_LSTOCK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SNAME&nbsp;MEINS&nbsp;SUM(&nbsp;MENGE&nbsp;)&nbsp;AS&nbsp;MENGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;T_LSTOCK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZMMT0350<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;I_VBAP-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;SNAME&nbsp;MEINS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;V_LTEXT,&nbsp;V_MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_MATN1_OUTPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;=&nbsp;I_VBAP-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUTPUT&nbsp;=&nbsp;V_MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'('&nbsp;V_MATNR&nbsp;')'&nbsp;INTO&nbsp;V_MATNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_LSTOCK&nbsp;INTO&nbsp;S_LSTOCK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;V_MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;S_LSTOCK-MENGE&nbsp;TO&nbsp;V_MENGE&nbsp;UNIT&nbsp;S_LSTOCK-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;V_MENGE&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;S_LSTOCK-SNAME&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S_LSTOCK-SNAME&nbsp;=&nbsp;'담당자&nbsp;미지정'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;V_LTEXT&nbsp;S_LSTOCK-SNAME&nbsp;':'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_MENGE&nbsp;S_LSTOCK-MEINS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;V_LTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-TABIX&nbsp;&lt&nbsp;SY-DBCNT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;V_LTEXT&nbsp;','&nbsp;INTO&nbsp;V_LTEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_LTEXT&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SHIFT&nbsp;V_LTEXT&nbsp;LEFT&nbsp;DELETING&nbsp;LEADING&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I000(ZSDM)&nbsp;WITH&nbsp;'※&nbsp;장기재고'&nbsp;V_MATNR&nbsp;V_LTEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*/E<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;I_VBAP-MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;I_VBAP-WERKS&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"업체별&nbsp;자재군&nbsp;점검_천준필_20181128<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;V_KTOKD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_VBAK-KUNNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;KTOKD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(V_KTOKD)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;KNA1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;KUNNR&nbsp;=&nbsp;I_VBAK-KUNNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"삭제&nbsp;플래그&nbsp;점검<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;A~LVORM&nbsp;A~MTART&nbsp;A~SPART&nbsp;B~LVORM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"용접기사업부&nbsp;분사&nbsp;관련&nbsp;수주&nbsp;금지_천준필_20200226<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B~PRCTR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;&nbsp;(V_LVORM1,&nbsp;V_MTART,&nbsp;V_SPART,&nbsp;V_LVORM2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_PRCTR)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;&nbsp;MARA&nbsp;AS&nbsp;A<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LEFT&nbsp;JOIN&nbsp;MARC&nbsp;AS&nbsp;B&nbsp;ON&nbsp;A~MATNR&nbsp;=&nbsp;B~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~WERKS&nbsp;=&nbsp;I_VBAP-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~MATNR&nbsp;=&nbsp;I_VBAP-MATNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_LVORM1&nbsp;=&nbsp;'X'&nbsp;OR&nbsp;V_LVORM2&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E033(ZSDM)&nbsp;WITH&nbsp;I_VBAP-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"용접기사업부&nbsp;분사&nbsp;관련&nbsp;수주&nbsp;금지_천준필_20200226<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-UNAME(3)&nbsp;&lt&gt&nbsp;'HBC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_VBAK-VDATU&nbsp;GE&nbsp;'20200301'&nbsp;AND&nbsp;V_PRCTR&nbsp;=&nbsp;'0000001520'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E057(ZSDM).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"업체별&nbsp;자재군&nbsp;점검_천준필_20181128<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;V_KTOKD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'A100'&nbsp;OR&nbsp;'A200'.&nbsp;&nbsp;"용접봉<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_VBAK-KUNNR&nbsp;&lt&gt&nbsp;'0000201982'.&nbsp;"베트남공장&nbsp;제외_20200327<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_SPART&nbsp;=&nbsp;'20'&nbsp;OR&nbsp;V_SPART&nbsp;=&nbsp;'90'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E035(ZSDM)&nbsp;WITH&nbsp;V_KTOKD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'D100'&nbsp;OR&nbsp;'D200'.&nbsp;&nbsp;"용접기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_SPART&nbsp;=&nbsp;'10'&nbsp;OR&nbsp;V_SPART&nbsp;=&nbsp;'80'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E035(ZSDM)&nbsp;WITH&nbsp;V_KTOKD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"제품인&nbsp;경우만&nbsp;체크<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;V_MTART&nbsp;=&nbsp;'FERT'<br />
+   </div>
+   <div class="codeComment">
+*/S_용접봉만 원가 점검_천준필_20190312<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;(&nbsp;V_SPART&nbsp;=&nbsp;'10'&nbsp;OR&nbsp;V_SPART&nbsp;=&nbsp;'80'&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*/E<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;"원가&nbsp;점검<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;VPRSV&nbsp;VERPR&nbsp;STPRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(V_VPRSV,&nbsp;V_VERPR,&nbsp;V_STPRS)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MBEW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;I_VBAP-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BWKEY&nbsp;=&nbsp;I_VBAP-WERKS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_SUBRC&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;V_VPRSV.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_STPRS&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_SUBRC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'V'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_VERPR&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"상품,&nbsp;원자재인&nbsp;경우는&nbsp;체크&nbsp;제외<br />
+   </div>
+   <div class="codeComment">
+*            V_SUBRC = 1.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E034(ZSDM)&nbsp;WITH&nbsp;I_VBAP-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*/E<br />
+<br />
+*/S_기본 플랜트 지정 추가_천준필_20181213<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;V_WERKS&nbsp;TYPE&nbsp;WERKS_D.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  IF sy-uname &lt&gt'HSD51' and sy-uname &lt&gt 'HBC02'and sy-uname &lt&gt 'HSD33'.<br />
+*  IF sy-uname &lt&gt'HSD51' and sy-uname &lt&gt 'HSD33'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_VBAP-MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;I_VBAP-WERKS&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;V_WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(V_WERKS)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT1200<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;I_VBAP-MATNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0&nbsp;AND&nbsp;I_VBAP-WERKS&nbsp;NE&nbsp;V_WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;W000(ZSDM)&nbsp;WITH&nbsp;V_WERKS&nbsp;'플랜트&nbsp;지정&nbsp;자재입니다.'.<br />
+   </div>
+   <div class="codeComment">
+*        DISPLAY LIKE 'E'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*  ENDIF.<br />
+*/E<br />
+<br />
+*/S_장기재고<br />
+*  DATA: V_PRAT3 TYPE MVKE-PRAT3.<br />
+*<br />
+*    IF I_VBAP-MATNR IS NOT INITIAL<br />
+*      AND I_VBAP-WERKS IS NOT INITIAL.<br />
+*<br />
+*      CLEAR V_PRAT3.<br />
+*      SELECT SINGLE PRAT3<br />
+*      INTO (V_PRAT3)<br />
+*      FROM ZSDT1201<br />
+*      WHERE MATNR = I_VBAP-MATNR.<br />
+*<br />
+*      IF SY-SUBRC = 0 .<br />
+*<br />
+*        MESSAGE W000(ZSDM) WITH V_PRAT3<br />
+*'장기재고 주의품목입니다.공장관리팀, 물류출하팀과 수주등록 전 협의하시기 바랍니다'.<br />
+*<br />
+*<br />
+*      ENDIF.<br />
+*<br />
+*    ENDIF.<br />
+<br />
+*/E<br />
+<br />
+*/S_장기재고<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;V_PRAT3&nbsp;TYPE&nbsp;MVKE-PRAT3.<br />
+&nbsp;&nbsp;DATA:&nbsp;V_WERKS1&nbsp;TYPE&nbsp;WERKS_D.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_VBAP-MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;I_VBAP-WERKS&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;V_PRAT3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;PRAT3&nbsp;WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(V_PRAT3&nbsp;,&nbsp;V_WERKS1&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT1202<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;I_VBAP-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;WERKS&nbsp;=&nbsp;I_VBAP-WERKS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I059(ZSDM)&nbsp;WITH&nbsp;V_PRAT3.<br />
+   </div>
+   <div class="codeComment">
+*        MESSAGE W000(ZSDM) WITH V_PRAT3<br />
+*'장기재고 주의품목입니다.공장관리팀, 물류출하팀과 수주등록 전 협의하시기 바랍니다'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/E<br />
+<br />
+<br />
+*/S_샘플 수주 통제항목 입력 체크_천준필_20200210<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;T_1151&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZSDT1151,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S_1151&nbsp;TYPE&nbsp;ZSDT1151.<br />
+&nbsp;&nbsp;IF&nbsp;I_VBAK-AUART&nbsp;=&nbsp;'ZFD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;I_VBAP-MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*    CLEAR: t_1151.<br />
+*    SELECT mvgr1<br />
+*    INTO CORRESPONDING FIELDS OF TABLE t_1151<br />
+*    FROM zsdt1151<br />
+*    WHERE werks = i_vbap-werks<br />
+*      AND prdha = i_vbap-prodh<br />
+*      AND zabgru LIKE '4%'.<br />
+*<br />
+*    LOOP AT t_1151 INTO s_1151.<br />
+*      IF s_1151-mvgr1 IS INITIAL.<br />
+*        "샘플수주 등록 금지 품목입니다.<br />
+*        MESSAGE e055(zsdm) WITH v_matnr.<br />
+*        EXIT.<br />
+*      ELSE.<br />
+*        SELECT SINGLE matnr<br />
+*        INTO (v_matnr)<br />
+*        FROM mvke<br />
+*        WHERE matnr = i_vbap-matnr<br />
+*          AND vkorg = i_vbak-vkorg<br />
+*          AND vtweg = i_vbak-vtweg<br />
+*          AND mvgr1 = s_1151-mvgr1.<br />
+*<br />
+*        IF sy-subrc = 0.<br />
+*          MESSAGE e055(zsdm) WITH v_matnr.<br />
+*          EXIT.<br />
+*        ENDIF.<br />
+*      ENDIF.<br />
+*    ENDLOOP.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*/E<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/S_베트남 3자거래 단가 통제 체크_천준필_20180514<br />
+*  DATA: L_VBELN TYPE VBAK-VBELN,<br />
+*        L_NETPR TYPE NETPR.<br />
+*<br />
+*  IF VBAK-VBELN IS NOT INITIAL.<br />
+*    IF VBAK-AUART EQ 'ZOR'<br />
+*      AND I_VBAP-MATNR IS NOT INITIAL<br />
+*      AND I_VBAP-WERKS = '3060'.<br />
+*<br />
+*      "3자거래 확인<br />
+*      CLEAR: L_VBELN, L_NETPR.<br />
+*      SELECT SINGLE VBELN<br />
+*      INTO (L_VBELN)<br />
+*      FROM ZSDT0516<br />
+*      WHERE VBELN2 = VBAK-VBELN.<br />
+*<br />
+*      IF SY-SUBRC = 0.<br />
+*        "등록 단가 정보<br />
+*        SELECT SINGLE NETPR<br />
+*        INTO (L_NETPR)<br />
+*        FROM ZSDT0570<br />
+*        WHERE WERKS = '1060'<br />
+*          AND MATNR = I_VBAP-MATNR.<br />
+*        IF SY-SUBRC = 0<br />
+*          AND L_NETPR &lt&gt I_VBAP-NETPR.<br />
+*          MESSAGE E036(ZSDM).<br />
+*        ENDIF.<br />
+*      ENDIF.<br />
+*<br />
+*    ENDIF.<br />
+*  ENDIF.<br />
+*/E<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZSDM<br />
+*033   Error::Code & is a material with deletion flag.<br />
+*034   Error::Code &, standard unit price calculation not completed.<br />
+*057   Not available material entered<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

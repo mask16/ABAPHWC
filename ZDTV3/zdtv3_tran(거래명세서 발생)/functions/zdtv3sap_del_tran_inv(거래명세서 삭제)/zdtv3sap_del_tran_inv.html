@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3SAP_DEL_TRAN_INV</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3SAP_DEL_TRAN_INV</h2>
+<h3> Description: 거래명세서 삭제</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3SAP_DEL_TRAN_INV.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(TRAN_SEQ) TYPE  ZDTV3E_TRAN_SEQ<br />
+*"  EXPORTING<br />
+*"     VALUE(OS_RETURN) LIKE  ZDTV3S_TRAN_RETURN STRUCTURE<br />
+*"        ZDTV3S_TRAN_RETURN<br />
+*"----------------------------------------------------------------------<br />
+<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3sap_del_tran_inv.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_CLOSED.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LS_KEY&nbsp;LIKE&nbsp;ZDTV3S_TRANKEY.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;LS_KEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_TRAN_HD<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;TRAN_SEQ&nbsp;EQ&nbsp;TRAN_SEQ.<br />
+   </div>
+   <div class="codeComment">
+* 마감 check<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zdtv3sap_chk_tran_closed(거래명세서 - 자체발행분 마감관리)/zdtv3sap_chk_tran_closed.html">'ZDTV3SAP_CHK_TRAN_CLOSED'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_KEY-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_DATE&nbsp;=&nbsp;LS_KEY-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_KEY-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRAN_SEQ&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_KEY-TRAN_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLOSED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_CLOSED.<br />
+&nbsp;&nbsp;IF&nbsp;L_CLOSED&nbsp;EQ&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;GS_RETURN&nbsp;'E'&nbsp;'00010'&nbsp;TRAN_SEQ&nbsp;TRAN_SEQ&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+** 합계표에 생성된 경우 합계표 삭제후처리함.<br />
+*  SELECT SINGLE *<br />
+*    INTO CORRESPONDING FIELDS OF LS_KEY<br />
+*    FROM ZDTV3T_AR_SUM<br />
+*   WHERE BUKRS      = LS_KEY-BUKRS<br />
+*     AND ISSUE_DATE = LS_KEY-ISSUE_DATE<br />
+*     AND BUPLA      = LS_KEY-BUPLA<br />
+*     AND TRAN_SEQ    = LS_KEY-TRAN_SEQ .<br />
+*  IF SY-SUBRC EQ 0.<br />
+*    DS_RETURN GS_RETURN 'E' '14040' TRAN_SEQ TRAN_SEQ '' '' ''.<br />
+*    EXIT.<br />
+*  ENDIF.<br />
+<br />
+* HEAD 삭제<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;ZDTV3T_TRAN_HD<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;TRAN_SEQ&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;TRAN_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;(&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'3000'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;(&nbsp;STATUS&nbsp;EQ&nbsp;'3110'&nbsp;AND&nbsp;PROC_STEP&nbsp;EQ&nbsp;'21'&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;(&nbsp;STATUS&nbsp;EQ&nbsp;'3110'&nbsp;AND&nbsp;PROC_STEP&nbsp;EQ&nbsp;'23'&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'3113'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'9999')&nbsp;.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+* 사용자 추가<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zdtv3i_u130&nbsp;if&nbsp;found.html">ZDTV3I_U130&nbsp;IF&nbsp;FOUND</a>.<br />
+   </div>
+   <div class="codeComment">
+* ITEM 삭제<br />
+*    DELETE FROM ZDTV3T_TRAN_IT<br />
+*     WHERE TRAN_SEQ EQ TRAN_SEQ.<br />
+* PAYMANT 삭제<br />
+*    DELETE FROM ZDTV3T_AR_PAYM<br />
+*     WHERE INV_SEQ EQ INV_SEQ.<br />
+* EXTEND 삭제<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;ZDTV3T_TRAN_EXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;TRAN_SEQ&nbsp;EQ&nbsp;TRAN_SEQ.<br />
+   </div>
+   <div class="codeComment">
+* EXTEND_D 삭제<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;ZDTV3T_TRAN_EXTD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;TRAN_SEQ&nbsp;EQ&nbsp;TRAN_SEQ.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;OS_RETURN&nbsp;'S'&nbsp;'10034'&nbsp;TRAN_SEQ&nbsp;TRAN_SEQ&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;OS_RETURN&nbsp;'E'&nbsp;'10033'&nbsp;TRAN_SEQ&nbsp;TRAN_SEQ&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: 00<br />
+*398   & & & &<br />
+*<br />
+* Message class: 0K<br />
+*000   & & & &<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+*005   변경된 자료가 없습니다.<br />
+*006   작업을 취소하였습니다.<br />
+*014   &는 POPUP화면을 정의하지 않았습니다.<br />
+*018   &는 사용할수 없는 BUTTON 입니다.<br />
+*019   &의 결과화면 POPUP 레이아웃 정의을 정의하지 않았습니다.<br />
+*030   &에 대한 권한이 존재하지 않습니다.<br />
+*301   파일경로 길이는 128자리까지만 허용합니다.<br />
+*901   &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

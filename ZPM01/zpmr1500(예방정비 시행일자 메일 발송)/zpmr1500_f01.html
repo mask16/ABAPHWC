@@ -1,0 +1,443 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPMR1500_F01</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZPMR1500_F01</h2>
+<h3> Description: Include ZPMR1500_F01</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZPMR1500_F01<br />
+*&---------------------------------------------------------------------*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DATA_SELECT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM data_select .<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;lv_pltxt&nbsp;LIKE&nbsp;zpmt0010-pltxt.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;lv_tplma&nbsp;LIKE&nbsp;zpmt0010-tplma.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;v_pland.<br />
+&nbsp;&nbsp;CALL FUNCTION 'RP_CALC_DATE_IN_INTERVAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;days&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;months&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signum&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'+'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;years&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calc_date&nbsp;=&nbsp;v_pland.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_data.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_data<br />
+&nbsp;&nbsp;FROM&nbsp;zpmt0050<br />
+&nbsp;&nbsp;WHERE&nbsp;(&nbsp;pland&nbsp;=&nbsp;sy-datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;(&nbsp;pland&nbsp;=&nbsp;v_pland&nbsp;AND&nbsp;wplanchk&nbsp;=&nbsp;'X'&nbsp;)&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;IN&nbsp;s_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;loevm&nbsp;=&nbsp;space.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;gt_data&nbsp;BY&nbsp;tplnr&nbsp;equnr&nbsp;preve.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_data&nbsp;INTO&nbsp;gs_data.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"예방부서내역명<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;orgtx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;gs_data-ppdep_tx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;&nbsp;t527x<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;orgeh&nbsp;=&nbsp;gs_data-ppdep.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"위치내역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;pltxt&nbsp;tplma<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(gs_data-pltxt,&nbsp;lv_tplma)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zpmt0010<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tplnr&nbsp;=&nbsp;gs_data-tplnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;pltxt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;lv_pltxt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zpmt0010<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tplnr&nbsp;=&nbsp;lv_tplma.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;lv_pltxt&nbsp;'-'&nbsp;gs_data-pltxt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;gs_data-pltxt&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"설비내역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;eqktx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;gs_data-eqktx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zpmt0020<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;equnr&nbsp;=&nbsp;gs_data-equnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;domvalue_text_get&nbsp;USING&nbsp;'ZDPTYPE'&nbsp;gs_data-ptype<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-ptype_tx.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;get_name_text&nbsp;USING&nbsp;'WERKS'&nbsp;gs_data-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-werks_tx.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;get_name_text&nbsp;USING&nbsp;'PERNR'&nbsp;gs_data-erpsn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-erpsn_tx.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;get_name_text&nbsp;USING&nbsp;'PERNR'&nbsp;gs_data-aepsn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-aepsn_tx.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_data&nbsp;FROM&nbsp;gs_data.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " DATA_SELECT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DOMVALUE_TEXT_GET<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM domvalue_text_get  USING   p_domain<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_zstat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_zstatt.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;lv_value&nbsp;TYPE&nbsp;domvalue_l.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;lv_text&nbsp;TYPE&nbsp;ddtext.<br />
+<br />
+&nbsp;&nbsp;lv_value&nbsp;=&nbsp;p_zstat.<br />
+&nbsp;&nbsp;CALL FUNCTION 'CRM_EI_DDIC_GET_FIXEDTEXT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_domain_name&nbsp;=&nbsp;p_domain<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_value<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev_text&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lv_text.<br />
+<br />
+&nbsp;&nbsp;p_zstatt&nbsp;=&nbsp;lv_text.<br />
+<br />
+ENDFORM.                    " DOMVALUE_TEXT_GET<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_NAME_TEXT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_name_text  USING    p_fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_value<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_text.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;l_table&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;TYPE&nbsp;string.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;p_fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BUKRS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;&nbsp;=&nbsp;'T001'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;&nbsp;=&nbsp;'BUKRS&nbsp;=&nbsp;p_value'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'BUTXT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WERKS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;=&nbsp;'T001W'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;=&nbsp;'WERKS&nbsp;=&nbsp;p_value'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'NAME1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'EKORG'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;&nbsp;=&nbsp;'T024E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;&nbsp;=&nbsp;'EKORG&nbsp;=&nbsp;p_value'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'EKOTX'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'EKGRP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;&nbsp;=&nbsp;'T024'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;&nbsp;=&nbsp;'EKGRP&nbsp;=&nbsp;p_value'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'EKNAM'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'PERNR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;=&nbsp;'PA0001'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;=&nbsp;'PERNR&nbsp;=&nbsp;p_value&nbsp;AND&nbsp;endda&nbsp;=&nbsp;''99991231'''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'SNAME'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'ORGEH'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;=&nbsp;'T527X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'SPRSL&nbsp;=&nbsp;SY-LANGU&nbsp;and&nbsp;ORGEH&nbsp;=&nbsp;p_value&nbsp;AND&nbsp;endda&nbsp;=&nbsp;''99991231'''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'ORGTX'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'LIFNR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;=&nbsp;'LFA1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;=&nbsp;'LIFNR&nbsp;=&nbsp;p_value'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'NAME1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'KNTTP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;=&nbsp;'T163I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;=&nbsp;'SPRAS&nbsp;=&nbsp;SY-LANGU&nbsp;and&nbsp;KNTTP&nbsp;=&nbsp;p_value&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'KNTTX'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'KOSTL'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;=&nbsp;'CSKT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'KOKRS&nbsp;=&nbsp;''1000''&nbsp;and&nbsp;KOSTL&nbsp;=&nbsp;p_value&nbsp;AND&nbsp;datbi&nbsp;=&nbsp;''99991231'''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'MCTXT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SAKNR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;&nbsp;&nbsp;=&nbsp;'SKAT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'SPRAS&nbsp;=&nbsp;SY-LANGU&nbsp;AND&nbsp;KTOPL&nbsp;=&nbsp;''1000''&nbsp;and&nbsp;SAKNR&nbsp;=&nbsp;p_value&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;&nbsp;=&nbsp;'TXT20'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MATKL'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_table&nbsp;=&nbsp;'T023T'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_where&nbsp;=&nbsp;'SPRAS&nbsp;=&nbsp;SY-LANGU&nbsp;and&nbsp;MATKL&nbsp;=&nbsp;p_value'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_select&nbsp;=&nbsp;'WGBEZ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;(l_select)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;p_text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;(l_table)<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;(l_where).<br />
+<br />
+<br />
+ENDFORM.                    " GET_NAME_TEXT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SEND_MAIL<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM send_mail .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;t_mail&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zpmt1060,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_mail&nbsp;TYPE&nbsp;zpmt1060.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;t_string&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v_string&nbsp;TYPE&nbsp;string.<br />
+<br />
+&nbsp;&nbsp;DEFINE&nbsp;_reference.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;&1&nbsp;is&nbsp;not&nbsp;initial.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_reclist-receiver&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_reclist-rec_type&nbsp;=&nbsp;'U'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;s_mail-mtype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'T'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_reclist-copy&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_reclist-copy&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;translate&nbsp;i_reclist-receiver&nbsp;to&nbsp;lower&nbsp;case.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;i_reclist.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;i_reclist.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;SORT&nbsp;gt_data&nbsp;BY&nbsp;pland&nbsp;wplanchk.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_data&nbsp;INTO&nbsp;gs_data.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Mail&nbsp;Title<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_doc_chng-obj_name&nbsp;=&nbsp;'PMWARN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_data-wplanchk&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_data-pland&nbsp;&lt&gt&nbsp;sy-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_doc_chng-obj_descr&nbsp;=&nbsp;'(외주)예방정비일&nbsp;도래&nbsp;안내(D-6일)'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_doc_chng-obj_descr&nbsp;=&nbsp;'(외주)예방정비일&nbsp;도래&nbsp;안내'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_doc_chng-obj_descr&nbsp;=&nbsp;'(자체)예방정비일&nbsp;도래&nbsp;안내'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wa_doc_chng-sensitivty&nbsp;=&nbsp;'F'.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;t_mail.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;t_mail<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zpmt1060.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Main&nbsp;Text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;text_build&nbsp;TABLES&nbsp;t_string.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;i_objtxt,&nbsp;i_objtxt[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;t_string&nbsp;TO&nbsp;i_objtxt[].<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;i_objpack,&nbsp;i_objpack[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;i_objpack-transf_bin&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;i_objpack-head_start&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;i_objpack-head_num&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;i_objpack-body_start&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;i_objtxt&nbsp;LINES&nbsp;i_objpack-body_num.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;i_objpack-doc_type&nbsp;=&nbsp;'RAW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;i_objpack.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;i_objpack.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Sender&nbsp;Address<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;v_sender.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;v_sender&nbsp;=&nbsp;'no_reply@sap.admin'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;v_sender&nbsp;TO&nbsp;LOWER&nbsp;CASE.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Receiver&nbsp;Address<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;i_reclist,&nbsp;i_reclist[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;t_mail&nbsp;INTO&nbsp;s_mail.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_reference:&nbsp;s_mail-email.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'SO_DOCUMENT_SEND_API1'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document_data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;wa_doc_chng<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;put_in_outbox&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sender_address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;v_sender<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sender_address_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'INT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;commit_work&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_object_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;v_object_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;packing_list&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_objpack<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_header&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;wa_objhead<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contents_bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_objbin<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contents_txt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_objtxt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;receivers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_reclist<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;too_many_receivers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document_not_sent&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document_type_not_exist&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;operation_no_authorization&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parameter_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enqueue_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " SEND_MAIL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;TEXT_BUILD<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM text_build     TABLES pt_string.<br />
+<br />
+&nbsp;&nbsp;DEFINE&nbsp;_append_text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;clear:&nbsp;v_string.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;&2&nbsp;is&nbsp;initial.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v_string&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;&1&nbsp;&2&nbsp;into&nbsp;v_string&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;&1&nbsp;&2&nbsp;into&nbsp;v_string&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;v_string&nbsp;to&nbsp;pt_string.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;initial&nbsp;line&nbsp;to&nbsp;pt_string.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;v_string&nbsp;TYPE&nbsp;string.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;pt_string,&nbsp;pt_string[].<br />
+<br />
+&nbsp;&nbsp;_append_text:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"공장구분&nbsp;(예&nbsp;:&nbsp;포항1공장&nbsp;CO2)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'공장&nbsp;:'&nbsp;gs_data-werks_tx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방계획번호&nbsp;:&nbsp;30000136<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방계획번호&nbsp;:'&nbsp;gs_data-preve,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방계획내역&nbsp;:&nbsp;(CO2&nbsp;콤프레샤&nbsp;#1)&nbsp;에어필터&nbsp;교체<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방계획내역&nbsp;:'&nbsp;gs_data-prevet,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방유형&nbsp;:&nbsp;정비&nbsp;(한글부분)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방유형&nbsp;:'&nbsp;gs_data-ptype_tx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;설비번호&nbsp;:&nbsp;&nbsp;20000027<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;설비번호&nbsp;:'&nbsp;gs_data-equnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"5.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;설비내역&nbsp;:&nbsp;(CO2&nbsp;콤프레샤#1)&nbsp;(아틀라스&nbsp;50HP,&nbsp;GA37+)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'5.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;설비내역&nbsp;:'&nbsp;gs_data-eqktx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"6.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방계획부서&nbsp;:&nbsp;공무본부-기계팀<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'6.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방계획부서&nbsp;:'&nbsp;gs_data-ppdep_tx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"7.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;최근정비일&nbsp;:&nbsp;2019.06.20<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'7.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;최근정비일&nbsp;:'&nbsp;gs_data-workd,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"8.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방정비일&nbsp;:&nbsp;2019.07.20<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'8.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예방정비일&nbsp;:'&nbsp;gs_data-pland.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;v_text&nbsp;TYPE&nbsp;c&nbsp;LENGTH&nbsp;20.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;gs_data-period&nbsp;'(단위&nbsp;:'&nbsp;gs_data-periodu&nbsp;')'<br />
+&nbsp;&nbsp;INTO&nbsp;v_text.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;v_xo&nbsp;TYPE&nbsp;c.<br />
+&nbsp;&nbsp;IF&nbsp;gs_data-wplanchk&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;v_xo&nbsp;=&nbsp;'YES'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;v_xo&nbsp;=&nbsp;'NO'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;_append_text:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"9.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;주기&nbsp;:&nbsp;1&nbsp;(단위&nbsp;:&nbsp;월)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'9.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;주기&nbsp;:'&nbsp;v_text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"10.&nbsp;&nbsp;외주구분&nbsp;:&nbsp;X&nbsp;(O&nbsp;or&nbsp;X로)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'10.&nbsp;&nbsp;외주구분&nbsp;:'&nbsp;v_xo.<br />
+<br />
+<br />
+ENDFORM.                    " TEXT_BUILD<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

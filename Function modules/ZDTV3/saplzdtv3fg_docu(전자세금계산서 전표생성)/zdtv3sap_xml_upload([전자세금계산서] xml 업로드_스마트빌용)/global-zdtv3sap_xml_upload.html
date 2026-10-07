@@ -1,0 +1,890 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LZDTV3FG_DOCUTOP</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LZDTV3FG_DOCUTOP</h2>
+<h3> Description: [전자세금계산서] XML 업로드_스마트빌용</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION-POOL ZDTV3FG_DOCU MESSAGE-ID ZDTV3M.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Global&nbsp;data&nbsp;declarations<br />
+   </div>
+   <div class="code">
+TABLES : BGR00,                        " Mappenvorsatz<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BBKPF,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belegkopf&nbsp;+&nbsp;Tcode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BBSEG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belegsegment.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BBTAX,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belegsteuern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BWITH,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Quellensteuer<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BSELK,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Selektionsdaten&nbsp;Kopf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BSELP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Selektionsdaten&nbsp;Position<br />
+<br />
+TABLES : TBSL.                         " Buchungsschl?sel<br />
+TABLES : T041A.                        " Ausgleichsvorg?ge<br />
+TABLES : T100.                         " Nachrichten<br />
+<br />
+DATA : BEGIN OF FTPOST OCCURS 100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;FTPOST.<br />
+DATA : END OF FTPOST.<br />
+<br />
+DATA : BEGIN OF FTCLEAR OCCURS 20.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;FTCLEAR.<br />
+DATA : END OF FTCLEAR.<br />
+<br />
+DATA : BEGIN OF FTTAX OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;FTTAX.<br />
+DATA : END OF FTTAX.<br />
+<br />
+DATA : BEGIN OF XBLNTAB  OCCURS 2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BLNTAB.<br />
+DATA : END OF XBLNTAB.<br />
+<br />
+DATA : BEGIN OF SAVE_FTCLEAR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;FTCLEAR.<br />
+DATA : END OF SAVE_FTCLEAR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;T_BBKPF&nbsp;enth?t&nbsp;Belegkopf&nbsp;+&nbsp;Tcode&nbsp;&nbsp;--------------------<br />
+   </div>
+   <div class="code">
+DATA:    T_BBKPF LIKE BBKPF OCCURS 1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;T_BBSEG&nbsp;enth?t&nbsp;Belegsegment&nbsp;--------------------------<br />
+   </div>
+   <div class="code">
+DATA:    T_BBSEG LIKE BBSEG_DI OCCURS 50.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;T_BBTAX&nbsp;enth?t&nbsp;Steuerdaten&nbsp;---------------------------<br />
+   </div>
+   <div class="code">
+DATA:    T_BBTAX LIKE BBTAX OCCURS 50.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;T_BWITH&nbsp;enth?t&nbsp;Quellensteuerdaten&nbsp;--------------------<br />
+   </div>
+   <div class="code">
+DATA:    T_BWITH LIKE BWITH_DI OCCURS 50.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;FFILE&nbsp;enth?t&nbsp;alle&nbsp;Datens?ze&nbsp;-------------------------<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF TFILE OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REC(3300)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;TFILE.<br />
+DATA:    BEGIN OF EFILE OCCURS 100,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REC(3300)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;EFILE.<br />
+DATA:    BEGIN OF ERTAB OCCURS 5,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REC(3300)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;ERTAB.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Feld-Informationen&nbsp;aus&nbsp;NAMETAB&nbsp;--------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF NAMETAB OCCURS 120.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;DNTAB.<br />
+DATA:    END OF NAMETAB.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;XT001&nbsp;-------------------------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF XT001 OCCURS 5.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;T001.<br />
+DATA:    END OF XT001.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;XTBSL&nbsp;-------------------------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF XTBSL OCCURS 10.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;TBSL.<br />
+DATA:    END OF XTBSL.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Tabelle&nbsp;XT041A&nbsp;------------------------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF XT041A OCCURS 5,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUGLV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;T041A-AUGLV,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;XT041A.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*eject<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strukturen<br />
+*---------------------------------------------------------------------*<br />
+*-------&nbsp;Initialstrukturen&nbsp;--------------------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF I_BBKPF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BBKPF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belegkopf<br />
+DATA:    END OF I_BBKPF.<br />
+<br />
+DATA:    BEGIN OF I_BBSEG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BBSEG.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belegsegment<br />
+DATA:    END OF I_BBSEG.<br />
+<br />
+DATA:    BEGIN OF I_BBTAX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BBTAX.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belegsteuern<br />
+DATA:    END OF I_BBTAX.<br />
+<br />
+DATA:    BEGIN OF I_BSELK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BSELK.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Selektionsdaten&nbsp;Kopf<br />
+DATA:    END OF I_BSELK.<br />
+<br />
+DATA:    BEGIN OF I_BSELP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BSELP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Selektionsdaten&nbsp;Position<br />
+DATA:    END OF I_BSELP.<br />
+<br />
+DATA:    BEGIN OF I_BWITH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BWITH.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Quellensteuer<br />
+DATA:    END OF I_BWITH.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Hilfsstrukturen&nbsp;f?&nbsp;Direct&nbsp;Input&nbsp;------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF WA_BBSEG_DI.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BBSEG_DI.<br />
+DATA:    END OF WA_BBSEG_DI.<br />
+<br />
+DATA:    BEGIN OF WA_BWITH_DI.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BWITH_DI.<br />
+DATA:    END OF WA_BWITH_DI.<br />
+<br />
+DATA:    BEGIN OF TRANS OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_00&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SOH&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_01&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STX&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_02&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ETX&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_03&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EOT&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_04&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENQ&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_05&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACK&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_06&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEL&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_07&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_08&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_09&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LF&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_0A&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_0B&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FF&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_0C&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_0D&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SO&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_0E&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SI&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_0F&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DLE&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_10&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DC1&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_11&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DC2&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_12&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DC3&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_13&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DC4&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_14&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAK&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_15&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYN&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_16&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ETB&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_17&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CAN&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_18&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EM&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NO_M_RISC3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_19&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUB&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_1A&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ESC&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_1B&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_1C&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_1D&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_1E&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;US&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_1F&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;TRANS.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-------&nbsp;Workarea&nbsp;zum&nbsp;Lesen&nbsp;der&nbsp;BI-S?ze&nbsp;-------------------------------<br />
+*-------&nbsp;wa,&nbsp;ertab,&nbsp;tfile&nbsp;und&nbsp;efile&nbsp;muessen&nbsp;mindestens&nbsp;so&nbsp;lang&nbsp;sein<br />
+*-------&nbsp;wie&nbsp;die&nbsp;laengste&nbsp;Batchinput-Struktur&nbsp;BBSEG&nbsp;+&nbsp;kundeneigene<br />
+*-------&nbsp;Felder&nbsp;im&nbsp;Include&nbsp;CI_COBL_BI.<br />
+*-------&nbsp;Laenge&nbsp;der&nbsp;BBSEG&nbsp;ohne&nbsp;CI_COBL_BI&nbsp;(Stand&nbsp;3.0F)&nbsp;1861&nbsp;Bytes<br />
+   </div>
+   <div class="code">
+DATA:    BEGIN OF WA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHAR1(3300)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;WA.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*eject<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Einzelfelder<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+DATA:    BELEG_COUNT(6) TYPE C,        " Anz. Belege je Mappe<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BELEG_BREAK(6)&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Belege&nbsp;je&nbsp;Mappe<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BBSEG-NEWBK,&nbsp;&nbsp;&nbsp;"&nbsp;Buchungskreis<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BBKPF_OK(1)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belegkopf&nbsp;?ergeben<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BBSEG_COUNT(3)&nbsp;TYPE&nbsp;N,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;BSEGS&nbsp;pro&nbsp;Beleg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BBSEG_TAX(1)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Steuer&nbsp;?er&nbsp;BBSEG&nbsp;eingegeb<br />
+<br />
+DATA:    CHAR(40)       TYPE C,        " Char. Hilfsfeld<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHAR1(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Char.&nbsp;Hilfsfeld<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHAR2(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Char.&nbsp;Hilfsfeld<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILE_FILL(1)&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;X=TFILE&nbsp;schon&nbsp;gef?lt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFSAVE_FILL(1)&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;X=TFSAVE&nbsp;schon&nbsp;gef?lt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMIT_COUNT(4)&nbsp;TYPE&nbsp;N,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Z?ler&nbsp;f?&nbsp;Commit<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALL_COMMIT&nbsp;LIKE&nbsp;TBIST-AKTNUM.&nbsp;"&nbsp;Anzahl&nbsp;der&nbsp;Belege&nbsp;bis&nbsp;zum<br />
+" letzten COMMIT<br />
+<br />
+DATA:    DYN_NAME(12)   TYPE C.        " Dynproname<br />
+<br />
+DATA:    ERROR_RUN(1)   TYPE C.        " X = error processing<br />
+<br />
+DATA:    FCODE(5)       TYPE C,        " Funktionscode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FUNCTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;&nbsp;RFIPI-FUNCT.&nbsp;&nbsp;"&nbsp;B=&nbsp;BDC,&nbsp;C=&nbsp;Call&nbsp;Trans<br />
+" D-DIRECT INPUT<br />
+DATA:    GROUP_COUNT(6) TYPE C,        " Anzahl Mappen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP_OPEN(1)&nbsp;&nbsp;TYPE&nbsp;C.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;X=Mappe&nbsp;schon&nbsp;ge?fnet<br />
+<br />
+DATA:    LN_BBSEG(8)    TYPE P,        " L?ge des BBSEG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LN_BBKPF(8)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;L?ge&nbsp;des&nbsp;BBKPF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LN_BSELK(8)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;L?ge&nbsp;des&nbsp;BSELK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LN_BSELP(8)&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;L?ge&nbsp;des&nbsp;BSELP<br />
+<br />
+DATA:    MODE           LIKE  RFPDO-ALLGAZMD.<br />
+DATA:    MSGVN          LIKE SY-MSGV1, " Hilfsfeld Message-Variable<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGTY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGNO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGV1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGV2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGV3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGV4.<br />
+<br />
+DATA:    N(2)           TYPE N,        " Hilfsfeld num.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NODATA(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Keine&nbsp;BI-Daten&nbsp;f?&nbsp;Feld<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NODATA_OLD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;NODATA.&nbsp;&nbsp;&nbsp;"&nbsp;NODATA&nbsp;gemerkt<br />
+<br />
+DATA:    PREFIX_P       LIKE TCURP-PREFIX_P, "price-based rate prefix<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PREFIX_M&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TCURP-PREFIX_P.&nbsp;"quantity-based&nbsp;rate&nbsp;prefix<br />
+<br />
+DATA:    REFE1(8)       TYPE P.        " Hilfsfeld gepackt<br />
+<br />
+DATA:    SATZ2_COUNT(6) TYPE C,        " Anz. S?ze(Typ2) je Trans.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SATZ2_CNT_AKT&nbsp;&nbsp;LIKE&nbsp;SATZ2_COUNT,&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;S?ze(Typ2)&nbsp;-&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SAVE_TBNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BBSEG-TBNAM,&nbsp;&nbsp;&nbsp;"&nbsp;gemerkter&nbsp;Tabellenname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SAVE_BGR00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BGR00,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;gemerkter&nbsp;BGR00<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBRC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-SUBRC,&nbsp;"&nbsp;Subrc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Belege<br />
+<br />
+DATA:    TABIX(2)       TYPE N,        " Tabelleninex<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TBIST_AKTIV(1)&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Restart&nbsp;aktiv?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT(200)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Messagetext<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT1(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Messagetext<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT2(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Messagetext<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT3(40)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Messagetext<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_FTPOST&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;FTPOST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_T_BBSEG&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;T_BBSEG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_T_BWITH&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;T_BWITH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_TFILE&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;TFILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_ERTAB&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;ERTAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_FTC(3)&nbsp;&nbsp;&nbsp;TYPE&nbsp;N,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;FTC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_FTK(3)&nbsp;&nbsp;&nbsp;TYPE&nbsp;N,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;FTK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_FTZ(3)&nbsp;&nbsp;&nbsp;TYPE&nbsp;N,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;FTZ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFILL_041A(1)&nbsp;&nbsp;TYPE&nbsp;N.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anz.&nbsp;Eintr?e&nbsp;in&nbsp;XT041A<br />
+<br />
+<br />
+DATA:    WERT(60)       TYPE C,        " Hilfsfeld Feldinhalt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WT_COUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Z?ler&nbsp;Quellensteuer<br />
+<br />
+DATA:    XBDCC          LIKE RFIPI-XBDCC,   " X=BDC bei Error in CallTra<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XEOF(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;X=End&nbsp;of&nbsp;File&nbsp;erreicht<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XMESS_BBKPF_SENDE(1)&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;"&nbsp;Message&nbsp;gesendet&nbsp;f?&nbsp;BBKPF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XMESS_BBSEG_SENDE(1)&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;"&nbsp;Message&nbsp;gesendet&nbsp;f?&nbsp;BBSEG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XMESS_BBTAX_SENDE(1)&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;"&nbsp;Message&nbsp;gesendet&nbsp;f?&nbsp;BBTAX<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XMWST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BKPF-XMWST,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Steuer&nbsp;rechnen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XNEWG(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;X=Neue&nbsp;Mappe<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XFTCLEAR(1).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Append&nbsp;FTCLEAR&nbsp;durchfuehren?<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;DATAs&nbsp;wichtig&nbsp;f?&nbsp;Wiederaufsetzbarkeit<br />
+   </div>
+   <div class="code">
+DATA: AKTNUM LIKE TBIST-AKTNUM.   " Z?ler f? aktuell bearbeiteter Satz<br />
+DATA: STARTNUM LIKE TBIST-AKTNUM.      " erster zu bearbeitender Satz<br />
+   </div>
+   <div class="codeComment">
+*ata:&nbsp;is_error.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;?ergebene&nbsp;Satznummer&nbsp;war&nbsp;fehlerhaft<br />
+   </div>
+   <div class="code">
+DATA: NUMERROR LIKE TBIST-NUMERROR.    " Anzahl Fehler in diesem Schritt<br />
+DATA: OLDERROR LIKE TBIST-NUMERROR.    " Anzahl Fehler aus dem<br />
+" vorherigen Job.<br />
+DATA: LASTERRNUM LIKE TBIST-LASTNUM.   "Letzte Fehlernummer<br />
+DATA: NOSTART LIKE TBIST-NOSTARTING VALUE 'X'. " Start-Infos schreiben ?<br />
+DATA: JOBID LIKE TBTCO-JOBNAME.<br />
+DATA: JOBID_EXT LIKE TBTCO-JOBNAME.<br />
+CONSTANTS:   PACK_SIZE TYPE I VALUE '250',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_MSGID&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MSGID&nbsp;VALUE&nbsp;'FB'.<br />
+<br />
+TABLES: TERRD,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TFSAVE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-----------------------------------------------------------------------<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Konstanten&nbsp;und&nbsp;Field-Symbols<br />
+*-----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    C_NODATA(1)    TYPE C VALUE '/',   " Default f? NODATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'X'.&nbsp;&nbsp;&nbsp;"&nbsp;Flag&nbsp;eingeschaltet<br />
+<br />
+DATA:    FMF1GES(1)     TYPE X VALUE '20'.  " Beide Flags aus: Input.<br />
+DATA:    FMB1NUM(1)     TYPE X VALUE '10'.  "       "<br />
+<br />
+DATA:    MAX_COMMIT(4)  TYPE N.        " Max. Belege je Commit<br />
+<br />
+DATA:    REP_NAME_A(8)  TYPE C VALUE 'SAPMF05A'. " Mpool SAPMF05A<br />
+DATA:    REP_NAME_C(8)  TYPE C VALUE 'SAPLFCPD'. " Mpool SAPLFCPD<br />
+DATA:    REP_NAME_K(8)  TYPE C VALUE 'SAPLKACB'. " Mpool SAPLKACB<br />
+<br />
+FIELD-SYMBOLS: &ltA&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;332&nbsp;~&nbsp;359&nbsp;line&nbsp;copies&nbsp;that&nbsp;is&nbsp;RFBIBL01's&nbsp;parameters&nbsp;part<br />
+*&nbsp;PARAMETERS,&nbsp;SELECT-OPTIONS&nbsp;to&nbsp;data&nbsp;declaration<br />
+   </div>
+   <div class="code">
+DATA: DS_NAME     LIKE RFPDO-RFBIFILE.  " Dateiname<br />
+<br />
+DATA: FL_CHECK    LIKE RFPDO-RFBICHCK,    " Datei nur pr?en<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OS_XON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RFPDO-RFBIOLDSTR.&nbsp;&nbsp;"&nbsp;Alte&nbsp;Strukturen<br />
+<br />
+DATA: MAX_COMM(4) TYPE N VALUE '1000',  " Max Belege pro Commit<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PA_XPROT(1)&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;erweitertes&nbsp;Protokoll<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANZ_MODE&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RFPDO-ALLGAZMD&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'N',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RFPDO-ALLGVBMD&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'S',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XPOP&nbsp;&nbsp;TYPE&nbsp;C,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Do&nbsp;not&nbsp;by&nbsp;XPOP&nbsp;and&nbsp;alteration&nbsp;by&nbsp;XLOG<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XLOG&nbsp;&nbsp;TYPE&nbsp;C&nbsp;VALUE&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XINF&nbsp;&nbsp;TYPE&nbsp;C.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Addition&nbsp;data&nbsp;declaration<br />
+   </div>
+   <div class="code">
+DATA: G_BELNR LIKE BKPF-BELNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_BUKRS&nbsp;LIKE&nbsp;BKPF-BUKRS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_GJAHR&nbsp;LIKE&nbsp;BKPF-GJAHR.<br />
+<br />
+DATA: T_DD03L  LIKE DD03L OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_FIMSG&nbsp;LIKE&nbsp;FIMSG&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Normalcy&nbsp;journalizing<br />
+   </div>
+   <div class="code">
+CONSTANTS: C_TCODE_NORMAL    LIKE SY-TCODE VALUE 'FB01'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Payment&nbsp;Block&nbsp;connection<br />
+*&nbsp;Disbursement&nbsp;reservation&nbsp;connection<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF ACCPMBLK_FI.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;ACCPMBLK.<br />
+DATA :   KUNNR LIKE ACCIT-KUNNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIFNR&nbsp;LIKE&nbsp;ACCIT-LIFNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BELNR&nbsp;LIKE&nbsp;ACCIT-BELNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHR&nbsp;LIKE&nbsp;ACCIT-GJAHR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;ACCPMBLK_FI.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Partial&nbsp;connection<br />
+   </div>
+   <div class="code">
+DATA: IT_BSELK  LIKE BSELK       OCCURS 0 WITH HEADER LINE.<br />
+DATA: IT_BSELP  LIKE BSELP       OCCURS 0 WITH HEADER LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;BDC&nbsp;connection<br />
+   </div>
+   <div class="code">
+TABLES : CTU_PARAMS.  "Parameter string for runtime of<br />
+"CALL TRANSACTION USING...<br />
+<br />
+DATA : IT_BDC LIKE BDCDATA    OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_MSG&nbsp;LIKE&nbsp;BDCMSGCOLL&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+DATA : BEGIN OF GS_F13,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;LIKE&nbsp;BKPF-BUKRS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BELNR&nbsp;LIKE&nbsp;BKPF-BELNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHR&nbsp;LIKE&nbsp;BKPF-GJAHR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWTYP&nbsp;LIKE&nbsp;BKPF-AWTYP,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWKEY&nbsp;LIKE&nbsp;BKPF-AWKEY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIFNR&nbsp;LIKE&nbsp;LFA1-LIFNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GS_F13.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;BDC&nbsp;Option<br />
+   </div>
+   <div class="code">
+DATA: G_POST_TYPE TYPE  RFIPI-SGFUNCT     VALUE IS INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_BDC_MODE&nbsp;&nbsp;TYPE&nbsp;&nbsp;RFPDO-ALLGAZMD&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+<br />
+DATA: GT_BSELK    LIKE BSELK         OCCURS 0   WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_BSELP&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSELP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;&nbsp;&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-----------------------------------------------------------------------<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Einzelfelder<br />
+*-----------------------------------------------------------------------<br />
+<br />
+*-------&nbsp;Einzelfelder&nbsp;Schnittstelle&nbsp;------------------------------------<br />
+   </div>
+   <div class="code">
+DATA:    AUGLV          LIKE T041A-AUGLV,      " Ausgleichsvorgang<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUGBL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05R-AUGBL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Ausgleichsbelegnummer<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BELNS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05A-BELNS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Belnr&nbsp;zu&nbsp;storn.&nbsp;Beleg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BDCIMMED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RFIPI-BDCIMMED,&nbsp;&nbsp;&nbsp;"&nbsp;nur&nbsp;BDC:&nbsp;sof.&nbsp;Abspielen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BDCSTRTDT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TBTCJOB-SDLSTRTDT,&nbsp;&nbsp;"nur&nbsp;BDC:&nbsp;Startdatum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BDCSTRTTM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TBTCJOB-SDLSTRTTM,&nbsp;&nbsp;"nur&nbsp;BDC:&nbsp;Startzeit<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSIS-BUDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Budat&nbsp;Stornobeleg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FTFKTO_INDX&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-TABIX,&nbsp;&nbsp;"QHA&nbsp;&nbsp;&nbsp;"&nbsp;Index&nbsp;merken&nbsp;f#r&nbsp;FTFKTO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FUNCT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RFIPI-FUNCT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Funktion<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;APQI-GROUPID,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Mappenname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05R-GJAHR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Gesch#ftsjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05A-GJAHS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Gjahr&nbsp;zu&nbsp;storn.&nbsp;Beleg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HOLDD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;APQI-STARTDATE,&nbsp;&nbsp;&nbsp;"&nbsp;Startdateum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MANDT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-MANDT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Mandant<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mode(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Anzeigemodus<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MONAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSIS-MONAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Buchungsper&nbsp;Stornobeleg<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-msgid,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Message-ID<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgno&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-msgno,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Message-Nummer<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-msgty,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Message-Typ<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-msgv1,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Message-Variable&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-msgv2,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Message-Variable&nbsp;2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-msgv3,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Message-Variable&nbsp;3<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-msgv4,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Message-Variable&nbsp;4<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MWSKZS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SKB1-MWSKZ,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Steuerkategorie&nbsp;Sako<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;QUEUE_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;APQI-QID,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BDC&nbsp;Unique&nbsp;Key<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SGFUNCT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RFIPI-SGFUNCT,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Single&nbsp;function<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subrc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Returncode<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-TCODE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Transakt.Code<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;update(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Updatemodus<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;APQI-USERID,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Username<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STGRD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;UF05A-STGRD,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Stornogrund<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VOIDR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05A-VOIDR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Ung#ltigkeitsgrund<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xbdcc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;rfipi-xbdcc,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;X=BDC&nbsp;bei&nbsp;Error&nbsp;in&nbsp;C<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XKEEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;APQI-QERASE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;X=Mappe&nbsp;halten<br />
+<br />
+DATA:    DEFSIZE        TYPE C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEZZEICHEN(1)&nbsp;&nbsp;TYPE&nbsp;C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Dezimalzeichen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEZSTELLEN(1)&nbsp;&nbsp;TYPE&nbsp;N,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Dezimalstellen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TSTC-DYPNO.&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Standard-Dynpronummer<br />
+<br />
+DATA:    FIXPT          LIKE TRDIR-FIXPT.   "Fixp.arithmetik<br />
+DATA:    FNAM_KONTO     LIKE BDCDATA-FNAM.    "field name      "30E<br />
+<br />
+DATA:    G_DIFFX        TYPE C.<br />
+<br />
+<br />
+DATA: G_SIM.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;RETURN&nbsp;MESSAGE&nbsp;STRECTURE<br />
+   </div>
+   <div class="code">
+DEFINE : DS_RETURN.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&1.<br />
+&nbsp;&nbsp;&1-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&1-CODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;&1-INV_SEQ&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&1-MSGV1&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;&1-MSGV2&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;&1-MSGV3&nbsp;&nbsp;&nbsp;=&nbsp;&7.<br />
+&nbsp;&nbsp;&1-MSGV4&nbsp;&nbsp;&nbsp;=&nbsp;&8.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;ERROR_CODE_TEXT&nbsp;INTO&nbsp;&1-MESSAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_ERR_CODE<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ERROR_CODE&nbsp;EQ&nbsp;&3.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&5&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&6&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&7&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&8&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+END-OF-DEFINITION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;전표생성&nbsp;FORM...<br />
+   </div>
+   <div class="code">
+include <a href ="../zdtv3_docu_form.html">ZDTV3_DOCU_FORM</a>.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+TABLES : T001 , BSEC , ZDTV3T_DOC_CONF ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_DOC_BKPF&nbsp;,&nbsp;ZDTV3T_DOC_BSEG&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AP_HEAD.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;전표생성&nbsp;화면....<br />
+   </div>
+   <div class="code">
+DATA : OK_CODE LIKE SY-UCOMM.<br />
+DATA : G_DYNNR1 LIKE SY-DYNNR.<br />
+DATA : G_DYNNR2 LIKE SY-DYNNR.<br />
+DATA : G_DYNNR3 LIKE SY-DYNNR.<br />
+DATA : G_BOXTEXT1(72).<br />
+DATA : G_BOXTEXT2(72).<br />
+DATA : G_BOXTEXT3(72).<br />
+DATA : G_LIFNR TYPE LIFNR.<br />
+<br />
+CONSTANTS : C_AR_PROG(30) VALUE 'ZDTV3_AR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C_AP_PROG(30)&nbsp;VALUE&nbsp;'ZDTV3_AP'.<br />
+DATA : G_PROG(30).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;기본정보<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF GS_HEAD ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BUKRS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BUTXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BUTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BUPLA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LIFNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LIFNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NAME1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;NAME1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SU_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_SU_ID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IP_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_IP_ID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHARGETOTAL&nbsp;TYPE&nbsp;ZDTV3E_CHARGETOTAL&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TAXTOTAL&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_TAXTOTAL&nbsp;&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GRANDTOTAL&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_GRANDTOTAL&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;XCPDK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;XCPDK,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_DATE&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_ISSUE_DATE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_DT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_ISSUE_DT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NEWBS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BSCHL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MWSKZ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MWSKZ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ZTERM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSEG-ZTERM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ZLSPR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSEG-ZLSPR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ZLSCH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSEG-ZLSCH,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ZUONR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSEG-ZUONR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SGTXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSEG-SGTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TYPE_CODE&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_TYPE_CODE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GS_HEAD.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+CONTROLS CON TYPE TABLEVIEW USING SCREEN 103.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : INT_BSEG LIKE BBSEG .<br />
+DATA : GT_BSEG  LIKE BBSEG OCCURS 0 WITH HEADER LINE.<br />
+DATA : GT_BKPF  LIKE BBKPF OCCURS 0 WITH HEADER LINE.<br />
+DATA : G_MOD    LIKE RFPDO-ALLGAZMD VALUE 'N'.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF GS_DOCU ,<br />
+&nbsp;&nbsp;BUKRS&nbsp;TYPE&nbsp;BUKRS,<br />
+&nbsp;&nbsp;BELNR&nbsp;TYPE&nbsp;BELNR_D,<br />
+&nbsp;&nbsp;GJAHR&nbsp;TYPE&nbsp;GJAHR,<br />
+END OF GS_DOCU.<br />
+<br />
+DATA : G_ETC_FLAG.<br />
+<br />
+DATA : GT_FIMSG LIKE FIMSG OCCURS 0 WITH HEADER LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*화면출력&nbsp;ITAB.<br />
+   </div>
+   <div class="code">
+FIELD-SYMBOLS: &ltIT_DISP&gt TYPE TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltIS_DISP&gt&nbsp;TYPE&nbsp;ANY&nbsp;&nbsp;.<br />
+<br />
+DATA : BEGIN OF GT_BELNR OCCURS 0 ,<br />
+&nbsp;&nbsp;BELNR&nbsp;TYPE&nbsp;BELNR_D,<br />
+&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_BELNR.<br />
+<br />
+DATA : GS_BELNR LIKE GT_BELNR .<br />
+<br />
+DATA: GS_TABLE TYPE REF TO DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TABLE&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.<br />
+FIELD-SYMBOLS : &ltGS_EXT&gt   TYPE ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_EXT&gt&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGS_EXT_D&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_EXT_D&gt&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : GS_KEY LIKE ZDTV3S_HEADKEY.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : G_SAVE_DATA(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SAVE_DATA_D(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OK,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLG(3),&nbsp;&nbsp;&nbsp;&nbsp;"매입&nbsp;FLAG(메세지_I33)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FLG_R(3).&nbsp;&nbsp;"매출&nbsp;FLAG(메세지_I23)<br />
+<br />
+   </div>
+   <div class="codeComment">
+*XML&nbsp;업로드(함수용)****************************************************<br />
+<br />
+   </div>
+   <div class="code">
+DATA : GT_RETURN LIKE ZDTV3S_RETURN OCCURS 0 WITH HEADER LINE.<br />
+DATA : I_TEXT TYPE BAPI_MSG.<br />
+DATA : RETURN LIKE ZDTV3S_RETURN .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;HEAD<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_HEAD OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_HEAD-ISSUE_ID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_DT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_HEAD-ISSUE_DT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_HEADKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_HEAD_INV.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_HEAD_SU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_HEAD_IP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_HEAD_BP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_HEAD_AMT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_AP_CUS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_AP_USR.<br />
+DATA :  "LIFNR              LIKE ZDTV3T_AP_EXT-LIFNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INT2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_ETC-INT2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XML_DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_ETC-XML_DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BOX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIGHTS.<br />
+DATA:  END OF IT_HEAD.<br />
+DATA : IS_HEAD  LIKE IT_HEAD.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ITEM<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_ITEM OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_HEAD-ISSUE_ID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GOOD_SEQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3E_GOOD_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_ITEM.<br />
+DATA:  END OF IT_ITEM.<br />
+DATA : IS_ITEM  LIKE IT_ITEM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;PAYM<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_PAYM OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_HEAD-ISSUE_ID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_PAYM.<br />
+DATA:  END OF IT_PAYM.<br />
+DATA : IS_PAYM  LIKE IT_PAYM.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;EXT<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_EXT OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_HEAD-ISSUE_ID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_AP_CUS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_AP_USR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_AP_ADD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_MAIL.<br />
+DATA:  END OF IT_EXT.<br />
+DATA : IS_EXT  LIKE IT_EXT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;EXT_D<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_EXT_D OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_HEAD-ISSUE_ID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_AP_DOC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_EXT_AP_USRD.<br />
+DATA:  END OF IT_EXT_D.<br />
+DATA : IS_EXT_D  LIKE IT_EXT_D.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ETC<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_ETC OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZDTV3T_AP_HEAD-ISSUE_ID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;ZDTV3S_ETC_DATA.<br />
+DATA:  END OF IT_ETC.<br />
+DATA : IS_ETC  LIKE IT_ETC.<br />
+<br />
+DATA : LS_HEAD LIKE IS_HEAD.<br />
+DATA : L_MIN_FLAG .<br />
+DATA : L_FILENAME LIKE RLGRAP-FILENAME.<br />
+DATA : L_FULLNAME TYPE STRING.<br />
+DATA : BEGIN OF LT_DATA OCCURS 0 ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINES&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LT_DATA.<br />
+DATA : L_CLOSED TYPE ZDTV3E_CLOSED.<br />
+   </div>
+   <div class="codeComment">
+**<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

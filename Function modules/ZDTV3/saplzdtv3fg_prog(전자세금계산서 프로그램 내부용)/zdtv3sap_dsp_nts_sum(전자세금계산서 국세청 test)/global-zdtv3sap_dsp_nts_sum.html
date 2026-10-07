@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LZDTV3FG_PROGTOP</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LZDTV3FG_PROGTOP</h2>
+<h3> Description: 전자세금계산서 국세청 test</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION-POOL ZDTV3FG_PROG MESSAGE-ID ZDTV3M.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_F4_DISP ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_F4_SEL&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_F4_SER&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_F4_CHK&nbsp;&nbsp;.<br />
+<br />
+TYPE-POOLS : ZDTV3.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ALV&nbsp;처리용.<br />
+   </div>
+   <div class="code">
+include <a href ="../zdtv3_class.html">ZDTV3_CLASS</a>.<br />
+include <a href ="../zdtv3_alv.html">ZDTV3_ALV</a>.<br />
+include <a href ="../zdtv3_excel.html">ZDTV3_EXCEL</a>.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;HTML&nbsp;VIEW..<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_AR_HEAD ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AR_ITEM&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AR_PAYM&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AR_ETC&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_AP_ETC&nbsp;&nbsp;.<br />
+TABLES : DD03L.<br />
+   </div>
+   <div class="codeComment">
+*STRU<br />
+   </div>
+   <div class="code">
+DATA : GS_DD03L   LIKE DD03L.<br />
+DATA : GS_AR_HD   LIKE ZDTV3S_AR_HD .<br />
+DATA : GS_AR_IM   LIKE ZDTV3S_AR_IM .<br />
+DATA : GS_AR_PM   LIKE ZDTV3S_AR_PM .<br />
+DATA : GS_AR_EX   LIKE ZDTV3S_AR_EX .<br />
+DATA : GS_AR_EX_D LIKE ZDTV3S_AR_EX_D.<br />
+DATA : GS_NTS     LIKE ZDTV3T_NTS .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ITAB<br />
+   </div>
+   <div class="code">
+DATA : GT_AR_HD   LIKE ZDTV3S_AR_HD   OCCURS 0 WITH HEADER LINE .<br />
+DATA : GT_AR_EX   LIKE ZDTV3S_AR_EX   OCCURS 0 WITH HEADER LINE .<br />
+DATA : GT_AR_EX_D LIKE ZDTV3S_AR_EX_D OCCURS 0 WITH HEADER LINE .<br />
+DATA : GT_AR_IM   LIKE ZDTV3S_AR_IM   OCCURS 0 WITH HEADER LINE .<br />
+DATA : GT_AR_PM   LIKE ZDTV3S_AR_PM   OCCURS 0 WITH HEADER LINE .<br />
+<br />
+DATA : G_HTML_VIEWER       TYPE REF TO CL_GUI_HTML_VIEWER.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;수정사유&nbsp;코드<br />
+   </div>
+   <div class="code">
+DATA : GS_ZDTV3_AMEND TYPE ZDTV3_AMEND.<br />
+DATA : G_OBJID LIKE WWWDATAID-OBJID.<br />
+DATA : GT_HTML TYPE TABLE OF W3HTML .<br />
+DATA : GS_HTML LIKE W3HTML.<br />
+DATA : G_INV_SEQ1 TYPE ZDTV3E_INV_SEQ ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_INV_SEQ2&nbsp;TYPE&nbsp;ZDTV3E_INV_SEQ&nbsp;.<br />
+RANGES  : RT_INV_SEQ FOR ZDTV3T_AR_HEAD-INV_SEQ OCCURS 2.<br />
+DATA :    RS_INV_SEQ LIKE RT_INV_SEQ.<br />
+<br />
+DATA : G_UPDMODE TYPE CTU_UPDATE.<br />
+   </div>
+   <div class="codeComment">
+*****<br />
+   </div>
+   <div class="code">
+DATA : G_BUKRS  TYPE BUKRS ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_BUTTON&nbsp;TYPE&nbsp;ZDTV3E_BUTTON&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_FIELD&nbsp;&nbsp;TYPE&nbsp;FIELDNAME.<br />
+DATA : G_URL(255).<br />
+DATA : G_INV_SEQ  TYPE ZDTV3E_INV_SEQ.<br />
+DATA : G_ISSUE_ID TYPE ZDTV3E_SSUE_ID.<br />
+<br />
+DATA : GS_INF_RETURN LIKE ZDTV3S_INFRETURN.<br />
+DATA : GS_ZDTV3T_COMPANY LIKE ZDTV3T_COMPANY.<br />
+<br />
+DATA : GT_RETURN  LIKE ZDTV3S_RETURN OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_RETURN.<br />
+DATA : GT_RETURN_TMP  LIKE ZDTV3S_RETURN OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN_TMP&nbsp;&nbsp;LIKE&nbsp;ZDTV3S_RETURN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;HTML&nbsp;INPUT&nbsp;용<br />
+   </div>
+   <div class="code">
+include <a href ="../zdtv3_html.html">ZDTV3_HTML</a>.<br />
+DATA : G_TITLE LIKE SY-TITLE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;POPUP&nbsp;화면&nbsp;정의.<br />
+   </div>
+   <div class="code">
+TABLES : ZDTV3T_POP_DISP ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_STATUS&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_BUTTON&nbsp;&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_ASP_CODE&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDTV3T_ASP_FUNCT&nbsp;.<br />
+<br />
+DATA : GS_KEY LIKE ZDTV3S_HEADKEY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*화면출력&nbsp;ITAB.<br />
+   </div>
+   <div class="code">
+FIELD-SYMBOLS: &ltIT_DISP&gt TYPE TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltIS_DISP&gt&nbsp;TYPE&nbsp;ANY&nbsp;&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltIT_F4&gt&nbsp;TYPE&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltIS_F4&gt&nbsp;TYPE&nbsp;ANY&nbsp;&nbsp;.<br />
+<br />
+DATA: NEW_LINE  TYPE REF TO DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NEW_TABLE&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+DATA : I_ITAB(30), "INTERNAL TABLE 이름.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_STRU(30).<br />
+<br />
+DATA : G_SROWS TYPE SYSROWS ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SCOLS&nbsp;TYPE&nbsp;SYSCOLS&nbsp;.<br />
+<br />
+DATA : G_INV_TYPE(2) . "AR/AP 구분<br />
+DATA : G_SAVE_HEAD(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SAVE_ITEM(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SAVE_DATA(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SAVE_DATA_D(30).<br />
+<br />
+DATA: GS_TABLE TYPE REF TO DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TABLE&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.<br />
+FIELD-SYMBOLS : &ltGS_HEAD&gt   TYPE ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_HEAD&gt&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGS_ITEM&gt&nbsp;&nbsp;&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_ITEM&gt&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGS_EXT&gt&nbsp;&nbsp;&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_EXT&gt&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGS_EXT_D&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_EXT_D&gt&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGS_ETC_D&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_ETC_D&gt&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;RETURN&nbsp;MESSAGE&nbsp;STRECTURE<br />
+   </div>
+   <div class="code">
+DEFINE : DS_RETURN.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&1.<br />
+&nbsp;&nbsp;&1-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&1-CODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;&1-INV_SEQ&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&1-MSGV1&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;&1-MSGV2&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;&1-MSGV3&nbsp;&nbsp;&nbsp;=&nbsp;&7.<br />
+&nbsp;&nbsp;&1-MSGV4&nbsp;&nbsp;&nbsp;=&nbsp;&8.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;ERROR_CODE_TEXT&nbsp;INTO&nbsp;&1-MESSAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_ERR_CODE<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ERROR_CODE&nbsp;EQ&nbsp;&3.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&5&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&6&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&7&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'$'&nbsp;WITH&nbsp;&8&nbsp;INTO&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;&1-MESSAGE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+END-OF-DEFINITION.<br />
+<br />
+DATA : G_ETC_FLAG  TYPE C.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;F4&nbsp;검색조건<br />
+   </div>
+   <div class="code">
+include <a href ="../zdtv3_f4_ser if found.html">ZDTV3_F4_SER IF FOUND</a>.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;F4&nbsp;DATA&nbsp;넣기.<br />
+   </div>
+   <div class="code">
+include <a href ="../zdtv3_f4_sel if found.html">ZDTV3_F4_SEL IF FOUND</a>.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;F4&nbsp;CHECK&nbsp;문.<br />
+   </div>
+   <div class="code">
+include <a href ="../zdtv3_f4_chk if found.html">ZDTV3_F4_CHK IF FOUND</a>.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

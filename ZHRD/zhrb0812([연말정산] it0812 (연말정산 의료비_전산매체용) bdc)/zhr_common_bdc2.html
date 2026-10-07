@@ -1,0 +1,869 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHR_COMMON_BDC2</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZHR_COMMON_BDC2</h2>
+<h3> Description: Include ZHR_COMMON_BDC2</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHR_COMMON_BDC2<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;TABLES:&nbsp;T100,&nbsp;SSCRFIELDS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Batchinputdata&nbsp;of&nbsp;single&nbsp;transaction<br />
+   </div>
+   <div class="code">
+&nbsp;DATA:&nbsp;BDCDATA&nbsp;LIKE&nbsp;BDCDATA&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;DATA:&nbsp;NODATA&nbsp;LIKE&nbsp;BDCDATA-FVAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;OF&nbsp;CALL&nbsp;TRANSACTION<br />
+   </div>
+   <div class="code">
+&nbsp;DATA:&nbsp;MESSTAB&nbsp;LIKE&nbsp;BDCMSGCOLL&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR&nbsp;SESSION&nbsp;OPENED&nbsp;('&nbsp;'&nbsp;OR&nbsp;'X')<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;DATA:&nbsp;E_GROUP_OPENED.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;TEXTS<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;GT_DOWN&nbsp;OCCURS&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;RECORD.<br />
+&nbsp;DATA:&nbsp;&nbsp;MSG(110),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SF(8),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;GT_DOWN.<br />
+<br />
+&nbsp;DATA:&nbsp;OBJID&nbsp;LIKE&nbsp;P1000-OBJID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEMP_TEXT(50).<br />
+<br />
+&nbsp;DATA:&nbsp;GV_COUNT(6)&nbsp;TYPE&nbsp;N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_SCOUNT&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_ECOUNT&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_TOTAL&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_SKIP&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_DONE&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_ERROR&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_PERCHK&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_PERCENT(3)&nbsp;TYPE&nbsp;P&nbsp;DECIMALS&nbsp;2.<br />
+&nbsp;DATA:&nbsp;GV_REPID&nbsp;&nbsp;LIKE&nbsp;SY-REPID.<br />
+&nbsp;DATA:&nbsp;GV_TTIME&nbsp;&nbsp;LIKE&nbsp;SY-UZEIT.<br />
+<br />
+&nbsp;DATA:&nbsp;INITIALFOLDER&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;DATA:&nbsp;PATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FULLPATH&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;DATA:&nbsp;FILETABLE&nbsp;TYPE&nbsp;FILETABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WA_FILE&nbsp;&nbsp;&nbsp;TYPE&nbsp;FILE_TABLE.<br />
+<br />
+&nbsp;DATA:&nbsp;IT_P0003&nbsp;TYPE&nbsp;P0003&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;DATA:&nbsp;GV_CUPDATE&nbsp;LIKE&nbsp;CTU_PARAMS-UPDMODE&nbsp;VALUE&nbsp;'S'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;해당&nbsp;파일명을&nbsp;가져온다<br />
+   </div>
+   <div class="code">
+&nbsp;DATA:&nbsp;GV_FILENAME&nbsp;LIKE&nbsp;RLGRAP-FILENAME.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;실제&nbsp;EXCEL&nbsp;파일을&nbsp;UPLOAD&nbsp;한다<br />
+   </div>
+   <div class="code">
+&nbsp;DATA:&nbsp;GT_INTERN&nbsp;LIKE&nbsp;ALSMEX_TABLINE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;DATA:&nbsp;GV_INDEX&nbsp;LIKE&nbsp;SY-TABIX.<br />
+&nbsp;DATA:&nbsp;GV_START_COL&nbsp;TYPE&nbsp;I&nbsp;VALUE&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_START_ROW&nbsp;TYPE&nbsp;I&nbsp;VALUE&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_END_COL&nbsp;&nbsp;&nbsp;TYPE&nbsp;I&nbsp;VALUE&nbsp;500,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_END_ROW&nbsp;&nbsp;&nbsp;TYPE&nbsp;I&nbsp;VALUE&nbsp;65536.<br />
+<br />
+&nbsp;FIELD-SYMBOLS:&nbsp;&ltLO_FS&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;SELECTION&nbsp;SCREEN<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;SELECTION-SCREEN:&nbsp;FUNCTION&nbsp;KEY&nbsp;1.<br />
+<br />
+&nbsp;SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;BLOCK&nbsp;BLK1&nbsp;WITH&nbsp;FRAME&nbsp;TITLE&nbsp;TEXT-001.<br />
+<br />
+&nbsp;PARAMETERS:&nbsp;P_PATH&nbsp;LIKE&nbsp;RLGRAP-FILENAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBLIGATORY&nbsp;DEFAULT&nbsp;'C:\it1000'.<br />
+&nbsp;PARAMETERS:&nbsp;P_PATH2&nbsp;LIKE&nbsp;RLGRAP-FILENAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBLIGATORY&nbsp;DEFAULT&nbsp;'C:\it1000_error.txt'.<br />
+<br />
+&nbsp;PARAMETERS:&nbsp;P_CMODE&nbsp;LIKE&nbsp;CTU_PARAMS-DISMODE&nbsp;DEFAULT&nbsp;'N'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;PARAMETERS:&nbsp;P_FORCE&nbsp;TYPE&nbsp;C&nbsp;DEFAULT&nbsp;'X'.<br />
+   </div>
+   <div class="code">
+&nbsp;PARAMETERS:&nbsp;P_EFIRST&nbsp;AS&nbsp;CHECKBOX&nbsp;DEFAULT&nbsp;'X'.<br />
+&nbsp;SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;BLOCK&nbsp;BLK1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;P_PATH.<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;P_PATH.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;GV_RC,&nbsp;FILETYPE.<br />
+&nbsp;&nbsp;&nbsp;REFRESH:&nbsp;FILETABLE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;P_PATH&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIALFOLDER&nbsp;=&nbsp;P_PATH.<br />
+&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIALFOLDER&nbsp;=&nbsp;'C:\'.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;IF&nbsp;P_TEXT&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;=&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILETYPE_TEXT.<br />
+*&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;=&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILETYPE_EXCEL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILE_OPEN_DIALOG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEFAULT_EXTENSION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;',*.txt,*.TXT.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_FILTER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FILETYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIAL_DIRECTORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;INITIALFOLDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_TABLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FILETABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GV_RC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_OPEN_DIALOG_FAILED&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNTL_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_NO_GUI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT_SUPPORTED_BY_GUI&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;FILETABLE&nbsp;INTO&nbsp;WA_FILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_PATH&nbsp;=&nbsp;WA_FILE-FILENAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_PATH2_RTN&nbsp;USING&nbsp;P_PATH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;P_PATH2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;P_PATH2.<br />
+*----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;P_PATH2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;P_PATH2&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIALFOLDER&nbsp;=&nbsp;P_PATH2.<br />
+&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIALFOLDER&nbsp;=&nbsp;'C:\'.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILE_SAVE_DIALOG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_FILTER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILETYPE_EXCEL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIAL_DIRECTORY&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;INITIALFOLDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROMPT_ON_OVERWRITE&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FILENAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PATH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FULLPATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FULLPATH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNTL_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_NO_GUI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT_SUPPORTED_BY_GUI&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_PATH2&nbsp;=&nbsp;FULLPATH.<br />
+&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;P_PATH2.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;&nbsp;SET_PATH2_RTN<br />
+*&---------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;SET_PATH2_RTN&nbsp;USING&nbsp;P_PATH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;P_PATH2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LV_SPLIT1(100),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SPLIT2(100),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_DYNFLDS&nbsp;LIKE&nbsp;DYNPREAD&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LV_OFF&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_PATH&nbsp;TYPE&nbsp;RLGRAP-FILENAME.<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LV_RESULT&nbsp;TYPE&nbsp;STRING.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;&nbsp;SPLIT&nbsp;P_PATH&nbsp;AT&nbsp;'.'&nbsp;INTO&nbsp;LV_SPLIT1&nbsp;LV_SPLIT2.<br />
+**&nbsp;&nbsp;FIND&nbsp;'.txt'&nbsp;IN&nbsp;P_PATH&nbsp;MATCH&nbsp;OFFSET&nbsp;LV_OFF.<br />
+***&nbsp;&nbsp;SPLIT<br />
+**&nbsp;&nbsp;CONCATENATE&nbsp;LV_SPLIT1&nbsp;'_err.TXT'&nbsp;INTO&nbsp;P_PATH2.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;LV_PATH&nbsp;=&nbsp;P_PATH.<br />
+<br />
+&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;LV_PATH&nbsp;TO&nbsp;LOWER&nbsp;CASE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;IF&nbsp;P_TEXT&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;LV_RESULT&nbsp;=&nbsp;SUBSTRING_BEFORE(&nbsp;VAL&nbsp;=&nbsp;LV_PATH&nbsp;SUB&nbsp;=&nbsp;'.txt'&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;LV_RESULT&nbsp;'_err.TXT'&nbsp;INTO&nbsp;P_PATH2.<br />
+*&nbsp;&nbsp;ELSE.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;LV_RESULT&nbsp;=&nbsp;SUBSTRING_BEFORE(&nbsp;VAL&nbsp;=&nbsp;LV_PATH&nbsp;SUB&nbsp;=&nbsp;'.xls'&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;LV_RESULT&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_RESULT&nbsp;=&nbsp;SUBSTRING_BEFORE(&nbsp;VAL&nbsp;=&nbsp;LV_PATH&nbsp;SUB&nbsp;=&nbsp;'.xlsx'&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;LV_RESULT&nbsp;'_err.xls'&nbsp;INTO&nbsp;P_PATH2.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;LT_DYNFLDS-FIELDNAME&nbsp;=&nbsp;'P_PATH2'.<br />
+&nbsp;&nbsp;&nbsp;LT_DYNFLDS-FIELDVALUE&nbsp;=&nbsp;P_PATH2.<br />
+&nbsp;&nbsp;&nbsp;APPEND&nbsp;LT_DYNFLDS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DYNP_VALUES_UPDATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-CPROG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNUMB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DYNNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPFIELDS&nbsp;=&nbsp;LT_DYNFLDS.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SET_PATH2_RTN<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;&nbsp;SET_INIT_SETTING<br />
+*&---------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;SET_INIT_SETTING&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;L_UPPATH(72)&nbsp;VALUE&nbsp;'C:\'.<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;L_DWPATH(72)&nbsp;VALUE&nbsp;'C:\'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+****..&nbsp;naming&nbsp;rule&nbsp;for&nbsp;BDC&nbsp;PGM&nbsp;:&nbsp;ZHRBXXXX<br />
+***&nbsp;&nbsp;CHECK&nbsp;SY-REPID(4)&nbsp;=&nbsp;'ZHRB'.<br />
+***<br />
+***&nbsp;&nbsp;CONCATENATE&nbsp;L_UPPATH&nbsp;'IT'&nbsp;SY-REPID+4&nbsp;'.TXT'&nbsp;INTO&nbsp;L_UPPATH.<br />
+***&nbsp;&nbsp;CONDENSE&nbsp;L_UPPATH&nbsp;NO-GAPS.<br />
+***<br />
+***&nbsp;&nbsp;P_PATH&nbsp;=&nbsp;L_UPPATH.<br />
+***<br />
+****..FOR&nbsp;ERROR&nbsp;DATA&nbsp;DOWNLOAD<br />
+***&nbsp;&nbsp;CONCATENATE&nbsp;L_DWPATH&nbsp;'IT'&nbsp;SY-REPID+4&nbsp;'_err.TXT'&nbsp;INTO&nbsp;L_DWPATH.<br />
+***&nbsp;&nbsp;CONDENSE&nbsp;L_DWPATH&nbsp;NO-GAPS.<br />
+***<br />
+***&nbsp;&nbsp;P_PATH2&nbsp;=&nbsp;L_DWPATH.<br />
+***<br />
+****..<br />
+***&nbsp;&nbsp;SSCRFIELDS-FUNCTXT_01&nbsp;=&nbsp;'Layout&nbsp;Download'.<br />
+*****&nbsp;&nbsp;P_EXCEL&nbsp;=&nbsp;'X'.<br />
+<br />
+*..&nbsp;NAMING&nbsp;RULE&nbsp;FOR&nbsp;BDC&nbsp;PGM&nbsp;:&nbsp;ZHRBXXXX&nbsp;/&nbsp;ZHRCXXXX<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;CHECK&nbsp;SY-REPID(4)&nbsp;=&nbsp;'ZHRB'&nbsp;OR&nbsp;SY-REPID(4)&nbsp;=&nbsp;'ZHRC'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;L_UPPATH&nbsp;'IT'&nbsp;GV_REPID+4&nbsp;'.xls'&nbsp;INTO&nbsp;L_UPPATH.<br />
+&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_UPPATH&nbsp;NO-GAPS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;P_PATH&nbsp;=&nbsp;L_UPPATH.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*..&nbsp;for&nbsp;error&nbsp;data&nbsp;download<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;L_DWPATH&nbsp;'IT'&nbsp;GV_REPID+4&nbsp;'_err.xls'&nbsp;INTO&nbsp;L_DWPATH.<br />
+&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_DWPATH&nbsp;NO-GAPS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;P_PATH2&nbsp;=&nbsp;L_DWPATH.<br />
+   </div>
+   <div class="codeComment">
+*..<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;SSCRFIELDS-FUNCTXT_01&nbsp;=&nbsp;'Layout&nbsp;Download'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;&nbsp;P_EXCEL&nbsp;=&nbsp;'X'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;=&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILETYPE_EXCEL.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SET_INIT_SETTING<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;START&nbsp;NEW&nbsp;SCREEN<br />
+*----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;BDC_DYNPRO&nbsp;USING&nbsp;PROGRAM&nbsp;DYNPRO.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CLEAR&nbsp;BDCDATA.<br />
+&nbsp;&nbsp;&nbsp;BDCDATA-PROGRAM&nbsp;=&nbsp;PROGRAM.<br />
+&nbsp;&nbsp;&nbsp;BDCDATA-DYNPRO&nbsp;=&nbsp;DYNPRO.<br />
+&nbsp;&nbsp;&nbsp;BDCDATA-DYNBEGIN&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;APPEND&nbsp;BDCDATA.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"bdc_dynpro<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;FIELD<br />
+*----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;BDC_FIELD&nbsp;USING&nbsp;FNAM&nbsp;FVAL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;IF&nbsp;fval&nbsp;&lt&gt&nbsp;nodata.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;CLEAR&nbsp;BDCDATA.<br />
+&nbsp;&nbsp;&nbsp;BDCDATA-FNAM&nbsp;=&nbsp;FNAM.<br />
+&nbsp;&nbsp;&nbsp;BDCDATA-FVAL&nbsp;=&nbsp;FVAL.<br />
+&nbsp;&nbsp;&nbsp;APPEND&nbsp;BDCDATA.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"bdc_field<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;&nbsp;PROGRESS_DISPLAY<br />
+*&---------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;PROGRESS_DISPLAY&nbsp;USING&nbsp;PERCENT&nbsp;PTEXT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LV_TXT(50)&nbsp;TYPE&nbsp;C.<br />
+<br />
+&nbsp;&nbsp;&nbsp;LV_TXT&nbsp;=&nbsp;PTEXT.<br />
+&nbsp;&nbsp;&nbsp;CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERCENTAGE&nbsp;=&nbsp;PERCENT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_TXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;PROGRESS_DISPLAY<br />
+   </div>
+   <div class="codeComment">
+*&--------------------------------------------------------------------<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BDC_TRANSACTION<br />
+*&--------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;BDC_TRANSACTION&nbsp;USING&nbsp;TCODE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;L_MSTRING(480).<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;L_SUBRC&nbsp;LIKE&nbsp;SY-SUBRC.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;batch&nbsp;input&nbsp;session<br />
+*&nbsp;&nbsp;&nbsp;IF&nbsp;SESSION&nbsp;=&nbsp;'X'.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'BDC_INSERT'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TCODE<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPROTAB&nbsp;=&nbsp;BDCDATA.<br />
+*<br />
+**&nbsp;CALL&nbsp;TRANSACTION&nbsp;USING<br />
+*&nbsp;&nbsp;&nbsp;ELSE.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;REFRESH&nbsp;MESSTAB.&nbsp;CLEAR&nbsp;MESSTAB.<br />
+&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;TCODE&nbsp;USING&nbsp;&nbsp;BDCDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;CI_CALLTA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE&nbsp;&nbsp;&nbsp;P_CMODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;GV_CUPDATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;MESSTAB.<br />
+<br />
+&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;MESSTAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;T100&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;MESSTAB-MSGSPRA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ARBGB&nbsp;=&nbsp;MESSTAB-MSGID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MSGNR&nbsp;=&nbsp;MESSTAB-MSGNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MSTRING&nbsp;=&nbsp;T100-TEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_MSTRING&nbsp;CS&nbsp;'&1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&1'&nbsp;WITH&nbsp;MESSTAB-MSGV1&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&2'&nbsp;WITH&nbsp;MESSTAB-MSGV2&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&3'&nbsp;WITH&nbsp;MESSTAB-MSGV3&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&4'&nbsp;WITH&nbsp;MESSTAB-MSGV4&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&'&nbsp;WITH&nbsp;MESSTAB-MSGV1&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&'&nbsp;WITH&nbsp;MESSTAB-MSGV2&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&'&nbsp;WITH&nbsp;MESSTAB-MSGV3&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&'&nbsp;WITH&nbsp;MESSTAB-MSGV4&nbsp;INTO&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE:&nbsp;MESSTAB-MSGTYP,&nbsp;L_MSTRING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;MESSTAB&nbsp;WITH&nbsp;KEY&nbsp;MSGTYP&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/2(20)&nbsp;'BDC&nbsp;=&gt&nbsp;NOT&nbsp;success!',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;COLOR&nbsp;6.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_ECOUNT&nbsp;=&nbsp;GV_ECOUNT&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;RECORD&nbsp;TO&nbsp;GT_DOWN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DOWN-MSG&nbsp;=&nbsp;L_MSTRING(110).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_DOWN.<br />
+&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;MESSTAB&nbsp;WITH&nbsp;KEY&nbsp;MSGTYP&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/2(20)&nbsp;'BDC&nbsp;=&gt&nbsp;NOT&nbsp;success!',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;COLOR&nbsp;6.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_ECOUNT&nbsp;=&nbsp;GV_ECOUNT&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;RECORD&nbsp;TO&nbsp;GT_DOWN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DOWN-MSG&nbsp;=&nbsp;L_MSTRING(110).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_DOWN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;BDC_TRANSACTION<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;&nbsp;UPLOAD_DATA_FILE<br />
+*&---------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;UPLOAD_DATA_FILE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LENGTH&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_PATH&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;RECORD,&nbsp;RECORD[].<br />
+<br />
+&nbsp;&nbsp;&nbsp;L_PATH&nbsp;=&nbsp;P_PATH.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_UPLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_PATH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'ASC'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HAS_FIELD_SEPARATOR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILELENGTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LENGTH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RECORD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_OPEN_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_READ_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_BATCH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUI_REFUSE_FILETRANSFER&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_AUTHORITY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNKNOWN_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BAD_DATA_FORMAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEADER_NOT_ALLOWED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATOR_NOT_ALLOWED&nbsp;&nbsp;&nbsp;=&nbsp;10<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEADER_TOO_LONG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNKNOWN_DP_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;12<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACCESS_DENIED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;13<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DP_OUT_OF_MEMORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;14<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISK_FULL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;15<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DP_TIMEOUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;16<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;17.<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I016(PG)&nbsp;WITH&nbsp;'Check&nbsp;Uploading&nbsp;file.....'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;upload_data_file<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;download_errors<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;DOWNLOAD_ERRORS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LV_PATH&nbsp;TYPE&nbsp;STRING.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;IF&nbsp;session&nbsp;&lt&gt&nbsp;'X'&nbsp;AND&nbsp;P_PATH2&nbsp;&lt&gt&nbsp;space.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;IF&nbsp;P_PATH2&nbsp;&lt&gt&nbsp;SPACE&nbsp;AND&nbsp;GT_DOWN[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_PATH&nbsp;=&nbsp;P_PATH2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_PATH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILETYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'DAT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE_FIELD_SEPARATOR&nbsp;=&nbsp;'X'<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUNC_TRAILING_BLANKS&nbsp;=&nbsp;'X'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CODEPAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'8500'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_DOWN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;download_errors<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;WRITE_RESULT_RTN<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;WRITE_RESULT_RTN&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CHECK&nbsp;GV_TOTAL&nbsp;&gt=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;GV_SCOUNT&nbsp;=&nbsp;GV_COUNT.<br />
+&nbsp;&nbsp;&nbsp;WRITE:/<br />
+'==========================================================='.<br />
+&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Start&nbsp;time&nbsp;:&nbsp;',&nbsp;GV_TTIME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;'End&nbsp;time&nbsp;&nbsp;&nbsp;:&nbsp;',&nbsp;SY-UZEIT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;GV_SKIP&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'Skip&nbsp;count&nbsp;:&nbsp;',&nbsp;GV_SKIP.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Processed&nbsp;count&nbsp;:&nbsp;',&nbsp;GV_SCOUNT.<br />
+&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Error&nbsp;count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;',&nbsp;GV_ECOUNT&nbsp;COLOR&nbsp;COL_TOTAL.<br />
+&nbsp;&nbsp;&nbsp;WRITE:/<br />
+'==========================================================='.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;WRITE_RESULT_RTN<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;WRITE_RESULT_RTN2<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;WRITE_RESULT_RTN2&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CHECK&nbsp;GV_TOTAL&nbsp;&gt=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;WRITE:/<br />
+'==========================================================='.<br />
+&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Start&nbsp;time&nbsp;:&nbsp;',&nbsp;GV_TTIME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;'End&nbsp;time&nbsp;&nbsp;&nbsp;:&nbsp;',&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'Total&nbsp;count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;',&nbsp;GV_TOTAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;GV_SKIP&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'Skip&nbsp;count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;',&nbsp;GV_SKIP.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;WRITE:/&nbsp;'Processed&nbsp;count&nbsp;:&nbsp;',&nbsp;COUNT.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'Success&nbsp;count&nbsp;&nbsp;&nbsp;:&nbsp;',&nbsp;GV_DONE.<br />
+&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'Error&nbsp;count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;',&nbsp;GV_ERROR&nbsp;COLOR&nbsp;COL_TOTAL.<br />
+&nbsp;&nbsp;&nbsp;WRITE:/<br />
+'==========================================================='.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;WRITE_RESULT_RTN2<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;UPLOAD_DATA_FILE2<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;UPLOAD_DATA_FILE2&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LT_XLS&nbsp;TYPE&nbsp;ALSMEX_TABLINE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltFS&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;P_PATH&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIALFOLDER&nbsp;=&nbsp;'C:\'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILE_OPEN_DIALOG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEFAULT_EXTENSION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;',*.txt,*.TXT.'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_FILTER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FILETYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIAL_DIRECTORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;INITIALFOLDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_TABLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FILETABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GV_RC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_OPEN_DIALOG_FAILED&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNTL_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_NO_GUI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT_SUPPORTED_BY_GUI&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;FILETABLE&nbsp;INTO&nbsp;WA_FILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FULLPATH&nbsp;=&nbsp;WA_FILE-FILENAME.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_PATH2_RTN&nbsp;USING&nbsp;P_PATH<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;P_PATH2.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_FILENAME&nbsp;=&nbsp;FULLPATH.<br />
+<br />
+&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_FILENAME&nbsp;=&nbsp;P_PATH.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;IT_TYPE&nbsp;&nbsp;&nbsp;TYPE&nbsp;TRUXS_T_TEXT_DATA.<br />
+<br />
+&nbsp;&nbsp;&nbsp;CALL FUNCTION 'TEXT_CONVERT_XLS_TO_SAP'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_FIELD_SEPERATOR&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_LINE_HEADER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_EFIRST&nbsp;&nbsp;"Line&nbsp;Header&nbsp;삭제<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_TAB_RAW_DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;IT_TYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GV_FILENAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_TAB_CONVERTED_DATA&nbsp;=&nbsp;RECORD[].<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'SAP_CONVERT_TO_XLS_FORMAT'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_FIELD_SEPERATOR&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_LINE_HEADER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GV_FILENAME<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_APPL_KEEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_TAB_SAP_DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RECORD[]<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_TAB_CONVERTED_DATA&nbsp;=&nbsp;IT_TYPE<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONVERSION_FAILED&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+*&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+**&nbsp;Implement&nbsp;suitable&nbsp;error&nbsp;handling&nbsp;here<br />
+*&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+*&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'ALSM_EXCEL_TO_INTERNAL_TABLE'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GV_FILENAME<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BEGIN_COL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BEGIN_ROW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_END_COL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;200<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_END_ROW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;65536<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTERN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_XLS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCONSISTENT_PARAMETERS&nbsp;=&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPLOAD_OLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E009&nbsp;WITH&nbsp;'File&nbsp;Upload&nbsp;Failed&nbsp;!'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STOP.<br />
+*&nbsp;&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;RECORD,&nbsp;RECORD[].<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_XLS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;LT_XLS-COL&nbsp;OF&nbsp;STRUCTURE&nbsp;RECORD&nbsp;TO&nbsp;&ltFS&gt.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS&gt&nbsp;=&nbsp;LT_XLS-VALUE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;ROW.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;RECORD.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&nbsp;RECORD.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+*&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;UPLOAD_DATA_FILE2<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CHECK_PERNR_EXIST<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;CHECK_PERNR_EXIST&nbsp;USING&nbsp;VALUE(P_PERNR)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;VALUE(P_CHECK).<br />
+<br />
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;LV_PERNR&nbsp;LIKE&nbsp;P0003-PERNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;LV_PERNR&nbsp;=&nbsp;P_PERNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;SORT&nbsp;IT_P0003&nbsp;BY&nbsp;PERNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;IT_P0003&nbsp;WITH&nbsp;KEY&nbsp;PERNR&nbsp;=&nbsp;LV_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/2(20)&nbsp;'BDC&nbsp;=&gt&nbsp;NOT&nbsp;success!',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;COLOR&nbsp;6.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_ECOUNT&nbsp;=&nbsp;GV_ECOUNT&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;RECORD&nbsp;TO&nbsp;GT_DOWN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DOWN-MSG&nbsp;=&nbsp;'Please,&nbsp;Check&nbsp;employee&nbsp;number.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_DOWN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_CHECK&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CHECK_PERNR_EXIST<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MODIFY_SCREEN<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;FORM&nbsp;MODIFY_SCREEN&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SCREEN-GROUP4&nbsp;=&nbsp;'004'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SCREEN-INPUT&nbsp;=&nbsp;'0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SCREEN-INVISIBLE&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;MODIFY_SCREEN<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

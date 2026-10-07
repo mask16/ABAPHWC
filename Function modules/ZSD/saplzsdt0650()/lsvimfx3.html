@@ -1,0 +1,1448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LSVIMFX3</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LSVIMFX3</h2>
+<h3> Description: Subroutines for activating profiles</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;LSVIMFX3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*----------------------------------------------------------------------*<br />
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;LIST_ALV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;D_VIA_SELECTION_SCREEN&nbsp;--&gt&nbsp;X&nbsp;-&nbsp;mit&nbsp;Selektion,&nbsp;'&nbsp;'&nbsp;-&nbsp;Standardliste&nbsp;&nbsp;&nbsp;*<br />
+*&--------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM list_alv.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;STATICS:&nbsp;vim_alv_fcat&nbsp;TYPE&nbsp;slis_t_fieldcat_alv,&nbsp;&nbsp;--&gt&nbsp;global<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alv_events&nbsp;TYPE&nbsp;slis_t_event,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alv_layout&nbsp;TYPE&nbsp;slis_layout_alv.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;STATICS:&nbsp;texttab_begin&nbsp;LIKE&nbsp;sy-tabix,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;textlen&nbsp;TYPE&nbsp;intlen,&nbsp;unittab&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unitname&nbsp;TYPE&nbsp;fieldname,&nbsp;cukytab&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyname&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glob_unitvalue(3)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;"vim_unit,UF296573/2000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glob_cukyvalue&nbsp;TYPE&nbsp;vim_cuky.<br />
+&nbsp;&nbsp;DATA:&nbsp;textfld_no,&nbsp;textoffset&nbsp;TYPE&nbsp;intlen,&nbsp;rc&nbsp;LIKE&nbsp;sy-subrc,&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;progname&nbsp;LIKE&nbsp;sy-repid,&nbsp;value_len&nbsp;TYPE&nbsp;intlen,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_alv_value_tab&nbsp;TYPE&nbsp;tabl8000.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltalv_fcat&gt&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;vim_alv_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttextfields&gt.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;x_header-frm_bf_prn&nbsp;&lt&gt&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;old&nbsp;user&nbsp;exit&nbsp;for&nbsp;printing&nbsp;still&nbsp;used<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;drucken_ztp_alt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;vim_alv_fcat[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;vim_alv_fcat&nbsp;ASSIGNING&nbsp;&ltalv_fcat&gt&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltalv_fcat&gt-ref_tabname&nbsp;&lt&gt&nbsp;view_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNASSIGN&nbsp;&ltalv_fcat&gt.&nbsp;FREE&nbsp;vim_alv_fcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;vim_alv_fcat[]&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;build&nbsp;up&nbsp;field&nbsp;catalogue&nbsp;from&nbsp;X_NAMTAB<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_alv_fieldcat&nbsp;CHANGING&nbsp;vim_alv_fcat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_begin<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_value_length<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unittab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unitname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glob_unitvalue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukytab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glob_cukyvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;define_alv_callbacks&nbsp;CHANGING&nbsp;vim_alv_events.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_list_commentary&nbsp;USING&nbsp;unittab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unitname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glob_unitvalue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukytab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glob_cukyvalue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;vim_list_header.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_alv_layout&nbsp;CHANGING&nbsp;vim_alv_layout<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_print.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;init_alv_variant&nbsp;CHANGING&nbsp;vim_var_save<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_var_default<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_variant.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_called_by&nbsp;=&nbsp;'VIM_CALL_ALV'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;REFRESH:&nbsp;vim_alv_excluding,&nbsp;vim_alv_special_groups,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_sort,&nbsp;vim_alv_event_exit.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;&nbsp;&nbsp;vim_alv_print,&nbsp;vim_alv_sel_hide.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"new&nbsp;structure&nbsp;table<br />
+&nbsp;&nbsp;REFRESH&nbsp;alv_value_tab.<br />
+&nbsp;&nbsp;IF&nbsp;status-mode&nbsp;=&nbsp;list_bild.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Build&nbsp;ALV_VALUE_TAB<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_alv_value_tab&nbsp;=&nbsp;&ltvim_xextract&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract&nbsp;ASSIGNING&nbsp;&ltextract_line&gt.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alv_value_tab&nbsp;=&nbsp;&ltextract_line&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;w_alv_value_tab&nbsp;TO&nbsp;alv_value_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Build&nbsp;VALUE_TAB&nbsp;with&nbsp;single&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;w_alv_value_tab&nbsp;=&nbsp;&ltvim_xextract&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;alv_value_tab&nbsp;=&nbsp;extract.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;w_alv_value_tab&nbsp;TO&nbsp;alv_value_tab.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;&lt&gt&nbsp;space&nbsp;AND&nbsp;x_header-texttbexst&nbsp;&lt&gt&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;table&nbsp;and&nbsp;texttable<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;textlen&nbsp;=&nbsp;x_header-aft_txttbc&nbsp;-&nbsp;x_header-aft_txtkc.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;=&nbsp;space&nbsp;OR&nbsp;x_header-texttbexst&nbsp;=&nbsp;space<br />
+*&nbsp;&nbsp;&nbsp;OR&nbsp;x_header-maintview&nbsp;NE&nbsp;x_header-viewname.<br />
+*&nbsp;no&nbsp;table&nbsp;&&nbsp;texttable<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;textlen.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;IF&nbsp;textlen&nbsp;&lt&gt&nbsp;0.<br />
+*&nbsp;Shift&nbsp;fields<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;maintain_alv_value_tab_text&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;textlen.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_value_length&nbsp;=&nbsp;x_header-tablen.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-frm_bf_alv&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(x_header-frm_bf_alv)&nbsp;IN&nbsp;PROGRAM&nbsp;(sy-repid).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Release&nbsp;6.10(Unicode):&nbsp;alv_value_tab&nbsp;has&nbsp;got&nbsp;type&nbsp;RAW!<br />
+*&nbsp;useful&nbsp;parameters:<br />
+*&nbsp;&nbsp;&nbsp;vim_alv_value_length&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int.&nbsp;length&nbsp;of&nbsp;dataset&nbsp;in&nbsp;alv_value_tab<br />
+*&nbsp;&nbsp;&nbsp;vim_alv_called_by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;form&nbsp;routine&nbsp;calling&nbsp;FM&nbsp;ALV_LIST_DISPLAY<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;preset&nbsp;value:&nbsp;'VIM_CALL_ALV'<br />
+*&nbsp;&nbsp;&nbsp;alv_value_tab[]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;internal&nbsp;table&nbsp;containing&nbsp;values<br />
+*&nbsp;&nbsp;&nbsp;vim_alv_fcat[]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\<br />
+*&nbsp;&nbsp;&nbsp;vim_alv_events[]&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+*&nbsp;&nbsp;&nbsp;vim_list_header[]&nbsp;&nbsp;&nbsp;&gt&nbsp;&nbsp;&nbsp;&nbsp;preset&nbsp;by&nbsp;view-maintenance<br />
+*&nbsp;&nbsp;&nbsp;vim_alv_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+*&nbsp;&nbsp;&nbsp;vim_alv_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;alv_value_tab[]&nbsp;IS&nbsp;INITIAL.&nbsp;"suppress&nbsp;list<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;PERFORM&nbsp;check_list_before_alv&nbsp;CHANGING&nbsp;rc.<br />
+&nbsp;&nbsp;CHECK&nbsp;rc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;progname&nbsp;=&nbsp;sy-repid.<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_TABLE_CREATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_fcat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_program&nbsp;=&nbsp;progname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_formname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_called_by.<br />
+&nbsp;&nbsp;FREE&nbsp;alv_value_tab.<br />
+ENDFORM.                               " LIST_ALV<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;DRUCKEN_ZTP_ALT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;Keeps&nbsp;compatibility&nbsp;of&nbsp;view&nbsp;maintenance&nbsp;dialogs&nbsp;using&nbsp;old&nbsp;user&nbsp;exit<br />
+*&nbsp;"before&nbsp;printing"<br />
+*&nbsp;D_VIA_SELECTION_SCREEN&nbsp;--&gt&nbsp;X&nbsp;-&nbsp;mit&nbsp;Selektion,&nbsp;'&nbsp;'&nbsp;-&nbsp;Standardliste&nbsp;&nbsp;&nbsp;*<br />
+*&--------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM drucken_ztp_alt.<br />
+&nbsp;&nbsp;DATA:&nbsp;rc_safe&nbsp;LIKE&nbsp;sy-subrc,&nbsp;texttab_begin&nbsp;LIKE&nbsp;sy-tabix,&nbsp;x&nbsp;TYPE&nbsp;i,&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entifct_begin&nbsp;LIKE&nbsp;sy-tabix,&nbsp;len&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;after_text_assigned&nbsp;TYPE&nbsp;c,&nbsp;hname&nbsp;LIKE&nbsp;d021s-fnam.&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;DATA:&nbsp;fcat_entry&nbsp;TYPE&nbsp;slis_fieldcat_alv,&nbsp;i&nbsp;TYPE&nbsp;i,&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukytab&nbsp;TYPE&nbsp;tabname,&nbsp;unittab&nbsp;TYPE&nbsp;tabname,&nbsp;rc&nbsp;LIKE&nbsp;sy-subrc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyname&nbsp;TYPE&nbsp;fieldname,&nbsp;unitname&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyvalue&nbsp;TYPE&nbsp;vim_cuky,&nbsp;unitvalue&nbsp;TYPE&nbsp;vim_unit,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;length&nbsp;TYPE&nbsp;doffset,&nbsp;cukylength&nbsp;TYPE&nbsp;doffset,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_entry2&nbsp;TYPE&nbsp;slis_fieldcat_alv,&nbsp;progname&nbsp;LIKE&nbsp;sy-repid,&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alv_called_by&nbsp;TYPE&nbsp;char30&nbsp;VALUE&nbsp;'VIM_CALL_ALV'.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltbefore_text&gt,&nbsp;&lttext&gt,&nbsp;&ltafter_text&gt,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltcuky&gt,&nbsp;&ltunit&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltvalue&gt&nbsp;TYPE&nbsp;tabl8000,&nbsp;&ltw_value_tab_x&gt&nbsp;TYPE&nbsp;x.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;structure_table.<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;structure_table.<br />
+&nbsp;&nbsp;IF&nbsp;sy-tfill&nbsp;NE&nbsp;0.&nbsp;READ&nbsp;TABLE&nbsp;structure_table&nbsp;INDEX&nbsp;1.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;structure_table-tabname&nbsp;NE&nbsp;view_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'VIEW_GET_FIELDTAB'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;view_name&nbsp;=&nbsp;view_name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldtab&nbsp;&nbsp;=&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;NE&nbsp;space&nbsp;AND&nbsp;x_header-texttbexst&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;x_header-maintview&nbsp;=&nbsp;x_header-viewname.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Subviews<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;einf#gen&nbsp;text-felder&nbsp;in&nbsp;structure_table&nbsp;hinter&nbsp;entity-key<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;WHERE&nbsp;texttabfld&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;keyflag&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_begin&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;WHERE&nbsp;texttabfld&nbsp;EQ&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;keyflag&nbsp;EQ&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entifct_begin&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.&nbsp;&nbsp;"no&nbsp;entifct&nbsp;fields&nbsp;-&gt&nbsp;delete&nbsp;text&nbsp;key&nbsp;fields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;structure_table&nbsp;FROM&nbsp;texttab_begin<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;keyflag&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHILE&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;structure_table&nbsp;FROM&nbsp;texttab_begin.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;structure_table-keyflag&nbsp;EQ&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;structure_table&nbsp;INDEX&nbsp;entifct_begin.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD:&nbsp;1&nbsp;TO&nbsp;entifct_begin,&nbsp;1&nbsp;TO&nbsp;texttab_begin.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;aktualisieren&nbsp;von&nbsp;offset&nbsp;und&nbsp;position&nbsp;in&nbsp;structure_table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;len&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;len.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-position&nbsp;=&nbsp;sy-tabix.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Alignment<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;'CNDT'&nbsp;CS&nbsp;structure_table-inttype.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Character-like&nbsp;datatypes<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;cl_abap_char_utilities=&gtcharsize&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOD&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;cl_abap_char_utilities=&gtcharsize&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;structure_table-datatype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INT2'&nbsp;OR&nbsp;'PREC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset&nbsp;+&nbsp;2&nbsp;)&nbsp;MOD&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;2&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INT4'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset&nbsp;+&nbsp;4&nbsp;)&nbsp;MOD&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;4&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'FLTP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset&nbsp;+&nbsp;8&nbsp;)&nbsp;MOD&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;8&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;len&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;structure_table-intlen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"table&nbsp;with&nbsp;texttable<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-hiddenflag&nbsp;NE&nbsp;space.&nbsp;&nbsp;&nbsp;"hidden&nbsp;fields&nbsp;exist<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ignore&nbsp;hidden&nbsp;fields<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;WHERE&nbsp;readonly&nbsp;EQ&nbsp;vim_hidden&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;domname&nbsp;IN&nbsp;vim_guid_domain.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;structure_table&nbsp;WHERE&nbsp;fieldname&nbsp;EQ&nbsp;x_namtab-viewfield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;aktualisieren&nbsp;von&nbsp;offset&nbsp;und&nbsp;position&nbsp;in&nbsp;structure_table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;len&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;len.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-position&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;'CNDT'&nbsp;CS&nbsp;structure_table-inttype.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Character-like&nbsp;datatypes<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;cl_abap_char_utilities=&gtcharsize&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOD&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;cl_abap_char_utilities=&gtcharsize&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;structure_table-datatype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INT2'&nbsp;OR&nbsp;'PREC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset&nbsp;+&nbsp;2&nbsp;)&nbsp;MOD&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;2&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INT4'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset&nbsp;+&nbsp;4&nbsp;)&nbsp;MOD&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;4&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'FLTP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;structure_table-offset&nbsp;+&nbsp;8&nbsp;)&nbsp;MOD&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;structure_table-offset&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;8&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;len&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;structure_table-intlen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"hidden&nbsp;fields&nbsp;exist<br />
+&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"new&nbsp;structure&nbsp;table<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Aufbau&nbsp;der&nbsp;Value_tab<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ASSIGN&nbsp;value_tab&nbsp;TO&nbsp;&ltw_value_tab_x&gt&nbsp;CASTING.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;NE&nbsp;space&nbsp;AND&nbsp;x_header-texttbexst&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"base&nbsp;table&nbsp;with&nbsp;text&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;x_header-maintview&nbsp;=&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;value_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;status-mode&nbsp;EQ&nbsp;list_bild.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;build_valtab_hfields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;build_valtab_hfields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;view&nbsp;or&nbsp;base&nbsp;table&nbsp;without&nbsp;text&nbsp;table&nbsp;and&nbsp;user&nbsp;exits&nbsp;exists&nbsp;or&nbsp;hidden<br />
+*&nbsp;fields&nbsp;exist<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;value_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-hiddenflag&nbsp;EQ&nbsp;space&nbsp;AND"no&nbsp;hidden&nbsp;fields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-fieldorder&nbsp;EQ&nbsp;space.&nbsp;&nbsp;&nbsp;"Subviews&nbsp;/untersch.&nbsp;Feldreihenf.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;status-mode&nbsp;EQ&nbsp;list_bild.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;&ltvim_xextract&gt&nbsp;TO&nbsp;&ltw_value_tab_x&gt(x_header-tablen).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;extract&nbsp;TO&nbsp;value_tab(tablen).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;value_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;&ltvim_xextract&gt&nbsp;TO&nbsp;&ltw_value_tab_x&gt(x_header-tablen).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;extract&nbsp;TO&nbsp;value_tab(tablen).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;value_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;"hidden&nbsp;fields&nbsp;exist&nbsp;-&gt&nbsp;move&nbsp;field&nbsp;by&nbsp;field<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;status-mode&nbsp;EQ&nbsp;list_bild.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;build_valtab_hfields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;build_valtab_hfields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"base&nbsp;table&nbsp;with&nbsp;text_table.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-frm_bf_prn&nbsp;NE&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"user&nbsp;exit&nbsp;exists<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;perform&nbsp;user&nbsp;exit<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(x_header-frm_bf_prn)&nbsp;IN&nbsp;PROGRAM&nbsp;(sy-repid).<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;value_tab[]&nbsp;IS&nbsp;INITIAL.&nbsp;&nbsp;&nbsp;&nbsp;"suppress&nbsp;list<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;Build&nbsp;up&nbsp;ALV&nbsp;fieldcatalogue&nbsp;from&nbsp;STRUCTURE<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;vim_alv_fcat.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;structure_table.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;fcat_entry.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;conv_dfies_fcat&nbsp;USING&nbsp;structure_table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sy-tabix<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;fcat_entry.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;fcat_entry&nbsp;TO&nbsp;vim_alv_fcat.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;length&nbsp;=&nbsp;structure_table-offset&nbsp;+&nbsp;structure_table-intlen.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;consider&nbsp;CUKY&nbsp;or&nbsp;UNIT&nbsp;fields.......<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;vim_alv_fcat&nbsp;LINES&nbsp;i.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;vim_alv_fcat&nbsp;INTO&nbsp;fcat_entry&nbsp;WHERE&nbsp;datatype&nbsp;=&nbsp;'CURR'<br />
+&nbsp;&nbsp;&nbsp;OR&nbsp;datatype&nbsp;=&nbsp;'QUAN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;fcat_entry-datatype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CURR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;WITH&nbsp;KEY&nbsp;viewfield&nbsp;=&nbsp;fcat_entry-cfieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;try&nbsp;to&nbsp;get&nbsp;global&nbsp;currency&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;WITH&nbsp;KEY&nbsp;viewfield&nbsp;=&nbsp;fcat_entry-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukytab&nbsp;=&nbsp;x_namtab-reftable.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyname&nbsp;=&nbsp;x_namtab-reffield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;x_namtab-reftable&nbsp;'-'&nbsp;x_namtab-reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;hname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;(hname)&nbsp;TO&nbsp;&ltcuky&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;global&nbsp;currency&nbsp;key&nbsp;exists&nbsp;to&nbsp;be&nbsp;inserted&nbsp;in&nbsp;value&nbsp;table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_entry-currency&nbsp;=&nbsp;cukyvalue&nbsp;=&nbsp;&ltcuky&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'QUAN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;WITH&nbsp;KEY&nbsp;viewfield&nbsp;=&nbsp;fcat_entry-qfieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;try&nbsp;to&nbsp;get&nbsp;global&nbsp;quantity&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;WITH&nbsp;KEY&nbsp;viewfield&nbsp;=&nbsp;fcat_entry-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unittab&nbsp;=&nbsp;x_namtab-reftable.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unitname&nbsp;=&nbsp;x_namtab-reffield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;x_namtab-reftable&nbsp;'-'&nbsp;x_namtab-reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;hname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;(hname)&nbsp;TO&nbsp;&ltunit&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;global&nbsp;unit&nbsp;key&nbsp;exists&nbsp;to&nbsp;be&nbsp;inserted&nbsp;in&nbsp;value&nbsp;table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_entry-quantity&nbsp;=&nbsp;unitvalue&nbsp;=&nbsp;&ltunit&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;vim_alv_fcat&nbsp;FROM&nbsp;fcat_entry.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;REFRESH&nbsp;alv_value_tab.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;value_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&ltw_value_tab_x&gt&nbsp;TO&nbsp;alv_value_tab.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;APPEND&nbsp;LINES&nbsp;OF&nbsp;value_tab&nbsp;TO&nbsp;alv_value_tab.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;FREE&nbsp;value_tab.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;cukyname&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Append&nbsp;global&nbsp;currency&nbsp;to&nbsp;value_tab<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;alv_value_tab&nbsp;ASSIGNING&nbsp;&ltvalue&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltvalue&gt+length&nbsp;=&nbsp;cukyvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;length&nbsp;=&nbsp;length&nbsp;+&nbsp;cukylength.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;unitname&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Append&nbsp;global&nbsp;unit&nbsp;to&nbsp;value_tab<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;alv_value_tab&nbsp;ASSIGNING&nbsp;&ltvalue&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltvalue&gt+length&nbsp;=&nbsp;unitvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;PERFORM&nbsp;define_alv_callbacks&nbsp;CHANGING&nbsp;vim_alv_events.<br />
+&nbsp;&nbsp;PERFORM&nbsp;make_list_commentary&nbsp;USING&nbsp;unittab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unitname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unitvalue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukytab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cukyvalue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;vim_list_header.<br />
+&nbsp;&nbsp;PERFORM&nbsp;make_alv_layout&nbsp;CHANGING&nbsp;vim_alv_layout<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_print.<br />
+&nbsp;&nbsp;PERFORM&nbsp;init_alv_variant&nbsp;CHANGING&nbsp;vim_var_save<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_var_default<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_alv_variant.<br />
+&nbsp;&nbsp;progname&nbsp;=&nbsp;sy-repid.<br />
+&nbsp;&nbsp;PERFORM&nbsp;check_list_before_alv&nbsp;CHANGING&nbsp;rc.<br />
+&nbsp;&nbsp;CHECK&nbsp;rc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_TABLE_CREATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_fcat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_program&nbsp;=&nbsp;progname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_formname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;alv_called_by.<br />
+&nbsp;&nbsp;FREE&nbsp;alv_value_tab.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;ne&nbsp;0.&nbsp;raise&nbsp;print_error.&nbsp;endif.<br />
+   </div>
+   <div class="code">
+ENDFORM.                               " DRUCKEN_ZTP_ALT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MAKE_LIST_COMMENTARY<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Build&nbsp;up&nbsp;list&nbsp;header<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_LIST_COMMENTARY&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM make_list_commentary USING p_unittab TYPE tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unitname&nbsp;TYPE&nbsp;fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unitvalue&nbsp;TYPE&nbsp;any<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"vim_unitUF296573/2000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukytab&nbsp;TYPE&nbsp;tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukyname&nbsp;TYPE&nbsp;fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukyvalue&nbsp;TYPE&nbsp;vim_cuky<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_list_header&nbsp;TYPE&nbsp;slis_t_listheader.<br />
+&nbsp;&nbsp;DATA:&nbsp;h_header&nbsp;TYPE&nbsp;slis_listheader,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text(40),&nbsp;w_dfies&nbsp;TYPE&nbsp;dfies.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;p_list_header.<br />
+&nbsp;&nbsp;h_header-typ&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;h_header-info&nbsp;=&nbsp;x_header-ddtext.<br />
+&nbsp;&nbsp;APPEND&nbsp;h_header&nbsp;TO&nbsp;p_list_header.<br />
+&nbsp;&nbsp;h_header-typ&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;NE&nbsp;space&nbsp;AND&nbsp;x_header-texttbexst&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;AND&nbsp;x_header-maintview&nbsp;=&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;svim_text_p01.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;svim_text_p02.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;h_header-info&nbsp;=&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;APPEND&nbsp;h_header&nbsp;TO&nbsp;p_list_header.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-clidep&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;svim_text_p03.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-info&nbsp;=&nbsp;sy-mandt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;h_header&nbsp;TO&nbsp;p_list_header.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;p_unitname&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;h_header.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-typ&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_get_reffield_alv&nbsp;USING&nbsp;p_unitname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unittab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;w_dfies.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-scrtext_m&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-scrtext_m(20).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-scrtext_l&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-scrtext_l(20).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-scrtext_s&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-scrtext_s(10).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-reptext&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-reptext(20).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-info&nbsp;=&nbsp;p_unitvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;h_header&nbsp;TO&nbsp;p_list_header.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;p_cukyname&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;h_header.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-typ&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_get_reffield_alv&nbsp;USING&nbsp;p_cukyname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukytab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;w_dfies.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-scrtext_m&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-scrtext_m(20).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-scrtext_l&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-scrtext_l(20).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-scrtext_s&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-scrtext_s(10).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_dfies-reptext&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-reptext(20).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_header-key&nbsp;=&nbsp;w_dfies-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_header-info&nbsp;=&nbsp;p_cukyvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;h_header&nbsp;TO&nbsp;p_list_header.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                               " MAKE_LIST_COMMENTARY<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DEFINE_ALV_CALLBACKS<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_ALV_EVENTS&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM define_alv_callbacks CHANGING p_alv_events TYPE slis_t_event.<br />
+&nbsp;&nbsp;DATA:&nbsp;h_event&nbsp;TYPE&nbsp;slis_alv_event.<br />
+&nbsp;&nbsp;CONSTANTS:&nbsp;formname_top_of_list&nbsp;TYPE&nbsp;slis_formname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'ALV_TOP_OF_LIST',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;formname_top_of_page&nbsp;TYPE&nbsp;slis_formname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'ALV_TOP_OF_PAGE',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;formname_end_of_page&nbsp;TYPE&nbsp;slis_formname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'ALV_END_OF_PAGE',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;formname_end_of_list&nbsp;TYPE&nbsp;slis_formname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'ALV_END_OF_LIST'.<br />
+&nbsp;&nbsp;REFRESH&nbsp;p_alv_events.<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_EVENTS_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_list_type&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;et_events&nbsp;&nbsp;&nbsp;=&nbsp;p_alv_events.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;define&nbsp;TOP_OF_LIST&nbsp;event<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;p_alv_events&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;slis_ev_top_of_list<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;h_event.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_event-form&nbsp;=&nbsp;formname_top_of_list.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;h_event&nbsp;TO&nbsp;p_alv_events.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;define&nbsp;TOP_OF_PAGE&nbsp;event<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;p_alv_events&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;slis_ev_top_of_page<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;h_event.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_event-form&nbsp;=&nbsp;formname_top_of_page.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;h_event&nbsp;TO&nbsp;p_alv_events.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;define&nbsp;END_OF_PAGE&nbsp;event<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;p_alv_events&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;slis_ev_end_of_page<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;h_event.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_event-form&nbsp;=&nbsp;formname_end_of_page.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;h_event&nbsp;TO&nbsp;p_alv_events.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;define&nbsp;END_OF_LIST&nbsp;event<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;p_alv_events&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;slis_ev_end_of_list<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;h_event.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;h_event-form&nbsp;=&nbsp;formname_end_of_list.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;h_event&nbsp;TO&nbsp;p_alv_events.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "define_alv_callbacks<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ALV_TOP_OF_LIST<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM alv_top_of_list.<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_list_commentary&nbsp;=&nbsp;vim_list_header.<br />
+<br />
+ENDFORM.                               " ALV_TOP_OF_LIST<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ALV_TOP_OF_PAGE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM alv_top_of_page.<br />
+&nbsp;&nbsp;WRITE&nbsp;AT&nbsp;(sy-linsz)&nbsp;sy-datum&nbsp;RIGHT-JUSTIFIED.<br />
+ENDFORM.                               " ALV_TOP_OF_PAGE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ALV_END_OF_PAGE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM alv_end_of_page.<br />
+&nbsp;&nbsp;WRITE&nbsp;AT&nbsp;(sy-linsz)&nbsp;sy-pagno&nbsp;CENTERED.<br />
+ENDFORM.                               " ALV_END_OF_PAGE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MAKE_ALV_LAYOUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_ALV_LAYOUT&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM make_alv_layout CHANGING p_alv_layout TYPE slis_layout_alv<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_alv_print&nbsp;&nbsp;TYPE&nbsp;slis_print_alv.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;screen&nbsp;layout<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;p_alv_layout.<br />
+&nbsp;&nbsp;p_alv_layout-colwidth_optimize&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;p_alv_layout-f2code&nbsp;=&nbsp;'&ETA'.<br />
+&nbsp;&nbsp;p_alv_layout-detail_popup&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;print&nbsp;layout<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;p_alv_print-reserve_lines&nbsp;=&nbsp;2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"GKPR/1014972<br />
+&nbsp;&nbsp;p_alv_print-no_print_listinfos&nbsp;=&nbsp;'X'.<br />
+ENDFORM.                               " MAKE_ALV_LAYOUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;FILL_ALV_FIELDCAT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Builds&nbsp;up&nbsp;ALV-fieldcatalogue&nbsp;from&nbsp;X_NAMTAB<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_VIM_ALV_FCAT&nbsp;&nbsp;ALV-fieldctalogue<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM fill_alv_fieldcat CHANGING p_vim_alv_fcat TYPE slis_t_fieldcat_alv<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_begin&nbsp;LIKE&nbsp;sy-tabix<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_value_length&nbsp;TYPE&nbsp;intlen<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_textlen&nbsp;TYPE&nbsp;intlen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unittab&nbsp;TYPE&nbsp;tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unitname&nbsp;TYPE&nbsp;fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unitvalue&nbsp;TYPE&nbsp;any&nbsp;"vim_unit<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF296573/2000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukytab&nbsp;TYPE&nbsp;tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukyname&nbsp;TYPE&nbsp;fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukyvalue&nbsp;TYPE&nbsp;vim_cuky.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;fcat_header&nbsp;TYPE&nbsp;slis_fieldcat_alv,&nbsp;textfld_no&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_reffield&nbsp;TYPE&nbsp;slis_fieldcat_alv,&nbsp;rc&nbsp;LIKE&nbsp;sy-subrc,&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first&nbsp;TYPE&nbsp;xfeld&nbsp;VALUE&nbsp;'X',&nbsp;list_width&nbsp;TYPE&nbsp;outputlen,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;TYPE&nbsp;i,&nbsp;first_func_field&nbsp;TYPE&nbsp;i,&nbsp;text_outp_len&nbsp;TYPE&nbsp;outputlen,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fldno(2)&nbsp;TYPE&nbsp;n,&nbsp;strln&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hname&nbsp;TYPE&nbsp;fnam_____4,&nbsp;maintview,&nbsp;global_unit_set,&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;global_cuky_set.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+<br />
+&nbsp;&nbsp;CONSTANTS:&nbsp;max_list_width&nbsp;TYPE&nbsp;i&nbsp;VALUE&nbsp;250.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltalv_fcat&gt&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;p_vim_alv_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_fcat2&gt&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;p_vim_alv_fcat,&nbsp;"UF412290/2001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltx_namt&gt&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;x_namtab,&nbsp;&ltcuky&gt&nbsp;TYPE&nbsp;vim_cuky,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltunit&gt&nbsp;TYPE&nbsp;ANY.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"vim_unit.&nbsp;UF296573/2000<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;p_vim_alv_fcat.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;&nbsp;p_unitname,&nbsp;p_cukyname,&nbsp;p_unitvalue,&nbsp;p_cukyvalue,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_value_length.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;EQ&nbsp;space&nbsp;OR&nbsp;x_header-texttbexst&nbsp;EQ&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;OR&nbsp;x_header-maintview&nbsp;NE&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;maintview&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"It's&nbsp;a&nbsp;maintenance&nbsp;view!<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Build&nbsp;up&nbsp;field&nbsp;catalogue<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;ASSIGNING&nbsp;&ltx_namt&gt&nbsp;WHERE&nbsp;texttabfld&nbsp;=&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;OR&nbsp;keyflag&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;p_cukyvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;=&nbsp;i&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-col_pos&nbsp;=&nbsp;i.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-fieldname&nbsp;=&nbsp;&ltx_namt&gt-viewfield.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;While&nbsp;Printing&nbsp;ALV,&nbsp;the&nbsp;column&nbsp;ID&nbsp;should&nbsp;be&nbsp;flagged&nbsp;as&nbsp;ICON&nbsp;else&nbsp;the&nbsp;ALV&nbsp;list&nbsp;will&nbsp;not&nbsp;be&nbsp;created&nbsp;correctly<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;IF&nbsp;&ltx_namt&gt-domname&nbsp;=&nbsp;'ICON'&nbsp;AND&nbsp;&ltx_namt&gt-viewfield&nbsp;=&nbsp;'ID'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-icon&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maintview&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-ref_tabname&nbsp;=&nbsp;&ltx_namt&gt-bastabname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-ref_tabname&nbsp;=&nbsp;x_header-maintview.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-key&nbsp;=&nbsp;&ltx_namt&gt-keyflag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-seltext_l&nbsp;=&nbsp;&ltx_namt&gt-scrtext_l.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-seltext_m&nbsp;=&nbsp;&ltx_namt&gt-scrtext_m.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-seltext_s&nbsp;=&nbsp;&ltx_namt&gt-scrtext_s.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-reptext_ddic&nbsp;=&nbsp;&ltx_namt&gt-reptext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-datatype&nbsp;=&nbsp;&ltx_namt&gt-datatype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-inttype&nbsp;=&nbsp;&ltx_namt&gt-inttype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-ddic_outputlen&nbsp;=&nbsp;&ltx_namt&gt-outputlen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-intlen&nbsp;=&nbsp;&ltx_namt&gt-flength.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-lowercase&nbsp;=&nbsp;&ltx_namt&gt-lowercase.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;&ltx_namt&gt-datatype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CLNT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-clidep&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-tech&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CURR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;WITH&nbsp;KEY&nbsp;viewfield&nbsp;=&nbsp;&ltx_namt&gt-reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0&nbsp;AND&nbsp;&ltx_namt&gt-reftable&nbsp;=&nbsp;x_header-maintview.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF163276/2001<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;currency&nbsp;field&nbsp;in&nbsp;structure<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-cfieldname&nbsp;=&nbsp;&ltx_namt&gt-reffield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_cukyvalue&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;try&nbsp;to&nbsp;get&nbsp;global&nbsp;currency&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukytab&nbsp;=&nbsp;&ltx_namt&gt-reftable.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_cukyname&nbsp;=&nbsp;&ltx_namt&gt-reffield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;&ltx_namt&gt-reftable&nbsp;'-'&nbsp;&ltx_namt&gt-reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;hname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;(hname)&nbsp;TO&nbsp;&ltcuky&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;global&nbsp;currency&nbsp;key&nbsp;exists&nbsp;to&nbsp;be&nbsp;inserted&nbsp;in&nbsp;value&nbsp;table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-currency&nbsp;=&nbsp;p_cukyvalue&nbsp;=&nbsp;&ltcuky&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-currency&nbsp;=&nbsp;p_cukyvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'QUAN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;WITH&nbsp;KEY&nbsp;viewfield&nbsp;=&nbsp;&ltx_namt&gt-reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0&nbsp;AND&nbsp;&ltx_namt&gt-reftable&nbsp;=&nbsp;x_header-maintview.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF163276/2001.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;quantity&nbsp;field&nbsp;in&nbsp;structure<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-qfieldname&nbsp;=&nbsp;&ltx_namt&gt-reffield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;try&nbsp;to&nbsp;get&nbsp;global&nbsp;quantity&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_unitvalue&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unittab&nbsp;=&nbsp;&ltx_namt&gt-reftable.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_unitname&nbsp;=&nbsp;&ltx_namt&gt-reffield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;&ltx_namt&gt-reftable&nbsp;'-'&nbsp;&ltx_namt&gt-reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;hname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;(hname)&nbsp;TO&nbsp;&ltunit&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;global&nbsp;unit&nbsp;key&nbsp;exists&nbsp;to&nbsp;be&nbsp;inserted&nbsp;in&nbsp;value&nbsp;table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-quantity&nbsp;=&nbsp;p_unitvalue&nbsp;=&nbsp;&ltunit&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-quantity&nbsp;=&nbsp;p_unitvalue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltx_namt&gt-readonly&nbsp;=&nbsp;vim_hidden<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;hide&nbsp;hidden&nbsp;fields<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;&ltx_namt&gt-domname&nbsp;IN&nbsp;vim_guid_domain.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;no&nbsp;GUID-values<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcat_header-tech&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_width&nbsp;=&nbsp;list_width&nbsp;+&nbsp;&ltx_namt&gt-outputlen&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_value_length&nbsp;=&nbsp;p_value_length&nbsp;+&nbsp;fcat_header-intlen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;fcat_header&nbsp;TO&nbsp;p_vim_alv_fcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;fcat_header.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;&ltx_namt&gt-texttabfld&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;textfld_no&nbsp;=&nbsp;textfld_no&nbsp;+&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"get&nbsp;no.&nbsp;of&nbsp;text&nbsp;fields<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;p_textlen&nbsp;=&nbsp;p_textlen&nbsp;+&nbsp;&ltx_namt&gt-flength.&nbsp;"int.&nbsp;length&nbsp;of&nbsp;text&nbsp;flds<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;&ltx_namt&gt-readonly&nbsp;&lt&gt&nbsp;vim_hidden.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;first&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_begin&nbsp;=&nbsp;i.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"position&nbsp;of&nbsp;1st&nbsp;text&nbsp;fld<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;first.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;text_outp_len&nbsp;=&nbsp;text_outp_len&nbsp;+&nbsp;&ltx_namt&gt-outputlen.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;first&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;CLEAR&nbsp;i.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;NE&nbsp;space&nbsp;AND&nbsp;x_header-texttbexst&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;AND&nbsp;x_header-maintview&nbsp;=&nbsp;x_header-viewname.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Place&nbsp;text&nbsp;fields&nbsp;behind&nbsp;key&nbsp;fields.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;p_vim_alv_fcat&nbsp;ASSIGNING&nbsp;&ltalv_fcat&gt&nbsp;WHERE&nbsp;key&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;first&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first_func_field&nbsp;=&nbsp;&ltalv_fcat&gt-col_pos.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;first.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-tabix&nbsp;&lt&nbsp;texttab_begin.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_fcat&gt-col_pos&nbsp;=&nbsp;&ltalv_fcat&gt-col_pos&nbsp;+&nbsp;textfld_no.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;=&nbsp;i&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_fcat&gt-col_pos&nbsp;=&nbsp;first_func_field&nbsp;+&nbsp;i&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;first&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;p_vim_alv_fcat&nbsp;BY&nbsp;col_pos.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;list_width&nbsp;&gt&nbsp;max_list_width.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;line&nbsp;size&nbsp;to&nbsp;large&nbsp;for&nbsp;one&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;list_width&nbsp;=&nbsp;i&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;p_vim_alv_fcat&nbsp;ASSIGNING&nbsp;&ltalv_fcat&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_width&nbsp;=&nbsp;list_width&nbsp;+&nbsp;&ltalv_fcat&gt-ddic_outputlen&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;list_width&nbsp;&gt&nbsp;max_list_width.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;=&nbsp;i&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_width&nbsp;=&nbsp;&ltalv_fcat&gt-ddic_outputlen&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_fcat&gt-row_pos&nbsp;=&nbsp;i.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;maintview&nbsp;=&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF412290/2001b<br />
+   </div>
+   <div class="codeComment">
+*check&nbsp;field&nbsp;catalogue&nbsp;for&nbsp;doublettes&nbsp;and&nbsp;change&nbsp;their&nbsp;fieldname<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;p_vim_alv_fcat&nbsp;ASSIGNING&nbsp;&ltalv_fcat&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;fldno.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;p_vim_alv_fcat&nbsp;ASSIGNING&nbsp;&ltalv_fcat2&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;fieldname&nbsp;=&nbsp;&ltalv_fcat&gt-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;sy-tabix&nbsp;&lt&gt&nbsp;i.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_fcat2&gt-ref_fieldname&nbsp;=&nbsp;&ltalv_fcat2&gt-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;fldno.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;&ltalv_fcat2&gt-fieldname&nbsp;fldno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;&ltalv_fcat2&gt-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;strln&nbsp;=&nbsp;strlen(&nbsp;&ltalv_fcat2&gt-fieldname&nbsp;)&nbsp;-&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;&ltalv_fcat2&gt-fieldname(strln)&nbsp;fldno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;&ltalv_fcat2&gt-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF412290/2001e<br />
+ENDFORM.                               " FILL_ALV_FIELDCAT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;VIM_CALL_ALV<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Calls&nbsp;ABAP&nbsp;List&nbsp;Viewer.&nbsp;Has&nbsp;to&nbsp;be&nbsp;called&nbsp;from&nbsp;Function&nbsp;Module<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REUSE_ALV_TABLE_CREATE.<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtVALUE_TAB<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_call_alv TABLES value_tab.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;progname&nbsp;LIKE&nbsp;sy-repid.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltalv_value_tab_x&gt&nbsp;TYPE&nbsp;tabl8000,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltvalue_tab_x&gt&nbsp;TYPE&nbsp;x.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;value_tab.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;value_tab&nbsp;TO&nbsp;&ltvalue_tab_x&gt&nbsp;CASTING.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;alv_value_tab&nbsp;ASSIGNING&nbsp;&ltalv_value_tab_x&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltvalue_tab_x&gt&nbsp;=&nbsp;&ltalv_value_tab_x&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;value_tab.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;APPEND&nbsp;LINES&nbsp;OF&nbsp;alv_value_tab&nbsp;TO&nbsp;value_tab.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;progname&nbsp;=&nbsp;sy-repid.<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_LIST_DISPLAY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_program&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;progname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_layout<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_fcat<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_excluding&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_excluding<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_special_groups&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_special_groups<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_sort<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_FILTER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_sel_hide&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_sel_hide<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_default&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_var_default<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_var_save<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_variant<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_events&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_events<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_event_exit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_event_exit<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_print&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_alv_print<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS_REPREP_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_SCREEN_START_COLUMN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_SCREEN_START_LINE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_SCREEN_END_COLUMN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_SCREEN_END_LINE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_EXIT_CAUSED_BY_CALLER&nbsp;&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ES_EXIT_CAUSED_BY_USER&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;value_tab[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;program_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.&nbsp;RAISE&nbsp;print_error.&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;FB_RAIS_EX<br />
+ENDFORM.                               "vim_call_alv<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MAINTAIN_ALV_VALUE_TAB_TEXT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shift&nbsp;textfield&nbsp;directly&nbsp;behind&nbsp;key<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_TEXTLEN&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM maintain_alv_value_tab_text USING    p_textlen TYPE intlen.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;x&nbsp;TYPE&nbsp;i,&nbsp;record&nbsp;TYPE&nbsp;tabl8000,&nbsp;textoffset&nbsp;TYPE&nbsp;intlen,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;new_offs,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ref_tabname&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;TYPE&nbsp;viewfield,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ref_fieldname&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;offset&nbsp;TYPE&nbsp;tabfdpos,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;new_offs.<br />
+<br />
+&nbsp;&nbsp;STATICS:&nbsp;t_fld_offs&nbsp;LIKE&nbsp;SORTED&nbsp;TABLE&nbsp;OF&nbsp;new_offs&nbsp;WITH&nbsp;UNIQUE&nbsp;KEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ref_tabname&nbsp;fieldname&nbsp;ref_fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INITIAL&nbsp;SIZE&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;viewname&nbsp;TYPE&nbsp;viewname.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltx_namt&gt&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;x_namtab,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_fcat&gt&nbsp;TYPE&nbsp;slis_fieldcat_alv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_val&gt.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;viewname&nbsp;&lt&gt&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;viewname&nbsp;=&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;t_fld_offs.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;new_offs-offset&nbsp;=&nbsp;x_header-after_keyc.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;new_offs-offset&nbsp;=&nbsp;x_header-keylen.<br />
+*&nbsp;Offset&nbsp;aktualisieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;vim_alv_fcat&nbsp;ASSIGNING&nbsp;&ltalv_fcat&gt&nbsp;WHERE&nbsp;key&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-ref_tabname&nbsp;=&nbsp;&ltalv_fcat&gt-ref_tabname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-fieldname&nbsp;=&nbsp;&ltalv_fcat&gt-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-ref_fieldname&nbsp;=&nbsp;&ltalv_fcat&gt-ref_fieldname.&nbsp;"UF412290/2001<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Alignment<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;'CNDT'&nbsp;CS&nbsp;&ltalv_fcat&gt-inttype.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Character-like&nbsp;datatypes<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;new_offs-offset&nbsp;+&nbsp;cl_abap_char_utilities=&gtcharsize&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOD&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-offset&nbsp;=&nbsp;new_offs-offset<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;cl_abap_char_utilities=&gtcharsize&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;&ltalv_fcat&gt-datatype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INT2'&nbsp;OR&nbsp;'PREC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;new_offs-offset&nbsp;+&nbsp;2&nbsp;)&nbsp;MOD&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-offset&nbsp;=&nbsp;new_offs-offset&nbsp;+&nbsp;2&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INT4'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;new_offs-offset&nbsp;+&nbsp;4&nbsp;)&nbsp;MOD&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-offset&nbsp;=&nbsp;new_offs-offset&nbsp;+&nbsp;4&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'FLTP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;=&nbsp;(&nbsp;new_offs-offset&nbsp;+&nbsp;8&nbsp;)&nbsp;MOD&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-offset&nbsp;=&nbsp;new_offs-offset&nbsp;+&nbsp;8&nbsp;-&nbsp;x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;new_offs&nbsp;INTO&nbsp;TABLE&nbsp;t_fld_offs.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_offs-offset&nbsp;=&nbsp;new_offs-offset&nbsp;+&nbsp;&ltalv_fcat&gt-intlen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;textoffset&nbsp;=&nbsp;x_header-after_tabc&nbsp;+&nbsp;x_header-aft_txtkc.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;textoffset&nbsp;=&nbsp;x_header-tablen&nbsp;+&nbsp;x_header-textkeylen.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;alv_value_tab&nbsp;ASSIGNING&nbsp;&ltalv_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;record(x_header-after_keyc)&nbsp;=&nbsp;&ltalv_val&gt(x_header-after_keyc).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;record&nbsp;=&nbsp;&ltalv_val&gt(x_header-keylen).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_textlen&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record+x_header-after_keyc(p_textlen)&nbsp;=<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_val&gt+textoffset(p_textlen).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record+x_header-keylen(p_textlen)&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_val&gt+textoffset(p_textlen).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;ASSIGNING&nbsp;&ltx_namt&gt&nbsp;WHERE&nbsp;keyflag&nbsp;=&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttabfld&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;t_fld_offs&nbsp;INTO&nbsp;new_offs&nbsp;WITH&nbsp;TABLE&nbsp;KEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ref_tabname&nbsp;=&nbsp;&ltx_namt&gt-bastabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;=&nbsp;&ltx_namt&gt-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ref_fieldname&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record+new_offs-offset(&ltx_namt&gt-flength)&nbsp;=<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_val&gt+&ltx_namt&gt-position(&ltx_namt&gt-flength).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF412290/2001b<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;field&nbsp;had&nbsp;to&nbsp;be&nbsp;renamed&nbsp;because&nbsp;of&nbsp;doublettes<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;t_fld_offs&nbsp;INTO&nbsp;new_offs&nbsp;WITH&nbsp;KEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ref_tabname&nbsp;=&nbsp;&ltx_namt&gt-bastabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ref_fieldname&nbsp;=&nbsp;&ltx_namt&gt-viewfield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;record+new_offs-offset(&ltx_namt&gt-flength)&nbsp;=<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_val&gt+&ltx_namt&gt-position(&ltx_namt&gt-flength).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF412290/2001e<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&ltalv_val&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltalv_val&gt&nbsp;=&nbsp;record.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                               " MAINTAIN_ALV_VALUE_TAB_TEXT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;VIM_GET_REFFIELD_ALV<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_REFFIELD&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_REFTABLE&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_DFIES&nbsp;Entry&nbsp;for&nbsp;ALV-Fieldcatalogue<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_get_reffield_alv USING value(p_reffield) TYPE fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value(p_reftable)&nbsp;TYPE&nbsp;tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_dfies&nbsp;TYPE&nbsp;dfies.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;dfies_tab&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;dfies.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'DDIF_FIELDINFO_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_reftable<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;langu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-langu<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dfies_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;dfies_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;internal_error&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;dfies_tab&nbsp;INTO&nbsp;p_dfies&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                               " VIM_GET_REFFIELD_ALV<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CONV_DFIES_FCAT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_P_DFIES&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_P_FCAT_REFFIELD&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM conv_dfies_fcat USING    p_dfies LIKE dfies<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;TYPE&nbsp;i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_fcat_reffield&nbsp;TYPE&nbsp;slis_fieldcat_alv.<br />
+<br />
+&nbsp;&nbsp;p_fcat_reffield-col_pos&nbsp;=&nbsp;i.<br />
+&nbsp;&nbsp;p_fcat_reffield-fieldname&nbsp;=&nbsp;p_dfies-fieldname.<br />
+&nbsp;&nbsp;p_fcat_reffield-ref_tabname&nbsp;=&nbsp;p_dfies-tabname.<br />
+&nbsp;&nbsp;p_fcat_reffield-key&nbsp;=&nbsp;p_dfies-keyflag.<br />
+&nbsp;&nbsp;p_fcat_reffield-seltext_l&nbsp;=&nbsp;p_dfies-scrtext_l.<br />
+&nbsp;&nbsp;p_fcat_reffield-seltext_m&nbsp;=&nbsp;p_dfies-scrtext_m.<br />
+&nbsp;&nbsp;p_fcat_reffield-seltext_s&nbsp;=&nbsp;p_dfies-scrtext_s.<br />
+&nbsp;&nbsp;p_fcat_reffield-reptext_ddic&nbsp;=&nbsp;p_dfies-reptext.<br />
+&nbsp;&nbsp;p_fcat_reffield-datatype&nbsp;=&nbsp;p_dfies-datatype.<br />
+&nbsp;&nbsp;p_fcat_reffield-inttype&nbsp;=&nbsp;p_dfies-inttype.<br />
+&nbsp;&nbsp;p_fcat_reffield-ddic_outputlen&nbsp;=&nbsp;p_dfies-outputlen.<br />
+&nbsp;&nbsp;p_fcat_reffield-intlen&nbsp;=&nbsp;p_dfies-intlen.<br />
+&nbsp;&nbsp;p_fcat_reffield-lowercase&nbsp;=&nbsp;p_dfies-lowercase.<br />
+&nbsp;&nbsp;CASE&nbsp;p_dfies-datatype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CLNT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;x_header-clidep&nbsp;&lt&gt&nbsp;space&nbsp;AND&nbsp;p_fcat_reffield-key&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_fcat_reffield-tech&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CURR'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;currency&nbsp;field&nbsp;in&nbsp;structure<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_fcat_reffield-cfieldname&nbsp;=&nbsp;p_dfies-reffield.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'QUAN'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;currency&nbsp;field&nbsp;in&nbsp;structure<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_fcat_reffield-qfieldname&nbsp;=&nbsp;p_dfies-reffield.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                               " CONV_DFIES_FCAT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INIT_ALV_VARIANT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;define&nbsp;path&nbsp;for&nbsp;list&nbsp;variant&nbsp;names<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_VARIANT&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_SAVE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM init_alv_variant CHANGING p_save<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_default<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_variant&nbsp;STRUCTURE&nbsp;disvariant.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;x_header-viewname&nbsp;sy-repid&nbsp;INTO&nbsp;p_variant-report.<br />
+&nbsp;&nbsp;p_save&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;p_default&nbsp;=&nbsp;'X'.<br />
+ENDFORM.                               " INIT_ALV_VARIANT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ALV_END_OF_LIST<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM alv_end_of_list.<br />
+&nbsp;&nbsp;WRITE&nbsp;AT&nbsp;/(sy-linsz)&nbsp;sy-pagno&nbsp;CENTERED.<br />
+ENDFORM.                               " ALV_END_OF_LIST<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

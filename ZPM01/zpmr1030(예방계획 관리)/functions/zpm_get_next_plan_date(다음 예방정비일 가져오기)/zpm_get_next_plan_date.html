@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPM_GET_NEXT_PLAN_DATE</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZPM_GET_NEXT_PLAN_DATE</h2>
+<h3> Description: 다음 예방정비일 가져오기</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZPM_GET_NEXT_PLAN_DATE.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_WORKD) TYPE  DATUM<br />
+*"     REFERENCE(I_PERIOD) LIKE  ZPMT0050-PERIOD<br />
+*"     REFERENCE(I_PERIODU) LIKE  ZPMT0050-PERIODU<br />
+*"  EXPORTING<br />
+*"     REFERENCE(E_PLAND) TYPE  DATUM<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zpm_get_next_plan_date.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_DAY&nbsp;&nbsp;&nbsp;LIKE&nbsp;T5A4A-DLYDY.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_WEEK&nbsp;&nbsp;&nbsp;LIKE&nbsp;T5A4A-DLYDY.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_MONTH&nbsp;LIKE&nbsp;T5A4A-DLYMO.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_YEAR&nbsp;&nbsp;LIKE&nbsp;T5A4A-DLYYR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 날짜 주기, 주기단위 값이 없으면 EXIT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;I_WORKD&nbsp;=&nbsp;''&nbsp;OR&nbsp;I_PERIODU&nbsp;=&nbsp;''&nbsp;OR&nbsp;I_PERIOD&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 주기단위에 따라 주기일 입력<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CASE&nbsp;I_PERIODU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'DAY'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_DAY&nbsp;=&nbsp;I_PERIOD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WEEK'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"주기가&nbsp;WEEK&nbsp;일때는&nbsp;주기&nbsp;곱하기&nbsp;7&nbsp;을&nbsp;해서&nbsp;날짜로&nbsp;계산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_DAY&nbsp;=&nbsp;I_PERIOD&nbsp;*&nbsp;7.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MONTH'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_MONTH&nbsp;=&nbsp;I_PERIOD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'YEAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_YEAR&nbsp;=&nbsp;I_PERIOD.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'RP_CALC_DATE_IN_INTERVAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_WORKD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DAYS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_DAY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MONTHS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_MONTH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SIGNUM&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'+'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;YEARS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_YEAR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALC_DATE&nbsp;=&nbsp;E_PLAND.<br />
+<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZPMM<br />
+*000   &<br />
+*001   & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

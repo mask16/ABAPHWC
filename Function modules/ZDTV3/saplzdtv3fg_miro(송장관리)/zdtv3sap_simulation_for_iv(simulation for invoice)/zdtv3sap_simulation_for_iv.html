@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3SAP_SIMULATION_FOR_IV</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3SAP_SIMULATION_FOR_IV</h2>
+<h3> Description: Simulation for Invoice</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3SAP_SIMULATION_FOR_IV.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_INVNUM) LIKE  BAPI_INCINV_FLD-INV_DOC_NO OPTIONAL<br />
+*"     VALUE(I_YEAR) LIKE  BAPI_INCINV_FLD-FISC_YEAR OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(ET_ACCIT) TYPE  ACCIT_T<br />
+*"     VALUE(ET_ACCCR) TYPE  ACCCR_T<br />
+*"  TABLES<br />
+*"      RETURN STRUCTURE  ZDTV3S_RETURN OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3sap_simulation_for_iv.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_EKKN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;EKKN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_EKKN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;EKKN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_LIFNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZDTV3S_DOC_LIFNR.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;GS_HEADER,&nbsp;GS_ADDR,&nbsp;G_INVNUM,&nbsp;G_YEAR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEMDATA,&nbsp;GT_ACCTDATA,&nbsp;GT_GLDATA,&nbsp;&nbsp;&nbsp;&nbsp;GT_MATDATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAXDATA,&nbsp;&nbsp;GT_WITHDATA,&nbsp;GT_SPLITDATA,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_HEADERDATA,&nbsp;GS_ADDRESSDATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEM_DETAIL,&nbsp;&nbsp;GT_ACCOUNTINGDATA,&nbsp;GT_GLACCOUNTDATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_MATERIALDATA,&nbsp;GT_TAX_DETAIL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_WITHTAX_DETAIL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_SPLIT_DETAIL,"gt_nfmetallitms,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_RETURN,&nbsp;GT_ACCIT,&nbsp;GT_ACCCR.<br />
+<br />
+&nbsp;&nbsp;REFRESH:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEMDATA,&nbsp;GT_ACCTDATA,&nbsp;GT_GLDATA,&nbsp;&nbsp;&nbsp;&nbsp;GT_MATDATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAXDATA,&nbsp;&nbsp;GT_WITHDATA,&nbsp;GT_SPLITDATA,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEM_DETAIL,&nbsp;&nbsp;GT_ACCOUNTINGDATA,&nbsp;GT_GLACCOUNTDATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_MATERIALDATA,&nbsp;GT_TAX_DETAIL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_WITHTAX_DETAIL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_SPLIT_DETAIL,"gt_nfmetallitms,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_RETURN,&nbsp;GT_ACCIT,&nbsp;GT_ACCCR.<br />
+<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_INCOMINGINVOICE_GETDETAIL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVOICEDOCNUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_INVNUM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FISCALYEAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_YEAR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEADERDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_HEADERDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADDRESSDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ADDRESSDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ITEMDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_ITEM_DETAIL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACCOUNTINGDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_ACCOUNTINGDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GLACCOUNTDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_GLACCOUNTDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATERIALDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_MATERIALDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TAXDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_TAX_DETAIL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITHTAXDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_WITHTAX_DETAIL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VENDORITEMSPLITDATA&nbsp;=&nbsp;GT_SPLIT_DETAIL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_RETURN.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_HEADERDATA&nbsp;TO&nbsp;GS_HEADER.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;GS_HEADER-INV_DOC_NO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_HEADER-DSCT_DAYS1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_HEADER-PMNT_BLOCK.<br />
+&nbsp;&nbsp;GS_HEADER-GROSS_AMOUNT&nbsp;=&nbsp;GS_HEADERDATA-GROSS_AMNT.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_ITEM_DETAIL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GT_ITEM_DETAIL&nbsp;TO&nbsp;GT_ITEMDATA.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GT_ITEMDATA-COND_TYPE&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;GT_ITEMDATA-COND_COUNT,&nbsp;GT_ITEMDATA-COND_ST_NO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"..&nbsp;차후차변/차후대변<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GT_ITEMDATA-DE_CRE_IND&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GT_ITEMDATA-COND_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_ITEMDATA.&nbsp;CLEAR&nbsp;GT_ITEMDATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_SPLIT_DETAIL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GT_SPLIT_DETAIL&nbsp;TO&nbsp;GT_SPLITDATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_SPLITDATA.&nbsp;CLEAR&nbsp;GT_SPLITDATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 송장계정지정 데이타<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;set_acctdata&nbsp;USING&nbsp;&nbsp;ls_lifnr.<br />
+   </div>
+   <div class="codeComment">
+*  LOOP AT GT_ACCOUNTINGDATA.<br />
+*    MOVE-CORRESPONDING GT_ACCOUNTINGDATA TO GT_ACCTDATA.<br />
+*<br />
+**    REFRESH lt_ekkn. CLEAR ls_ekkn.<br />
+***<br />
+**    READ TABLE gt_item_detail<br />
+**      WITH KEY invoice_doc_item = gt_accountingdata-invoice_doc_item.<br />
+**<br />
+**    CALL FUNCTION 'MMPUR_EKKN_READ_EBELN_EBELP'<br />
+**      EXPORTING<br />
+**        pi_ebeln             = gt_item_detail-po_number<br />
+**        pi_ebelp             = gt_item_detail-po_item<br />
+**        pi_refresh_buffer    = 'X'<br />
+**      TABLES<br />
+**        pto_ekkn_po          = lt_ekkn<br />
+**      EXCEPTIONS<br />
+**        no_records_requested = 1<br />
+**        OTHERS               = 2.<br />
+**<br />
+**    READ TABLE lt_ekkn INTO ls_ekkn INDEX 1.<br />
+**    IF SY-SUBRC EQ 0.<br />
+**    " 송장검증에서 비계획 계정지정/계정 지정 순번<br />
+**    IF ls_ekkn-zekkn IS INITIAL.<br />
+**      gt_acctdata-xunpl = 'X'.<br />
+**      CLEAR gt_acctdata-serial_no.<br />
+**    ELSE.<br />
+**      CLEAR gt_acctdata-xunpl.<br />
+**      gt_acctdata-serial_no = ls_ekkn-zekkn.<br />
+**    ENDIF.<br />
+**    ENDIF.<br />
+**<br />
+*    APPEND GT_ACCTDATA. CLEAR GT_ACCTDATA.<br />
+*  ENDLOOP.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_TAX_DETAIL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GT_TAX_DETAIL&nbsp;TO&nbsp;GT_TAXDATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_TAXDATA.&nbsp;CLEAR&nbsp;GT_TAXDATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'MRM_SRM_INVOICE_SIMULATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEADERDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_HEADER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_RETURN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ACCIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ET_ACCIT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ACCCR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ET_ACCCR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ITEMDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_ITEMDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VENDORITEMSPLITDATA&nbsp;=&nbsp;GT_SPLITDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACCOUNTINGDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_ACCTDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TAXDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_TAXDATA.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&gt Return Message Return.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_RETURN&nbsp;INTO&nbsp;GS_RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_MESSAGE_TEXT&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN-ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN-NUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN-MESSAGE_V1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN-MESSAGE_V2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN-MESSAGE_V3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RETURN-MESSAGE_V4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_RETURN-MESSAGE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_RETURN-TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE&nbsp;&nbsp;=&nbsp;GS_RETURN-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;RETURN.&nbsp;CLEAR&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: 00<br />
+*398   & & & &<br />
+*<br />
+* Message class: 0K<br />
+*000   & & & &<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+*030   &에 대한 권한이 존재하지 않습니다.<br />
+*301   파일경로 길이는 128자리까지만 허용합니다.<br />
+*901   &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

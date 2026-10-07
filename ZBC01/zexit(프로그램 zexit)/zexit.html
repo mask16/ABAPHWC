@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZEXIT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZEXIT</h2>
+<h3> Description: 프로그램 ZEXIT</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;ZSEARCH_BADI_USER_EXIT<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&&nbsp;Wyszukiwanie&nbsp;User&nbsp;exit&nbsp;i&nbsp;Badi&nbsp;na&nbsp;podstawie&nbsp;numeru&nbsp;transakcji<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT zsearch_badi_user_exit.<br />
+<br />
+TABLES : tstc,<br />
+tadir,<br />
+modsapt,<br />
+modact,<br />
+trdir,<br />
+tfdir,<br />
+enlfdir,<br />
+sxs_attrt ,<br />
+tstct.<br />
+<br />
+DATA : jtab LIKE tadir OCCURS 0 WITH HEADER LINE.<br />
+DATA : field1(30).<br />
+DATA : v_devclass LIKE tadir-devclass.<br />
+<br />
+PARAMETERS : p_tcode LIKE tstc-tcode,<br />
+p_pgmna LIKE tstc-pgmna .<br />
+<br />
+<br />
+<br />
+<br />
+DATA wa_tadir TYPE tadir.<br />
+<br />
+START-OF-SELECTION.<br />
+<br />
+&nbsp;IF&nbsp;NOT&nbsp;p_tcode&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tstc&nbsp;WHERE&nbsp;tcode&nbsp;EQ&nbsp;p_tcode.<br />
+<br />
+&nbsp;ELSEIF&nbsp;NOT&nbsp;p_pgmna&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;tstc-pgmna&nbsp;=&nbsp;p_pgmna.<br />
+&nbsp;ENDIF.<br />
+<br />
+&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tadir<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;pgmid&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;object&nbsp;=&nbsp;'PROG'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;obj_name&nbsp;=&nbsp;tstc-pgmna.<br />
+<br />
+&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;tadir-devclass&nbsp;TO&nbsp;v_devclass.<br />
+<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;trdir<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;name&nbsp;=&nbsp;tstc-pgmna.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;trdir-subc&nbsp;EQ&nbsp;'F'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tfdir<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;pname&nbsp;=&nbsp;tstc-pgmna.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;enlfdir<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;funcname&nbsp;=&nbsp;tfdir-funcname.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tadir<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;pgmid&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;object&nbsp;=&nbsp;'FUGR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;obj_name&nbsp;EQ&nbsp;enlfdir-area.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;tadir-devclass&nbsp;TO&nbsp;v_devclass.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;tadir&nbsp;INTO&nbsp;TABLE&nbsp;jtab<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;pgmid&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;object&nbsp;IN&nbsp;('SMOD',&nbsp;'SXSD')<br />
+&nbsp;&nbsp;&nbsp;AND&nbsp;devclass&nbsp;=&nbsp;v_devclass.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tstct<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;sprsl&nbsp;EQ&nbsp;sy-langu<br />
+&nbsp;&nbsp;&nbsp;AND&nbsp;tcode&nbsp;EQ&nbsp;p_tcode.<br />
+<br />
+&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_POSITIVE&nbsp;INTENSIFIED&nbsp;OFF.<br />
+&nbsp;&nbsp;&nbsp;WRITE:/(19)&nbsp;'Transaction&nbsp;Code&nbsp;-&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;20(20)&nbsp;p_tcode,<br />
+&nbsp;&nbsp;&nbsp;45(50)&nbsp;tstct-ttext.<br />
+&nbsp;&nbsp;&nbsp;SKIP.<br />
+&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;jtab[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(105)&nbsp;sy-uline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_HEADING&nbsp;INTENSIFIED&nbsp;ON.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Sorting&nbsp;the&nbsp;internal&nbsp;Table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;jtab&nbsp;BY&nbsp;object.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;:&nbsp;wf_txt(60)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wf_smod&nbsp;TYPE&nbsp;i&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wf_badi&nbsp;TYPE&nbsp;i&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wf_object2(30)&nbsp;TYPE&nbsp;c.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;wf_smod,&nbsp;wf_badi&nbsp;,&nbsp;wf_object2.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Get&nbsp;the&nbsp;total&nbsp;SMOD.<br />
+<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;jtab&nbsp;INTO&nbsp;wa_tadir.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;FIRST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_HEADING&nbsp;INTENSIFIED&nbsp;ON.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/1&nbsp;sy-vline,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;'Enhancement/&nbsp;Business&nbsp;Add-in',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;41&nbsp;sy-vline&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42&nbsp;'Description',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;105&nbsp;sy-vline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(105)&nbsp;sy-uline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;wf_txt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;NEW&nbsp;object.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;wa_tadir-object&nbsp;=&nbsp;'SMOD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wf_object2&nbsp;=&nbsp;'Enhancement'&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;wa_tadir-object&nbsp;=&nbsp;'SXSD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wf_object2&nbsp;=&nbsp;'&nbsp;Business&nbsp;Add-in'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_GROUP&nbsp;INTENSIFIED&nbsp;ON.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/1&nbsp;sy-vline,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;wf_object2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;105&nbsp;sy-vline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;wa_tadir-object.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SMOD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wf_smod&nbsp;=&nbsp;wf_smod&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;modtext&nbsp;INTO&nbsp;wf_txt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;modsapt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;sprsl&nbsp;=&nbsp;sy-langu<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;name&nbsp;=&nbsp;wa_tadir-obj_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_NORMAL&nbsp;INTENSIFIED&nbsp;OFF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SXSD'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;For&nbsp;BADis<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wf_badi&nbsp;=&nbsp;wf_badi&nbsp;+&nbsp;1&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;text&nbsp;INTO&nbsp;wf_txt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;sxs_attrt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;sprsl&nbsp;=&nbsp;sy-langu<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;exit_name&nbsp;=&nbsp;wa_tadir-obj_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_NORMAL&nbsp;INTENSIFIED&nbsp;ON.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/1&nbsp;sy-vline,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;wa_tadir-obj_name&nbsp;HOTSPOT&nbsp;ON,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;41&nbsp;sy-vline&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42&nbsp;wf_txt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;105&nbsp;sy-vline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;object.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;:&nbsp;/(105)&nbsp;sy-uline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(105)&nbsp;sy-uline.<br />
+<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SKIP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_TOTAL&nbsp;INTENSIFIED&nbsp;ON.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'No.of&nbsp;Exits:'&nbsp;,&nbsp;wf_smod.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'No.of&nbsp;BADis:'&nbsp;,&nbsp;wf_badi.<br />
+<br />
+&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_NEGATIVE&nbsp;INTENSIFIED&nbsp;ON.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(105)&nbsp;'No&nbsp;userexits&nbsp;or&nbsp;BADis&nbsp;exist'.<br />
+&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_NEGATIVE&nbsp;INTENSIFIED&nbsp;ON.<br />
+&nbsp;&nbsp;&nbsp;WRITE:/(105)&nbsp;'Transaction&nbsp;does&nbsp;not&nbsp;exist'.<br />
+&nbsp;ENDIF.<br />
+<br />
+AT LINE-SELECTION.<br />
+<br />
+&nbsp;DATA&nbsp;:&nbsp;wf_object&nbsp;TYPE&nbsp;tadir-object.<br />
+&nbsp;CLEAR&nbsp;wf_object.<br />
+<br />
+<br />
+&nbsp;GET&nbsp;CURSOR&nbsp;FIELD&nbsp;field1.<br />
+&nbsp;CHECK&nbsp;field1(8)&nbsp;EQ&nbsp;'WA_TADIR'.<br />
+&nbsp;READ&nbsp;TABLE&nbsp;jtab&nbsp;WITH&nbsp;KEY&nbsp;obj_name&nbsp;=&nbsp;sy-lisel+1(20).<br />
+&nbsp;MOVE&nbsp;jtab-object&nbsp;TO&nbsp;wf_object.<br />
+<br />
+&nbsp;CASE&nbsp;wf_object.<br />
+&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SMOD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'MON'&nbsp;FIELD&nbsp;sy-lisel+1(10).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'SMOD'&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SXSD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'EXN'&nbsp;FIELD&nbsp;sy-lisel+1(20).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'SE18'&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+&nbsp;ENDCASE.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

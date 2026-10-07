@@ -1,0 +1,2279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPPR9002</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZPPR9002</h2>
+<h3> Description: Display joins of V -, GV - and DBA-Views (Owner SYS)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*-------------------------------------------------------------------------------------------------------------------*<br />
+*&nbsp;PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ZPPR9002<br />
+*&nbsp;DESCRIPTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;[Tool]&nbsp;SQL&nbsp;실행프로그램<br />
+*&nbsp;DEVELOPER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AB01<br />
+*&nbsp;CREATED&nbsp;DATE&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;2012.10.05<br />
+*-------------------------------------------------------------------------------------------------------------------*<br />
+*&nbsp;HISTORY&nbsp;:<br />
+*&nbsp;DEVELOPER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIPTION<br />
+*&nbsp;AB01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2012.10.05&nbsp;&nbsp;&nbsp;&nbsp;CREATION<br />
+*<br />
+*-------------------------------------------------------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+REPORT  ZPPR9002 NO STANDARD PAGE HEADING MESSAGE-ID ZPPM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;some&nbsp;infos:<br />
+*&nbsp;DBA_TABLES:&nbsp;contains&nbsp;tables&nbsp;but&nbsp;not&nbsp;dba*,&nbsp;gv$*,&nbsp;v$*&nbsp;-&nbsp;views<br />
+*&nbsp;DBA_TAB_COLS:&nbsp;contains&nbsp;table&nbsp;columns,&nbsp;also&nbsp;of&nbsp;above&nbsp;named&nbsp;views<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(here&nbsp;named&nbsp;DBA_*,&nbsp;GV_$*,&nbsp;V_$*)<br />
+*&nbsp;DBA_TAB_COLUMNS:&nbsp;dito.<br />
+*&nbsp;DBA_TAB_VIEWS:&nbsp;contains&nbsp;views,&nbsp;also&nbsp;(DBA_*,&nbsp;GV_$*,&nbsp;V_$*)&nbsp;-&nbsp;views<br />
+*&nbsp;Corrections:<br />
+*&nbsp;C20040123&nbsp;-&nbsp;read&nbsp;data&nbsp;in&nbsp;generated&nbsp;subroutinepool&nbsp;more&nbsp;fault-tolerant<br />
+*&nbsp;C20040315&nbsp;-&nbsp;catch&nbsp;exception&nbsp;during&nbsp;subroutine&nbsp;generation<br />
+<br />
+<br />
+<br />
+************************************************************************<br />
+*<br />
+*&nbsp;Classes<br />
+*<br />
+************************************************************************<br />
+<br />
+<br />
+<br />
+************************************************************************<br />
+*<br />
+*&nbsp;Data&nbsp;definition<br />
+*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+TYPE-POOLS: SLIS.<br />
+   </div>
+   <div class="codeComment">
+**type-pools:&nbsp;cntl.<br />
+<br />
+*-----------------------------------------------------------------------<br />
+*&nbsp;Types<br />
+*-----------------------------------------------------------------------<br />
+*&nbsp;Text&nbsp;edited&nbsp;in&nbsp;dialogue<br />
+   </div>
+   <div class="code">
+TYPES: TY_TEXTLINE(72) TYPE C.<br />
+TYPES: TY_TEXTTAB TYPE TABLE OF TY_TEXTLINE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;types&nbsp;for&nbsp;generated&nbsp;sourcecode<br />
+   </div>
+   <div class="code">
+TYPES: TY_REPLINE(72) TYPE C.<br />
+TYPES: TY_TAB_REPORT TYPE TABLE OF TY_REPLINE.<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+**&nbsp;types&nbsp;for&nbsp;oracle&nbsp;field&nbsp;description<br />
+*TYPES:&nbsp;BEGIN&nbsp;OF&nbsp;ty_ora_field,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;table_name(30)&nbsp;&nbsp;TYPE&nbsp;c,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;column_name(30)&nbsp;TYPE&nbsp;c,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_type(10)&nbsp;&nbsp;&nbsp;TYPE&nbsp;c,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_leng&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;ty_ora_field.<br />
+*TYPES:&nbsp;ty_ora_fields&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ty_ora_field.<br />
+*&ltRH<br />
+*&nbsp;type&nbsp;for&nbsp;read&nbsp;data<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF TY_DATALINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINE&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;TY_DATALINE.<br />
+TYPES: TY_DATATABLE TYPE TABLE OF TY_DATALINE.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-----------------------------------------------------------------------<br />
+*&nbsp;global&nbsp;tables,&nbsp;structures&nbsp;and&nbsp;fields<br />
+*-----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+DATA: OK_CODE         TYPE SY-UCOMM.           " OK-Code / command field<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+*DATA:&nbsp;gt_ora_fields&nbsp;&nbsp;&nbsp;TYPE&nbsp;ty_ora_fields.<br />
+*DATA:&nbsp;gs_ora_field&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ty_ora_field.<br />
+*&ltRH<br />
+   </div>
+   <div class="code">
+DATA: GT_DATA         TYPE TY_DATATABLE.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-----------------------------------------------------------------------<br />
+*&nbsp;controls,&nbsp;&gt=4.6-specific<br />
+*-----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+DATA: G_REF_CONTAINER TYPE REF TO CL_GUI_CUSTOM_CONTAINER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_REF_EDITOR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_GUI_TEXTEDIT.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*-----------------------------------------------------------------------<br />
+*&nbsp;constants<br />
+*-----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+CONSTANTS: C_APSTR(1) TYPE C VALUE ''''.<br />
+CONSTANTS: C_CTYPE_DBFIELD TYPE DSQLPCOLTYPE VALUE '1'.<br />
+CONSTANTS: C_CTYPE_EXPR    TYPE DSQLPCOLTYPE VALUE '2'.<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+   </div>
+   <div class="code">
+CONSTANTS: C_CTYPE_TABLECASTLINE TYPE DSQLPCOLTYPE VALUE '3'.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+<br />
+************************************************************************<br />
+*<br />
+*&nbsp;processing<br />
+*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;change&nbsp;language&nbsp;if&nbsp;texts&nbsp;are&nbsp;not&nbsp;available&nbsp;in&nbsp;user&nbsp;language<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;CHANGE_LANGU_IF_NEC.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;check&nbsp;database&nbsp;type<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;SY-DBSYS(3)&nbsp;&lt&gt&nbsp;'ORA'&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'A'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M99&nbsp;SY-DBSYS&nbsp;SPACE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;authority&nbsp;check&nbsp;(like&nbsp;ST04)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;AUTHORITY_CHECK(RSORA000).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Start&nbsp;editor<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;100.<br />
+<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*<br />
+*&nbsp;modules&nbsp;for&nbsp;editor&nbsp;screen&nbsp;PBO<br />
+*<br />
+************************************************************************<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;init_controls&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;Init&nbsp;the&nbsp;editor&nbsp;controls<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE INIT_CONTROLS OUTPUT.<br />
+&nbsp;&nbsp;IF&nbsp;G_REF_CONTAINER&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;create&nbsp;container&nbsp;control&nbsp;for&nbsp;sql&nbsp;editor<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_REF_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTAINER_NAME&nbsp;=&nbsp;'CC_EDITOR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'E'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M20&nbsp;SPACE&nbsp;SPACE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;create&nbsp;text&nbsp;editor&nbsp;object&nbsp;and&nbsp;link&nbsp;to&nbsp;container<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_REF_EDITOR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_REF_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORDWRAP_MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;at&nbsp;spec.&nbsp;column<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORDWRAP_POSITION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;72&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;max.&nbsp;72&nbsp;char&nbsp;/&nbsp;line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORDWRAP_TO_LINEBREAK_MODE&nbsp;=&nbsp;1&nbsp;&nbsp;"&nbsp;break&nbsp;at&nbsp;word<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'E'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M20&nbsp;SPACE&nbsp;SPACE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;Set&nbsp;fixed&nbsp;font<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_REF_EDITOR-&gtSET_FONT_FIXED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;CL_GUI_TEXTEDIT=&gtTRUE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_CNTL_CALL_METHOD&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_PARAMETER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'E'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M20&nbsp;SPACE&nbsp;SPACE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;Set&nbsp;autoindent&nbsp;mode&nbsp;on<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_REF_EDITOR-&gtSET_AUTOINDENT_MODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUTO_INDENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;CL_GUI_TEXTEDIT=&gtTRUE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_CNTL_CALL_METHOD&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'E'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M20&nbsp;SPACE&nbsp;SPACE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.&nbsp;"&nbsp;gref_container&nbsp;IS&nbsp;INITIAL<br />
+ENDMODULE.                 " init_controls  OUTPUT<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;status_0100&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;set&nbsp;pf&nbsp;status&nbsp;and&nbsp;titlebar<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE STATUS_0100 OUTPUT.<br />
+&nbsp;&nbsp;SET&nbsp;PF-STATUS&nbsp;'S100'.<br />
+&nbsp;&nbsp;SET&nbsp;TITLEBAR&nbsp;'T100'.<br />
+ENDMODULE.                 " status_0100  OUTPUT<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*<br />
+*&nbsp;modules&nbsp;for&nbsp;editor&nbsp;screen&nbsp;PAI<br />
+*<br />
+************************************************************************<br />
+<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;exit_command_0100&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;exit&nbsp;commands<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE EXIT_COMMAND_0100 INPUT.<br />
+&nbsp;&nbsp;PERFORM&nbsp;EXIT_COMMAND_0100_INPUT.<br />
+ENDMODULE.                 " exit_command_0100  INPUT<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;user_command_0100&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;user&nbsp;commands<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE USER_COMMAND_0100 INPUT.<br />
+&nbsp;&nbsp;PERFORM&nbsp;USER_COMMAND_0100_INPUT.<br />
+ENDMODULE.                 " user_command_0100  INPUT<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*<br />
+*&nbsp;FORM&nbsp;routines<br />
+*<br />
+************************************************************************<br />
+<br />
+*&gtRH:04.04.2006<br />
+**&--------------------------------------------------------------------*<br />
+**&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;append_ora_fields<br />
+**&--------------------------------------------------------------------*<br />
+**&nbsp;append&nbsp;field&nbsp;description&nbsp;to&nbsp;global&nbsp;table<br />
+**---------------------------------------------------------------------*<br />
+*FORM&nbsp;append_ora_fields.<br />
+*&nbsp;&nbsp;APPEND&nbsp;gs_ora_field&nbsp;TO&nbsp;gt_ora_fields.<br />
+*ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"append_ora_fields<br />
+*&ltRH<br />
+<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ask_and_leave<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;ask&nbsp;for&nbsp;confirmation&nbsp;and&nbsp;leave&nbsp;the&nbsp;program<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM ASK_AND_LEAVE .<br />
+&nbsp;&nbsp;DATA:&nbsp;L_ANSWER(1)&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;CLEAR&nbsp;L_ANSWER.<br />
+&nbsp;&nbsp;CALL FUNCTION 'POPUP_TO_CONFIRM_STEP'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEFAULTOPTION&nbsp;&nbsp;=&nbsp;'Y'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXTLINE1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TEXT-001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXTLINE2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TEXT-002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITEL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TEXT-003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;START_COLUMN&nbsp;&nbsp;&nbsp;=&nbsp;25<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;START_ROW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CANCEL_DISPLAY&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANSWER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_ANSWER.<br />
+&nbsp;&nbsp;CASE&nbsp;L_ANSWER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'J'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;FREE_CONTROL_RESSOURCES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;TO&nbsp;SCREEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'N'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;OK_CODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;SCREEN&nbsp;SY-DYNNR.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    " ask_and_leave<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;change_langu_if_nec<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;set&nbsp;language&nbsp;to&nbsp;english&nbsp;if&nbsp;texts&nbsp;are&nbsp;not&nbsp;available&nbsp;in&nbsp;user&nbsp;language<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHANGE_LANGU_IF_NEC.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_TEXT&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;&nbsp;L_TEXT&nbsp;=&nbsp;TEXT-001.<br />
+&nbsp;&nbsp;CHECK&nbsp;L_TEXT&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;SET&nbsp;LOCALE&nbsp;LANGUAGE&nbsp;'E'.<br />
+&nbsp;&nbsp;SET&nbsp;LANGUAGE&nbsp;SY-LANGU.<br />
+ENDFORM.                    "change_langu_if_nec<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;check_tables_owner<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;Check&nbsp;if&nbsp;owner&nbsp;of&nbsp;referred&nbsp;tables&nbsp;is&nbsp;SYS<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtPT_TABLES&nbsp;&nbsp;tables&nbsp;whic(h&nbsp;have&nbsp;to&nbsp;be&nbsp;checked<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;code:&nbsp;&lt&gt&nbsp;0&nbsp;if&nbsp;at&nbsp;least&nbsp;one&nbsp;table&nbsp;does&nbsp;not<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;have&nbsp;owner&nbsp;SYS<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHECK_TABLES_OWNER  USING    VALUE(PT_TABLES) TYPE TSQLPTABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;P_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;DATA:&nbsp;ls_table&nbsp;TYPE&nbsp;ssqlptables.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_owner(30)&nbsp;TYPE&nbsp;c.<br />
+*&nbsp;&nbsp;DATA:&nbsp;sapsid(6)&nbsp;TYPE&nbsp;c.<br />
+*&nbsp;local&nbsp;data<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;LS_TABLE&nbsp;TYPE&nbsp;SSQLPTABLES.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_OWNER(30)&nbsp;TYPE&nbsp;C.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ADBC&nbsp;reference&nbsp;variables<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;L_CON_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_SQL_CONNECTION.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_STMT_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_SQL_STATEMENT.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_QUERY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_RS_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_SQL_RESULT_SET.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DATA_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_ROWS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_SQLERR_REF&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CX_SQL_EXCEPTION.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&nbsp;processing<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;pt_tables&nbsp;INTO&nbsp;ls_table.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;l_owner.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;ls_table-table_name&nbsp;=&nbsp;'DUAL'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Except&nbsp;table&nbsp;DUAL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;CI_EXECSQL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;select&nbsp;owner<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from&nbsp;dba_objects<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;into&nbsp;:l_owner<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;object_name&nbsp;=&nbsp;:ls_table-table_underscore<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.<br />
+*<br />
+**...SAP&nbsp;user<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'SAP'&nbsp;sy-sysid&nbsp;INTO&nbsp;sapsid.<br />
+*<br />
+**...allow&nbsp;for&nbsp;history&nbsp;tables&nbsp;GVD_*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;(&nbsp;(&nbsp;(&nbsp;l_owner&nbsp;=&nbsp;'SAPR3'&nbsp;)&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;l_owner&nbsp;=&nbsp;sapsid&nbsp;&nbsp;)&nbsp;)&nbsp;AND<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;(&nbsp;ls_table-table_name(4)&nbsp;=&nbsp;'GVD_'&nbsp;)&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;ls_table-table_name(4)&nbsp;=&nbsp;'gvd_'&nbsp;)&nbsp;)&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*<br />
+*<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_owner&nbsp;&lt&gt&nbsp;'SYS'&nbsp;AND<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_owner&nbsp;&lt&gt&nbsp;'PUBLIC'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;text-m03&nbsp;text-m04&nbsp;ls_table-table_name&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_rc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_table-table_name(3)&nbsp;=&nbsp;'V_$'&nbsp;&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_table-table_name(3)&nbsp;=&nbsp;'v_$'&nbsp;&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_table-table_name(4)&nbsp;=&nbsp;'G_V$'&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_table-table_name(4)&nbsp;=&nbsp;'g_v$'&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_table-table_name(3)&nbsp;=&nbsp;'X_$'&nbsp;&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_table-table_name(3)&nbsp;=&nbsp;'x_$'&nbsp;&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_table-table_name(5)&nbsp;=&nbsp;'SAP_$'&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_table-table_name(5)&nbsp;=&nbsp;'sap_$'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;text-m06&nbsp;text-m07&nbsp;space&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_rc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;ENDLOOP.<br />
+*&nbsp;processing<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;L_CON_REF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_STMT_REF&nbsp;=&nbsp;L_CON_REF-&gtCREATE_STATEMENT(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GET&nbsp;REFERENCE&nbsp;OF&nbsp;L_OWNER&nbsp;INTO&nbsp;L_DATA_REF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;process&nbsp;a&nbsp;check&nbsp;for&nbsp;all&nbsp;tables<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;PT_TABLES&nbsp;INTO&nbsp;LS_TABLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;L_OWNER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;L_ROWS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;LS_TABLE-TABLE_NAME&nbsp;=&nbsp;'DUAL'.&nbsp;"&nbsp;don't&nbsp;check&nbsp;DUAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;LS_TABLE-TABLE_NAME&nbsp;=&nbsp;'&ltTABLE_CAST&gt'.&nbsp;"&nbsp;don't&nbsp;check<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;build&nbsp;query&nbsp;-&nbsp;create&nbsp;result&nbsp;set&nbsp;-&nbsp;get&nbsp;data&nbsp;-&nbsp;close&nbsp;result&nbsp;set<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SELECT&nbsp;owner&nbsp;FROM&nbsp;dba_objects'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;WHERE&nbsp;object_name&nbsp;=&nbsp;'''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TABLE-TABLE_UNDERSCORE&nbsp;''''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_QUERY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RS_REF&nbsp;=&nbsp;L_STMT_REF-&gtEXECUTE_QUERY(&nbsp;L_QUERY&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RS_REF-&gtSET_PARAM(&nbsp;L_DATA_REF&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHILE&nbsp;L_RS_REF-&gtNEXT(&nbsp;)&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;L_ROWS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RS_REF-&gtCLOSE(&nbsp;).<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;Table&nbsp;does&nbsp;not&nbsp;exist<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_ROWS&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M21&nbsp;LS_TABLE-TABLE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;table&nbsp;names&nbsp;must&nbsp;not&nbsp;contain&nbsp;'_',&nbsp;e.g.&nbsp;as&nbsp;V_$&nbsp;....<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_TABLE-TABLE_NAME(3)&nbsp;=&nbsp;'V_$'&nbsp;&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TABLE-TABLE_NAME(3)&nbsp;=&nbsp;'v_$'&nbsp;&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TABLE-TABLE_NAME(4)&nbsp;=&nbsp;'G_V$'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TABLE-TABLE_NAME(4)&nbsp;=&nbsp;'g_v$'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TABLE-TABLE_NAME(3)&nbsp;=&nbsp;'X_$'&nbsp;&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TABLE-TABLE_NAME(3)&nbsp;=&nbsp;'x_$'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M06&nbsp;TEXT-M07&nbsp;LS_TABLE-TABLE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;check&nbsp;owner&nbsp;SYS&nbsp;or&nbsp;PUBLIC<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_OWNER&nbsp;&lt&gt&nbsp;'SYS'&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_OWNER&nbsp;&lt&gt&nbsp;'PUBLIC'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;text-m22&nbsp;ls_table-table_name.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_rc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;close&nbsp;db&nbsp;connection<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_CON_REF-&gtCLOSE(&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;catch&nbsp;and&nbsp;handle&nbsp;SQL&nbsp;exception<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;CX_SQL_EXCEPTION&nbsp;INTO&nbsp;L_SQLERR_REF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;988<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M23&nbsp;&nbsp;L_SQLERR_REF-&gtSQL_CODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-M24&nbsp;&nbsp;L_SQLERR_REF-&gtSQL_MESSAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;ENDTRY.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " check_tables_owner<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;create_subroutine_pool<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;Create&nbsp;and&nbsp;generate&nbsp;a&nbsp;subroutine&nbsp;pool&nbsp;containing&nbsp;the&nbsp;EXEC-SQL&nbsp;command<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_SQL_STATEMENT&nbsp;&nbsp;sql&nbsp;statement<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtPT_SQL_STATEMENT&nbsp;sql&nbsp;statement&nbsp;as&nbsp;text&nbsp;table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtPT_TABLES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list&nbsp;of&nbsp;tables&nbsp;used&nbsp;in&nbsp;the&nbsp;statement<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtPT_COLUMNS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list&nbsp;of&nbsp;columns&nbsp;to&nbsp;read&nbsp;in&nbsp;the&nbsp;statement<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_SQL_REPORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;of&nbsp;the&nbsp;generated&nbsp;subroutine&nbsp;pool<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;code&nbsp;&lt&gt&nbsp;0&nbsp;&nbsp;if&nbsp;error&nbsp;occured<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CREATE_SUBROUTINE_POOL  USING    VALUE(P_SQL_STATEMENT) TYPE STRING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PT_SQL_STATEMENT&nbsp;&nbsp;TYPE&nbsp;TY_TEXTTAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE(PT_TABLES)&nbsp;&nbsp;TYPE&nbsp;TSQLPTABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE(PT_COLUMNS)&nbsp;TYPE&nbsp;TSQLPCOL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;P_SQL_REPORT&nbsp;LIKE&nbsp;TRDIR-NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.&nbsp;"#EC&nbsp;CI_VALPAR<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+*&nbsp;local&nbsp;data&nbsp;definitions<br />
+*&nbsp;types&nbsp;for&nbsp;oracle&nbsp;field&nbsp;description<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;TYPES:&nbsp;BEGIN&nbsp;OF&nbsp;TY_ORA_FIELD,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE_NAME(30)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLUMN_NAME(30)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TYPE(106)&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_LENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ABAP_TYPE(30)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ABAP_LENG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ABAP_LENGC(6)&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DICT_TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;DATATYPE_D,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;TY_ORA_FIELD.<br />
+&nbsp;&nbsp;TYPES:&nbsp;TY_ORA_FIELDS&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;TY_ORA_FIELD.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&nbsp;structure&nbsp;and&nbsp;table&nbsp;for&nbsp;sourcecode<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;L_REPLINE&nbsp;TYPE&nbsp;TY_REPLINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_REPLIN2&nbsp;TYPE&nbsp;TY_REPLINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_REPORT&nbsp;TYPE&nbsp;TY_TAB_REPORT.<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+**&nbsp;some&nbsp;local&nbsp;data<br />
+*&nbsp;&nbsp;DATA:&nbsp;ls_column&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ssqlpcol.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;dsqlpcolalias.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_fieldheader&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;dsqlpcolalias.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_data_length_c(6)&nbsp;TYPE&nbsp;c.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_stmt_line&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ty_textline.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_no_of_lines&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_strlen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_msg(80)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_flg_starsel(1)&nbsp;&nbsp;&nbsp;TYPE&nbsp;c.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_alv_title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_title.<br />
+*&nbsp;columns&nbsp;of&nbsp;select&nbsp;statement&nbsp;and&nbsp;db&nbsp;fields&nbsp;description<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;LT_COLUMNS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TSQLPCOL.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_COLUMN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;SSQLPCOL.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_COLUMN2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;SSQLPCOL.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_ORA_FIELDS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TY_ORA_FIELDS.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_ORA_FIELD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TY_ORA_FIELD.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_TABIX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;SY-TABIX.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;single&nbsp;field&nbsp;information<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;L_FIELDNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;DSQLPCOLALIAS.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_FIELDHEADER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;DSQLPCOLALIAS.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DATA_LENGTH_C(6)&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_LENGTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;some&nbsp;more&nbsp;local&nbsp;data<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;L_FLG_SEL_ASTERISK(1)&nbsp;TYPE&nbsp;C.&nbsp;&nbsp;&nbsp;"&nbsp;'SELECT&nbsp;*'&nbsp;statement<br />
+&nbsp;&nbsp;DATA:&nbsp;L_ALV_TITLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_TITLE.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSG(80)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ADBC&nbsp;reference&nbsp;variables<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;L_CON_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_SQL_CONNECTION.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_STMT_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_SQL_STATEMENT.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_QUERY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_RS_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_SQL_RESULT_SET.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_REF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_ROWS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_SQLERR_REF&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CX_SQL_EXCEPTION.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&nbsp;processing&nbsp;-----<br />
+*&nbsp;Initialization<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;CLEAR:&nbsp;l_flg_starsel.<br />
+*&nbsp;&nbsp;CLEAR&nbsp;l_repline.<br />
+*&nbsp;&nbsp;REFRESH&nbsp;lt_report.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;L_FLG_SEL_ASTERISK.<br />
+&nbsp;&nbsp;CLEAR&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;REFRESH&nbsp;LT_REPORT.<br />
+&nbsp;&nbsp;CLEAR&nbsp;LS_COLUMN.<br />
+&nbsp;&nbsp;CLEAR&nbsp;P_SQL_REPORT.<br />
+&nbsp;&nbsp;CLEAR&nbsp;P_RC.<br />
+&nbsp;&nbsp;LT_COLUMNS&nbsp;=&nbsp;PT_COLUMNS.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;create&nbsp;a&nbsp;database&nbsp;connection&nbsp;object&nbsp;and&nbsp;statement<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;L_CON_REF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_STMT_REF&nbsp;=&nbsp;L_CON_REF-&gtCREATE_STATEMENT(&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&nbsp;get&nbsp;field&nbsp;descriptions<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;REFRESH&nbsp;gt_ora_fields.<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;pt_columns&nbsp;INTO&nbsp;ls_column&nbsp;WHERE&nbsp;column_type&nbsp;=&nbsp;c_ctype_dbfield<br />
+*.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Exceptional&nbsp;name!<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_column-table_underscore&nbsp;=&nbsp;'GV$PGA_TARGET_ADVICE_HISTOGRAM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_column-table_underscore&nbsp;=&nbsp;'GV_$PGATARGET_ADVICE_HISTOGRAM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_column-column_name&nbsp;=&nbsp;'*'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL&nbsp;PERFORMING&nbsp;append_ora_fields&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;CI_EXECSQL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;table_name,&nbsp;column_name,&nbsp;data_type,&nbsp;data_length<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;dba_tab_columns<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;:gs_ora_field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;table_name&nbsp;=&nbsp;:ls_column-table_underscore<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;order&nbsp;by&nbsp;column_id<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_flg_starsel&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL&nbsp;PERFORMING&nbsp;append_ora_fields&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;CI_EXECSQL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;table_name,&nbsp;column_name,&nbsp;data_type,&nbsp;data_length<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;dba_tab_columns<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;:gs_ora_field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;table_name&nbsp;=&nbsp;:ls_column-table_underscore<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;column_name&nbsp;=&nbsp;:ls_column-column_name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;pt_columns<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;LT_ORA_FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GET&nbsp;REFERENCE&nbsp;OF&nbsp;LT_ORA_FIELDS&nbsp;INTO&nbsp;LT_REF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_COLUMNS&nbsp;INTO&nbsp;LS_COLUMN&nbsp;WHERE&nbsp;COLUMN_TYPE&nbsp;=&nbsp;C_CTYPE_DBFIELD.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;generic&nbsp;(all&nbsp;columns)&nbsp;or&nbsp;concrete&nbsp;for&nbsp;one&nbsp;column<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_COLUMN-COLUMN_NAME&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SELECT&nbsp;table_name,&nbsp;column_name,'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;data_type,&nbsp;data_length,'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;''&nbsp;'',&nbsp;0,&nbsp;''&nbsp;'',&nbsp;''&nbsp;''&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;FROM&nbsp;dba_tab_columns'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;WHERE&nbsp;table_name&nbsp;=&nbsp;'''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_COLUMN-TABLE_UNDERSCORE&nbsp;''''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;ORDER&nbsp;BY&nbsp;column_id'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_QUERY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FLG_SEL_ASTERISK&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SELECT&nbsp;table_name,&nbsp;column_name,'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;data_type,&nbsp;data_length,'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;''&nbsp;'',&nbsp;0,&nbsp;''&nbsp;'',&nbsp;''&nbsp;''&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;FROM&nbsp;dba_tab_columns'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;WHERE&nbsp;table_name&nbsp;=&nbsp;'''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_COLUMN-TABLE_UNDERSCORE&nbsp;''''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;AND&nbsp;&nbsp;&nbsp;column_name&nbsp;=&nbsp;'''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_COLUMN-COLUMN_NAME&nbsp;''''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_QUERY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RS_REF&nbsp;=&nbsp;L_STMT_REF-&gtEXECUTE_QUERY(&nbsp;L_QUERY&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RS_REF-&gtSET_PARAM_TABLE(&nbsp;LT_REF&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ROWS&nbsp;&nbsp;&nbsp;=&nbsp;L_RS_REF-&gtNEXT_PACKAGE(&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;addition&nbsp;for&nbsp;pseudo&nbsp;columns<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_ROWS&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_ORA_FIELD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'ROWNUM'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-TABLE_NAME&nbsp;&nbsp;=&nbsp;LS_COLUMN-TABLE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_TYPE&nbsp;&nbsp;&nbsp;=&nbsp;'NUMBER'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;&nbsp;&nbsp;=&nbsp;22.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'ROWID'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-TABLE_NAME&nbsp;&nbsp;=&nbsp;LS_COLUMN-TABLE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_TYPE&nbsp;&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;&nbsp;&nbsp;=&nbsp;80.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;LS_ORA_FIELD-COLUMN_NAME&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_ORA_FIELD&nbsp;TO&nbsp;LT_ORA_FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RS_REF-&gtCLOSE(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_columns<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_CON_REF-&gtCLOSE(&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;catch&nbsp;and&nbsp;handle&nbsp;SQL&nbsp;exception<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;CX_SQL_EXCEPTION&nbsp;INTO&nbsp;L_SQLERR_REF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;988<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M23&nbsp;&nbsp;L_SQLERR_REF-&gtSQL_CODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-M24&nbsp;&nbsp;L_SQLERR_REF-&gtSQL_MESSAGE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDTRY.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;in&nbsp;case&nbsp;of&nbsp;table&nbsp;cast...<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_COLUMNS&nbsp;INTO&nbsp;LS_COLUMN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;COLUMN_TYPE&nbsp;=&nbsp;C_CTYPE_TABLECASTLINE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;...&nbsp;replace&nbsp;'*'&nbsp;by&nbsp;'LINE'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_COLUMN-COLUMN_NAME&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_COLUMN-COLUMN_NAME&nbsp;=&nbsp;'LINE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_COLUMNS&nbsp;FROM&nbsp;LS_COLUMN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_ORA_FIELD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-TABLE_NAME&nbsp;&nbsp;=&nbsp;LS_COLUMN-TABLE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_TYPE&nbsp;&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;&nbsp;&nbsp;=&nbsp;512.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_ORA_FIELD&nbsp;TO&nbsp;LT_ORA_FIELDS.<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_columns<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&nbsp;statement&nbsp;was&nbsp;"select&nbsp;*&nbsp;from"<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;IF&nbsp;l_flg_starsel&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;pt_columns&nbsp;INTO&nbsp;ls_column&nbsp;INDEX&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;pt_columns&nbsp;INDEX&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_ora_fields&nbsp;INTO&nbsp;gs_ora_field.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_column-column_name&nbsp;=&nbsp;gs_ora_field-column_name.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_column&nbsp;TO&nbsp;pt_columns.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;L_FLG_SEL_ASTERISK&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;replace&nbsp;'*'-entry&nbsp;in&nbsp;lt_columns&nbsp;by&nbsp;corresponding&nbsp;real&nbsp;columns<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_COLUMNS&nbsp;INTO&nbsp;LS_COLUMN&nbsp;WHERE&nbsp;COLUMN_NAME&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;LT_COLUMNS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ORA_FIELDS&nbsp;INTO&nbsp;LS_ORA_FIELD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;TABLE_NAME&nbsp;=&nbsp;LS_COLUMN-TABLE_UNDERSCORE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;COLUMN_NAME&nbsp;&lt&gt&nbsp;'ROWNUM'&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;no&nbsp;pseudo&nbsp;columns!<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;COLUMN_NAME&nbsp;&lt&gt&nbsp;'ROWID'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_COLUMN-COLUMN_NAME&nbsp;=&nbsp;LS_ORA_FIELD-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;LS_COLUMN&nbsp;INTO&nbsp;LT_COLUMNS&nbsp;INDEX&nbsp;L_TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;L_TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_ora_fields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_columns<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;avoid&nbsp;duplicate&nbsp;field&nbsp;names&nbsp;in&nbsp;case&nbsp;of&nbsp;joined&nbsp;tables<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_COLUMNS&nbsp;INTO&nbsp;LS_COLUMN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_TABIX&nbsp;=&nbsp;SY-TABIX&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_COLUMNS&nbsp;INTO&nbsp;LS_COLUMN2&nbsp;&nbsp;FROM&nbsp;L_TABIX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;COLUMN_ALIAS&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;LS_COLUMN2-TABLE_ALIAS&nbsp;'-'&nbsp;LS_COLUMN2-COLUMN_NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;LS_COLUMN2-COLUMN_ALIAS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_COLUMNS&nbsp;FROM&nbsp;LS_COLUMN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_columns.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_columns<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;do&nbsp;some&nbsp;changes&nbsp;in&nbsp;type&nbsp;definitions.<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_ora_fields&nbsp;INTO&nbsp;gs_ora_field.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_ora_field-data_type(6)&nbsp;=&nbsp;'NUMBER'&nbsp;OR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_type(5)&nbsp;=&nbsp;'FLOAT'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_type&nbsp;=&nbsp;'NUM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_ora_field-data_type(4)&nbsp;=&nbsp;'LONG'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_type&nbsp;=&nbsp;'VARCHAR2'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_leng&nbsp;=&nbsp;1000.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_ora_field-data_type(6)&nbsp;=&nbsp;'RAW'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_type&nbsp;=&nbsp;'RAW'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_ora_field-data_type&nbsp;=&nbsp;'DATE'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_type&nbsp;=&nbsp;'DATE'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_leng&nbsp;=&nbsp;30.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_type&nbsp;=&nbsp;'CHAR'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_ora_fields&nbsp;FROM&nbsp;gs_ora_field.<br />
+*&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;gt_ora_fields<br />
+*&nbsp;now&nbsp;enrich&nbsp;table&nbsp;by&nbsp;ABAP&nbsp;type&nbsp;information<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ORA_FIELDS&nbsp;INTO&nbsp;LS_ORA_FIELD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;LS_ORA_FIELD-DATA_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'ANYDATA'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'RAW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CLOB'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'DATE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;30.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INTERVAL&nbsp;DAY(3)&nbsp;TO&nbsp;SECOND(0)'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;13.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INTERVAL&nbsp;DAY(3)&nbsp;TO&nbsp;SECOND(2)'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;16.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INTERVAL&nbsp;DAY(5)&nbsp;TO&nbsp;SECOND(1)'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;17.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'INTERVAL&nbsp;DAY(9)&nbsp;TO&nbsp;SECOND(6)'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;26.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'LONG'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;4000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'NCHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'NUMBER'&nbsp;OR&nbsp;'FLOAT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'P&nbsp;DECIMALS&nbsp;3'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;(&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;/&nbsp;2&nbsp;)&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'DEC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'NVARCHAR2'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'RAW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;(&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;*&nbsp;2&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'RAW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'RE$NV_LIST'.&nbsp;"&nbsp;does&nbsp;not&nbsp;work<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'RAW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'TIMESTAMP(3)'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;25.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'TIMESTAMP(6)&nbsp;WITH&nbsp;TIME&nbsp;ZONE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;35.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'VARCHAR2'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;&nbsp;=&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENG&nbsp;&nbsp;=&nbsp;132.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.&nbsp;"&nbsp;ls_ora_field-data_type.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-ABAP_LENGC&nbsp;=&nbsp;LS_ORA_FIELD-ABAP_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_ORA_FIELDS&nbsp;FROM&nbsp;LS_ORA_FIELD.<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_ora_fields<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+*&nbsp;macro&nbsp;for&nbsp;reducing&nbsp;source&nbsp;code&nbsp;in&nbsp;following&nbsp;report&nbsp;line&nbsp;definitions<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DEFINE&nbsp;APPEND_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L_REPLINE&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;L_REPLINE&nbsp;TO&nbsp;LT_REPORT.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Build&nbsp;the&nbsp;sourcecode<br />
+*&nbsp;Heading&nbsp;-------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'PROGRAM&nbsp;EXECSQL.'.<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'TYPE-POOLS:&nbsp;slis.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Data&nbsp;definitions&nbsp;-&nbsp;type&nbsp;for&nbsp;selected&nbsp;data&nbsp;----------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'TYPES:&nbsp;BEGIN&nbsp;OF&nbsp;ty_data,'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Data&nbsp;definitions&nbsp;-&nbsp;type&nbsp;for&nbsp;data&nbsp;structure&nbsp;and&nbsp;data&nbsp;table<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;pt_columns&nbsp;INTO&nbsp;ls_column.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_column-column_type&nbsp;=&nbsp;c_ctype_dbfield.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;data&nbsp;base&nbsp;field<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;get&nbsp;data&nbsp;type&nbsp;of&nbsp;the&nbsp;field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Exceptional&nbsp;name!<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_column-table_underscore&nbsp;=&nbsp;'GV$PGA_TARGET_ADVICE_HISTOGRAM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_column-table_underscore&nbsp;=&nbsp;'GV_$PGATARGET_ADVICE_HISTOGRAM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_ora_fields&nbsp;INTO&nbsp;gs_ora_field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;table_name&nbsp;=&nbsp;ls_column-table_underscore<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;column_name&nbsp;=&nbsp;ls_column-column_name.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;text-m08&nbsp;text-m09&nbsp;ls_column-column_name&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_rc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;use&nbsp;field&nbsp;alias&nbsp;name&nbsp;if&nbsp;available<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;ls_column-column_alias&nbsp;IS&nbsp;INITIAL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-column_name&nbsp;=&nbsp;ls_column-column_alias.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'"'&nbsp;IN&nbsp;gs_ora_field-column_name<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;''.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type&nbsp;and&nbsp;length&nbsp;specific&nbsp;definition&nbsp;of&nbsp;the&nbsp;field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;gs_ora_field-data_type.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'DATE'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_fieldname&nbsp;USING&nbsp;gs_ora_field-column_name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;l_fieldname.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_fieldname(30)&nbsp;'(30)'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_repline&nbsp;'&nbsp;TYPE&nbsp;C,'&nbsp;INTO&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'RAW'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;gs_ora_field-data_leng.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_fieldname&nbsp;USING&nbsp;gs_ora_field-column_name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;l_fieldname.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_fieldname(30)&nbsp;'('&nbsp;l_data_length_c&nbsp;')'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_repline&nbsp;'TYPE&nbsp;X,'&nbsp;INTO&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+**...modified&nbsp;by&nbsp;RH&nbsp;(28.06.2005)<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'NUM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;gs_ora_field-data_leng.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_fieldname&nbsp;USING&nbsp;gs_ora_field-column_name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;l_fieldname.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_fieldname(30)&nbsp;'&nbsp;type&nbsp;p&nbsp;decimals&nbsp;2,'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+**...end&nbsp;modification<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;gs_ora_field-data_leng.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_fieldname&nbsp;USING&nbsp;gs_ora_field-column_name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;l_fieldname.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_fieldname(30)&nbsp;'('&nbsp;l_data_length_c&nbsp;'),'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;ls_column-column_type&nbsp;=&nbsp;c_ctype_expr.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;an&nbsp;expression<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_fieldname&nbsp;USING&nbsp;ls_column-column_alias<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;l_fieldname.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_fieldname(30)&nbsp;'(80)'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_repline&nbsp;'TYPE&nbsp;C,'&nbsp;INTO&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;"&nbsp;ls_column-column_type&nbsp;=&nbsp;...<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;l_repline&nbsp;TO&nbsp;lt_report.<br />
+*&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;pt_columns<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_COLUMNS&nbsp;INTO&nbsp;LS_COLUMN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;LS_COLUMN-COLUMN_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;C_CTYPE_DBFIELD.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;data&nbsp;base&nbsp;field&nbsp;=&gt&nbsp;get&nbsp;data&nbsp;type&nbsp;of&nbsp;the&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_ORA_FIELDS&nbsp;INTO&nbsp;LS_ORA_FIELD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;TABLE_NAME&nbsp;&nbsp;=&nbsp;LS_COLUMN-TABLE_UNDERSCORE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'E'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M08&nbsp;TEXT-M09&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;available&nbsp;use&nbsp;'field&nbsp;alias&nbsp;name'&nbsp;for&nbsp;type's&nbsp;component&nbsp;name<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;LS_COLUMN-COLUMN_ALIAS&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_ALIAS.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'"'&nbsp;IN&nbsp;ls_ora_field-column_name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;''.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type&nbsp;and&nbsp;length&nbsp;specific&nbsp;definition&nbsp;of&nbsp;the&nbsp;field(type&nbsp;component)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;MAKE_FIELDNAME&nbsp;USING&nbsp;LS_ORA_FIELD-COLUMN_NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;L_FIELDNAME(30)&nbsp;'('&nbsp;LS_ORA_FIELD-ABAP_LENGC&nbsp;')'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLINE&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;'&nbsp;L_REPLINE&nbsp;'TYPE'&nbsp;LS_ORA_FIELD-ABAP_TYPE&nbsp;','<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;C_CTYPE_EXPR.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;an&nbsp;expression<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;MAKE_FIELDNAME&nbsp;USING&nbsp;LS_COLUMN-COLUMN_ALIAS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;'&nbsp;L_FIELDNAME(30)&nbsp;'(256)'&nbsp;INTO&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLINE&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;L_REPLINE&nbsp;'TYPE&nbsp;C,'&nbsp;INTO&nbsp;L_REPLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;C_CTYPE_TABLECASTLINE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;table&nbsp;cast&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;MAKE_FIELDNAME&nbsp;USING&nbsp;LS_COLUMN-COLUMN_ALIAS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_FIELDNAME&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FIELDNAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;'&nbsp;L_FIELDNAME(30)&nbsp;'(256)'&nbsp;INTO&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLINE&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;L_REPLINE&nbsp;'TYPE&nbsp;C,'&nbsp;INTO&nbsp;L_REPLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.&nbsp;"&nbsp;ls_column-column_type<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;L_REPLINE&nbsp;TO&nbsp;LT_REPORT.<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;lt_columns<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CHECK&nbsp;P_RC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'END&nbsp;OF&nbsp;ty_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'TYPES:&nbsp;ty_datatable&nbsp;TYPE&nbsp;TABLE&nbsp;of&nbsp;ty_data.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Data&nbsp;definitions&nbsp;-&nbsp;Table&nbsp;and&nbsp;structure&nbsp;for&nbsp;table&nbsp;data<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;gs_data&nbsp;TYPE&nbsp;ty_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;gt_data&nbsp;TYPE&nbsp;ty_datatable.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;C20040123&nbsp;-&nbsp;start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C20040123<br />
+**&nbsp;FORM&nbsp;read_data&nbsp;for&nbsp;reading&nbsp;data&nbsp;by&nbsp;exec-sql&nbsp;-------------------------<br />
+*&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;pt_sql_statement&nbsp;LINES&nbsp;l_no_of_lines.<br />
+*&nbsp;&nbsp;append_repline&nbsp;'FORM&nbsp;read_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'REFRESH&nbsp;gt_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'EXEC&nbsp;SQL&nbsp;PERFORMING&nbsp;append_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;pt_sql_statement&nbsp;INTO&nbsp;l_stmt_line.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;delete&nbsp;ending&nbsp;';'&nbsp;in&nbsp;Last&nbsp;line<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-tabix&nbsp;=&nbsp;l_no_of_lines.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_strlen&nbsp;=&nbsp;STRLEN(&nbsp;l_stmt_line&nbsp;)&nbsp;-&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_stmt_line+l_strlen(1)&nbsp;=&nbsp;';'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_line+l_strlen(1)&nbsp;=&nbsp;'&nbsp;'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_stmt_line.<br />
+*&nbsp;&nbsp;ENDLOOP.<br />
+*&nbsp;&nbsp;append_repline&nbsp;'INTO&nbsp;:gs_data'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'ENDEXEC.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'ENDFORM.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*<br />
+**&nbsp;FORM&nbsp;append_data&nbsp;for&nbsp;appending&nbsp;data&nbsp;into&nbsp;data&nbsp;table&nbsp;-----------------<br />
+*&nbsp;&nbsp;append_repline&nbsp;'FORM&nbsp;append_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;APPEND&nbsp;gs_data&nbsp;TO&nbsp;gt_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'ENDFORM.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&gtRH:04.04.2006<br />
+**&nbsp;FORM&nbsp;read_data&nbsp;for&nbsp;reading&nbsp;data&nbsp;by&nbsp;exec-sql&nbsp;----------------------<br />
+*&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;pt_sql_statement&nbsp;LINES&nbsp;l_no_of_lines.<br />
+*&nbsp;&nbsp;append_repline&nbsp;'FORM&nbsp;read_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline<br />
+*&nbsp;&nbsp;'&nbsp;DATA:&nbsp;l_except&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_sy_native_sql_error&nbsp;.'.&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;DATA:&nbsp;l_rc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;DATA:&nbsp;l_text&nbsp;&nbsp;&nbsp;TYPE&nbsp;string.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;DATA:&nbsp;l_text2&nbsp;&nbsp;TYPE&nbsp;string.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'REFRESH&nbsp;gt_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'EXEC&nbsp;SQL.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'open&nbsp;crsr&nbsp;for'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;pt_sql_statement&nbsp;INTO&nbsp;l_stmt_line.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;delete&nbsp;ending&nbsp;';'&nbsp;in&nbsp;Last&nbsp;line<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-tabix&nbsp;=&nbsp;l_no_of_lines.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_strlen&nbsp;=&nbsp;STRLEN(&nbsp;l_stmt_line&nbsp;)&nbsp;-&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_stmt_line+l_strlen(1)&nbsp;=&nbsp;';'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_line+l_strlen(1)&nbsp;=&nbsp;'&nbsp;'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_stmt_line.<br />
+*&nbsp;&nbsp;ENDLOOP.<br />
+*&nbsp;&nbsp;append_repline&nbsp;'ENDEXEC.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'DO.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;CLEAR&nbsp;gs_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;TRY.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fetch&nbsp;next&nbsp;crsr&nbsp;into&nbsp;:gs_data'.&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.&nbsp;EXIT.&nbsp;ENDIF.'.&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_sy_native_sql_error&nbsp;INTO&nbsp;l_except.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_rc&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_except-&gtsqlcode.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_text&nbsp;&nbsp;=&nbsp;l_except-&gtget_text(&nbsp;).'.&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_text2&nbsp;=&nbsp;l_except-&gtget_longtext(&nbsp;).'.&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close&nbsp;crsr'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;err_msg&nbsp;USING'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_rc&nbsp;l_text&nbsp;l_text2.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;ENDTRY.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;IF&nbsp;l_rc&nbsp;&lt&gt&nbsp;0.&nbsp;EXIT.&nbsp;ENDIF.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;APPEND&nbsp;gs_data&nbsp;to&nbsp;gt_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'ENDDO.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'EXEC&nbsp;SQL.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'&nbsp;&nbsp;close&nbsp;crsr'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'ENDEXEC.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+*&nbsp;&nbsp;append_repline&nbsp;'ENDFORM.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;'.<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;read&nbsp;data&nbsp;with&nbsp;query&nbsp;statement'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'FORM&nbsp;read_data&nbsp;'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;value(i_query)&nbsp;TYPE&nbsp;STRING.'.&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_rc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_text&nbsp;&nbsp;&nbsp;TYPE&nbsp;string.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_text2&nbsp;&nbsp;TYPE&nbsp;string.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;ADBC&nbsp;reference&nbsp;variables'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_adbc_connection&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_sql_connection.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_stmt_ref&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_sql_statement.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_rs_ref&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_sql_result_set.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_sqlerr_ref&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_sql_exception.'.&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_query&nbsp;TYPE&nbsp;string.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;DATA:&nbsp;lt_ref&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;DATA:&nbsp;l_rows&nbsp;TYPE&nbsp;i.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;Try&nbsp;-&nbsp;Endtry&nbsp;for&nbsp;whole&nbsp;ADBC&nbsp;logic'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'TRY.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;Initialization'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;REFRESH&nbsp;gt_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;l_adbc_connection.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;Create&nbsp;DB&nbsp;statement'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;l_stmt_ref&nbsp;=&nbsp;l_adbc_connection-&gtcreate_statement(&nbsp;).'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_query&nbsp;=&nbsp;i_query.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;Execute&nbsp;query,&nbsp;fetch&nbsp;data,&nbsp;close&nbsp;query'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;l_rs_ref&nbsp;=&nbsp;l_stmt_ref-&gtexecute_query(&nbsp;l_query&nbsp;).'.&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;GET&nbsp;REFERENCE&nbsp;OF&nbsp;gt_data&nbsp;INTO&nbsp;lt_ref.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_rs_ref-&gtset_param_table(&nbsp;lt_ref&nbsp;).'.&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_rows&nbsp;&nbsp;&nbsp;=&nbsp;l_rs_ref-&gtnext_package(&nbsp;).'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_rs_ref-&gtclose(&nbsp;).'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_adbc_connection-&gtclose(&nbsp;).'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'CATCH&nbsp;cx_sql_exception&nbsp;into&nbsp;l_sqlerr_ref.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;IF&nbsp;l_sqlerr_ref-&gtdb_error&nbsp;=&nbsp;''X''.'.&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;l_rc&nbsp;=&nbsp;l_sqlerr_ref-&gtsql_code.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;l_text&nbsp;=&nbsp;l_sqlerr_ref-&gtsql_message.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;ELSE.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;l_rc&nbsp;=&nbsp;l_sqlerr_ref-&gtinternal_error.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;l_text&nbsp;=&nbsp;''Unknown&nbsp;internal&nbsp;error''.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;ENDIF.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;PERFORM&nbsp;err_msg&nbsp;USING&nbsp;l_rc&nbsp;l_text&nbsp;'.&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_text2.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'ENDTRY.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'ENDFORM.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+<br />
+*&nbsp;FORM&nbsp;err_msg&nbsp;for&nbsp;processing&nbsp;a&nbsp;message&nbsp;on&nbsp;ora&nbsp;exceptions--------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'FORM&nbsp;err_msg&nbsp;USING&nbsp;value(p_nr)&nbsp;TYPE&nbsp;i'.&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value(p_t1)&nbsp;TYPE&nbsp;string'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value(p_t2)&nbsp;TYPE&nbsp;string.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;txt(150)&nbsp;TYPE&nbsp;C.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;c1(50)&nbsp;TYPE&nbsp;C.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;c2(50)&nbsp;TYPE&nbsp;C.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;c3(50)&nbsp;TYPE&nbsp;C.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;c4(50)&nbsp;TYPE&nbsp;C.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'WRITE&nbsp;p_nr&nbsp;TO&nbsp;c1.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'CONDENSE&nbsp;c1&nbsp;NO-GAPS.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'CONCATENATE&nbsp;''(ORA-''&nbsp;c1&nbsp;'')&nbsp;''&nbsp;INTO&nbsp;c1.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;txt&nbsp;=&nbsp;p_t1.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;''TEXT_SPLIT''&nbsp;'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;length&nbsp;=&nbsp;50'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;&nbsp;&nbsp;=&nbsp;txt'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING&nbsp;line&nbsp;&nbsp;&nbsp;=&nbsp;c2'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rest&nbsp;&nbsp;&nbsp;=&nbsp;txt.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;''TEXT_SPLIT''&nbsp;'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;length&nbsp;=&nbsp;50'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;&nbsp;&nbsp;=&nbsp;txt'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING&nbsp;line&nbsp;&nbsp;&nbsp;=&nbsp;c3'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rest&nbsp;&nbsp;&nbsp;=&nbsp;txt.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;''TEXT_SPLIT''&nbsp;'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;length&nbsp;=&nbsp;50'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;&nbsp;&nbsp;=&nbsp;txt'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING&nbsp;line&nbsp;&nbsp;&nbsp;=&nbsp;c4'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rest&nbsp;&nbsp;&nbsp;=&nbsp;txt.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;''S1''&nbsp;TYPE&nbsp;''E''&nbsp;'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;899&nbsp;WITH&nbsp;c1&nbsp;c2&nbsp;c3&nbsp;c4.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'ENDFORM.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;C20040123&nbsp;-&nbsp;end&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C20040123<br />
+<br />
+*&nbsp;FORM&nbsp;write_alv_list&nbsp;for&nbsp;writing&nbsp;the&nbsp;list&nbsp;-----------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'FORM&nbsp;write_alv_list.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'DATA:&nbsp;lt_fieldcat&nbsp;TYPE&nbsp;slis_t_fieldcat_alv.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;ls_fieldcat&nbsp;TYPE&nbsp;slis_fieldcat_alv.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;ls_layout&nbsp;&nbsp;&nbsp;TYPE&nbsp;slis_layout_alv.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;ls_column&nbsp;&nbsp;&nbsp;TYPE&nbsp;ssqlpcol.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;l_alv_title&nbsp;TYPE&nbsp;lvc_title.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;l_decvalue&nbsp;&nbsp;TYPE&nbsp;p&nbsp;DECIMALS&nbsp;2.'.&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'DATA:&nbsp;l_one&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;p&nbsp;DECIMALS&nbsp;2.'.&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;set&nbsp;layout&nbsp;parameters'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;CLEAR&nbsp;ls_layout.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;ls_layout-colwidth_optimize&nbsp;=&nbsp;''X''.'.&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;build&nbsp;the&nbsp;field&nbsp;catalog'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;pt_columns&nbsp;INTO&nbsp;ls_column.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_column-column_type&nbsp;=&nbsp;c_ctype_dbfield.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;data&nbsp;base&nbsp;field<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;get&nbsp;data&nbsp;type&nbsp;of&nbsp;the&nbsp;field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Exceptional&nbsp;name!<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_column-table_underscore&nbsp;=&nbsp;'GV$PGA_TARGET_ADVICE_HISTOGRAM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_column-table_underscore&nbsp;=&nbsp;'GV_$PGATARGET_ADVICE_HISTOGRAM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_ora_fields&nbsp;INTO&nbsp;gs_ora_field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;table_name&nbsp;=&nbsp;ls_column-table_underscore<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;column_name&nbsp;=&nbsp;ls_column-column_name.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;text-m08&nbsp;text-m09&nbsp;ls_column-column_name&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_rc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;(unary)&nbsp;expression&nbsp;field<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_ora_field.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-table_name&nbsp;=&nbsp;ls_column-table_name.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-column_name&nbsp;=&nbsp;ls_column-column_alias.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_type&nbsp;&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_ora_field-data_leng&nbsp;&nbsp;&nbsp;=&nbsp;80.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;"&nbsp;ls_column-column_type<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_COLUMNS&nbsp;INTO&nbsp;LS_COLUMN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;LS_COLUMN-COLUMN_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;C_CTYPE_DBFIELD.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;data&nbsp;base&nbsp;field&nbsp;-&gt&nbsp;get&nbsp;data&nbsp;type&nbsp;of&nbsp;the&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_ORA_FIELDS&nbsp;INTO&nbsp;LS_ORA_FIELD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;TABLE_NAME&nbsp;&nbsp;=&nbsp;LS_COLUMN-TABLE_UNDERSCORE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'E'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M08&nbsp;TEXT-M09&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;C_CTYPE_EXPR.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;(unary)&nbsp;expression&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_ORA_FIELD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-TABLE_NAME&nbsp;&nbsp;=&nbsp;LS_COLUMN-TABLE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_ALIAS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_TYPE&nbsp;&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;&nbsp;&nbsp;=&nbsp;256.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;C_CTYPE_TABLECASTLINE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;table&nbsp;cast&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_ORA_FIELD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-TABLE_NAME&nbsp;&nbsp;=&nbsp;LS_COLUMN-TABLE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-COLUMN_NAME&nbsp;=&nbsp;LS_COLUMN-COLUMN_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_TYPE&nbsp;&nbsp;&nbsp;=&nbsp;'CHAR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;&nbsp;&nbsp;=&nbsp;256.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.&nbsp;"&nbsp;ls_column-column_type<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+<br />
+*&nbsp;&nbsp;&nbsp;use&nbsp;field&nbsp;alias&nbsp;name&nbsp;if&nbsp;available<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;CLEAR&nbsp;ls_fieldcat.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;LS_COLUMN-COLUMN_ALIAS&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;MAKE_FIELDNAME&nbsp;USING&nbsp;LS_COLUMN-COLUMN_ALIAS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FIELDHEADER&nbsp;=&nbsp;LS_COLUMN-COLUMN_ALIAS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'"'&nbsp;IN&nbsp;L_FIELDHEADER&nbsp;WITH&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;make_fieldname&nbsp;USING&nbsp;gs_ora_field-column_name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;l_fieldname.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fieldheader&nbsp;=&nbsp;gs_ora_field-column_name.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;MAKE_FIELDNAME&nbsp;USING&nbsp;LS_ORA_FIELD-COLUMN_NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FIELDHEADER&nbsp;=&nbsp;LS_ORA_FIELD-COLUMN_NAME.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'"'&nbsp;IN&nbsp;L_FIELDHEADER&nbsp;WITH&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;C_APSTR&nbsp;L_FIELDNAME&nbsp;C_APSTR&nbsp;'.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLIN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-fieldname&nbsp;='&nbsp;L_REPLIN2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;C_APSTR&nbsp;L_FIELDHEADER&nbsp;C_APSTR&nbsp;'.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLIN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;CONDENSE&nbsp;ls_fieldcat-fieldname&nbsp;NO-GAPS.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-seltext_l&nbsp;='&nbsp;L_REPLIN2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;always&nbsp;use&nbsp;long&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-seltext_m&nbsp;='&nbsp;l_replin2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-seltext_s&nbsp;='&nbsp;l_replin2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.<br />
+<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_ora_field-data_leng&nbsp;&gt&nbsp;132.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;'132'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;gs_ora_field-data_leng.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_ORA_FIELD-DATA_LENG&nbsp;&gt&nbsp;50.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_DATA_LENGTH_C&nbsp;=&nbsp;'50'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_DATA_LENGTH_C&nbsp;=&nbsp;LS_ORA_FIELD-DATA_LENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;gs_ora_field-data_type.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'DATE'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;'30'&nbsp;c_apstr&nbsp;'.'&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;='&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;'30'&nbsp;c_apstr&nbsp;'.'&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-intlen&nbsp;='&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;'C'&nbsp;c_apstr&nbsp;'.'&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-datatype&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'RAW'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;l_data_length_c&nbsp;c_apstr&nbsp;'.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;gs_ora_field-data_leng.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;l_data_length_c&nbsp;c_apstr&nbsp;'.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-intlen&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;'RAW'&nbsp;c_apstr&nbsp;'.'&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-datatype&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*****&nbsp;modified&nbsp;part&nbsp;RH:&nbsp;28.&nbsp;June&nbsp;2005<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'NUM'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;l_data_length_c&nbsp;c_apstr&nbsp;'.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;gs_ora_field-data_leng.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;l_data_length_c&nbsp;c_apstr&nbsp;'.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-intlen&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-datatype&nbsp;=&nbsp;'&nbsp;'''DEC''.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-inttype&nbsp;=&nbsp;'&nbsp;'''P''.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-just&nbsp;=&nbsp;'&nbsp;'''R''.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+**...end&nbsp;of&nbsp;modification<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;l_data_length_c&nbsp;c_apstr&nbsp;'.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_data_length_c&nbsp;=&nbsp;gs_ora_field-data_leng.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;l_data_length_c&nbsp;c_apstr&nbsp;'.'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_repline&nbsp;NO-GAPS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-intlen&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;c_apstr&nbsp;'C'&nbsp;c_apstr&nbsp;'.'&nbsp;INTO&nbsp;l_repline.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-datatype&nbsp;=&nbsp;'&nbsp;l_repline<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_repline&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append_repline&nbsp;l_repline.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.&nbsp;"&nbsp;gs_ora_field-data_type<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;''''&nbsp;L_DATA_LENGTH_C&nbsp;'''.'&nbsp;INTO&nbsp;L_REPLIN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLIN2&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;'&nbsp;L_REPLIN2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;''''&nbsp;LS_ORA_FIELD-ABAP_LENGC&nbsp;'''.'&nbsp;INTO&nbsp;L_REPLIN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLIN2&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-intlen&nbsp;=&nbsp;'&nbsp;L_REPLIN2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;''''&nbsp;LS_ORA_FIELD-DICT_TYPE&nbsp;'''.'&nbsp;INTO&nbsp;L_REPLIN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLIN2&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-datatype&nbsp;=&nbsp;'&nbsp;L_REPLIN2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;''''&nbsp;LS_ORA_FIELD-ABAP_TYPE(1)&nbsp;'''.'&nbsp;INTO&nbsp;L_REPLIN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLIN2&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;ls_fieldcat-inttype&nbsp;=&nbsp;'&nbsp;L_REPLIN2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_ORA_FIELD-ABAP_TYPE(1)&nbsp;=&nbsp;'P'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;ls_fieldcat-just&nbsp;=&nbsp;''R''.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPECIAL:&nbsp;set&nbsp;decimals&nbsp;to&nbsp;0&nbsp;/&nbsp;suppress&nbsp;decimals&nbsp;if&nbsp;value&nbsp;is&nbsp;0<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_decvalue&nbsp;=&nbsp;0.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_one&nbsp;=&nbsp;''1.00''&nbsp;.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;l_decvalue&nbsp;=&nbsp;0.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_data&nbsp;INTO&nbsp;gs_data.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build&nbsp;sourcecode&nbsp;&nbsp;&nbsp;&nbsp;l_decvalue&nbsp;=&nbsp;gs_data-field&nbsp;MOD&nbsp;l_one.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'gs_data-'&nbsp;L_FIELDNAME&nbsp;INTO&nbsp;L_REPLIN2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_REPLIN2&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;l_decvalue&nbsp;=&nbsp;'&nbsp;L_REPLIN2&nbsp;'&nbsp;MOD&nbsp;l_one.'&nbsp;"#EC&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_REPLINE&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_decvalue&nbsp;&lt&gt&nbsp;0.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;ENDLOOP.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;IF&nbsp;l_decvalue&nbsp;=&nbsp;0.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-decimals_out&nbsp;=&nbsp;''0''.'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;ENDIF.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;APPEND&nbsp;ls_fieldcat&nbsp;TO&nbsp;lt_fieldcat.'.&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;AT&nbsp;pt_columns<br />
+&nbsp;&nbsp;CHECK&nbsp;P_RC&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;build&nbsp;title&nbsp;text<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;L_ALV_TITLE&nbsp;=&nbsp;TEXT-100.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;C_APSTR&nbsp;L_ALV_TITLE&nbsp;C_APSTR&nbsp;'.'&nbsp;INTO&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'&nbsp;&nbsp;l_alv_title&nbsp;='&nbsp;L_REPLINE&nbsp;INTO&nbsp;L_REPLINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;L_REPLINE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;*<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;call&nbsp;alv<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'*&nbsp;call&nbsp;ALV'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'CALL&nbsp;FUNCTION&nbsp;''REUSE_ALV_GRID_DISPLAY'''.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;EXPORTING'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_layout'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_fieldcat'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;i_grid_title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_alv_title'.&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;TABLES'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'&nbsp;&nbsp;&nbsp;&nbsp;t_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_data.'.&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+&nbsp;&nbsp;APPEND_REPLINE&nbsp;'ENDFORM.'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NOTEXT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Generate&nbsp;the&nbsp;program&nbsp;-------------------------------------------------<br />
+*&nbsp;start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C20040315<br />
+*&nbsp;GENERATE&nbsp;SUBROUTINE&nbsp;POOL&nbsp;lt_report&nbsp;NAME&nbsp;p_sql_report<br />
+*&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;l_msg.<br />
+*&nbsp;6.*&nbsp;specific&nbsp;error&nbsp;handling&nbsp;for&nbsp;subroutine&nbsp;limit<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;MYREF&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CX_SY_GENERATE_SUBPOOL_FULL.<br />
+&nbsp;&nbsp;DATA&nbsp;ERR_TEXT&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GENERATE&nbsp;SUBROUTINE&nbsp;POOL&nbsp;LT_REPORT&nbsp;NAME&nbsp;P_SQL_REPORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;CX_SY_GENERATE_SUBPOOL_FULL&nbsp;INTO&nbsp;MYREF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_TEXT&nbsp;=&nbsp;MYREF-&gtGET_TEXT(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M13&nbsp;TEXT-M14&nbsp;TEXT-M15&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ERR_TEXT&nbsp;TYPE&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDTRY.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;4.6*&nbsp;specific&nbsp;error&nbsp;handling&nbsp;for&nbsp;subroutine&nbsp;limit<br />
+*&nbsp;CATCH&nbsp;SYSTEM-EXCEPTIONS&nbsp;generate_subpool_dir_full&nbsp;=&nbsp;99.<br />
+*&nbsp;&nbsp;&nbsp;GENERATE&nbsp;SUBROUTINE&nbsp;POOL&nbsp;lt_report&nbsp;NAME&nbsp;p_sql_report<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;l_msg.<br />
+*&nbsp;ENDCATCH.<br />
+*&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;99.<br />
+*&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;text-m13&nbsp;text-m14&nbsp;text-m15&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;p_rc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;EXIT.<br />
+*&nbsp;ENDIF.<br />
+*&nbsp;end&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C20040315<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;L_MSG&nbsp;SPACE&nbsp;SPACE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;TO&nbsp;LIST-PROCESSING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;TEXT-M10,&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SKIP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;TEXT-M11.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SKIP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_REPORT&nbsp;INTO&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;L_REPLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " create_subroutine_pool<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;display_error_message<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;Display&nbsp;the&nbsp;error&nbsp;message&nbsp;according&nbsp;to&nbsp;system&nbsp;fields&nbsp;SYST-MSG...&nbsp;and<br />
+*&nbsp;SY-SUBRC&nbsp;after&nbsp;calling&nbsp;function&nbsp;scan_ora_select_statement<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtVALUE(P_SUBRC)&nbsp;&nbsp;returncode&nbsp;of&nbsp;scan_ora_select_statement<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM DISPLAY_ERROR_MESSAGE USING VALUE(P_SUBRC) LIKE SYST-SUBRC.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_EXCEPTION(30)&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSGID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SYST-MSGID.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSGTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SYST-MSGTY.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSGNO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SYST-MSGNO.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSGV1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SYST-MSGV1.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSGV2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SYST-MSGV2.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSGV3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SYST-MSGV3.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MSGV4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SYST-MSGV4.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;processing<br />
+*&nbsp;save&nbsp;raised&nbsp;message<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;L_MSGID&nbsp;=&nbsp;SYST-MSGID.<br />
+&nbsp;&nbsp;L_MSGTY&nbsp;=&nbsp;SYST-MSGTY.<br />
+&nbsp;&nbsp;L_MSGNO&nbsp;=&nbsp;SYST-MSGNO.<br />
+&nbsp;&nbsp;L_MSGV1&nbsp;=&nbsp;SYST-MSGV1.<br />
+&nbsp;&nbsp;L_MSGV2&nbsp;=&nbsp;SYST-MSGV2.<br />
+&nbsp;&nbsp;L_MSGV3&nbsp;=&nbsp;SYST-MSGV3.<br />
+&nbsp;&nbsp;L_MSGV4&nbsp;=&nbsp;SYST-MSGV4.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;show&nbsp;general&nbsp;message<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CASE&nbsp;P_SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;1.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'NO_STATEMENT_FOUND'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;2.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'NO_OPERATION_FOUND'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;3.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'INVALID_SQL_OPERATION'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;4.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'ERROR_IN_HINT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;5.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'ERROR_IN_PARSING_SELECT_LIST'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;6.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'ERROR_IN_TABLEREFERENCES'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;7.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'COLUMNS_NOT_MATCHING_WITH_TABLES'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;8.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'ERROR_REDUCING_DISTINCT_UNIQUE_ALL'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;9.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'ERROR_IN_SET_OPERATOR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;10.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'NO_FROM_FOUND'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;11.&nbsp;L_EXCEPTION&nbsp;=&nbsp;'&ltUNKNOWN_EXCEPTION_OCCURED&gt'.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;IF&nbsp;P_SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;(&nbsp;L_MSGNO&nbsp;IS&nbsp;INITIAL&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M01&nbsp;L_EXCEPTION&nbsp;TEXT-M12&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TEXT-M01&nbsp;L_EXCEPTION&nbsp;SPACE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;"&nbsp;NOT&nbsp;(&nbsp;l_msgno&nbsp;IS&nbsp;INITIAL&nbsp;).<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;(&nbsp;L_MSGNO&nbsp;IS&nbsp;INITIAL&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;L_MSGID&nbsp;TYPE&nbsp;L_MSGTY&nbsp;NUMBER&nbsp;L_MSGNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;L_MSGV1&nbsp;L_MSGV2&nbsp;L_MSGV3&nbsp;L_MSGV4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "display_error_message<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;exit_command_0100_input<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;perform&nbsp;the&nbsp;exit&nbsp;commands<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM EXIT_COMMAND_0100_INPUT.<br />
+&nbsp;&nbsp;CASE&nbsp;OK_CODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CANC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;ASK_AND_LEAVE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'EXIT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;ASK_AND_LEAVE.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    " exit_command_0100_input<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;free_control_ressources<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;free&nbsp;all&nbsp;control&nbsp;related&nbsp;ressources<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM FREE_CONTROL_RESSOURCES .<br />
+&nbsp;&nbsp;FREE&nbsp;G_REF_CONTAINER.<br />
+&nbsp;&nbsp;FREE&nbsp;G_REF_EDITOR.<br />
+ENDFORM.                    " free_control_ressources<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;get_sql_statement<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;get&nbsp;the&nbsp;sql&nbsp;statement&nbsp;from&nbsp;the&nbsp;editor&nbsp;and&nbsp;return&nbsp;it&nbsp;as&nbsp;a&nbsp;string<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_L_SQL_STATEMENT&nbsp;&nbsp;the&nbsp;sql&nbsp;statement&nbsp;as&nbsp;string<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--PT_SQL_STATEMENT&nbsp;&nbsp;&nbsp;the&nbsp;sql&nbsp;statement&nbsp;as&nbsp;table<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM GET_SQL_STATEMENT  CHANGING P_SQL_STATEMENT  TYPE STRING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PT_SQL_STATEMENT&nbsp;TYPE&nbsp;TY_TEXTTAB.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_STMTLINE&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TY_TEXTLINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_STATEMENT&nbsp;&nbsp;TYPE&nbsp;TY_TEXTTAB.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_NO_OF_LINES&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_STRLEN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;processing<br />
+*&nbsp;get&nbsp;statement&nbsp;from&nbsp;the&nbsp;editor&nbsp;into&nbsp;an&nbsp;internal&nbsp;table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_REF_EDITOR-&gtGET_TEXT_AS_R3TABLE<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;only_when_modified&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;false<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_STATEMENT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_modified&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_DP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_CNTL_CALL_METHOD&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_DP_CREATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POTENTIAL_DATA_LOSS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0&nbsp;AND&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'E'&nbsp;NUMBER&nbsp;591.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;delete&nbsp;empty&nbsp;ending&nbsp;lines.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;LT_STATEMENT&nbsp;LINES&nbsp;L_NO_OF_LINES.<br />
+&nbsp;&nbsp;DO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_NO_OF_LINES&nbsp;=&nbsp;0.&nbsp;EXIT.&nbsp;ENDIF.&nbsp;&nbsp;"&nbsp;empty&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_STATEMENT&nbsp;INTO&nbsp;L_STMTLINE&nbsp;INDEX&nbsp;L_NO_OF_LINES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;&nbsp;EXIT.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_STMTLINE&nbsp;IS&nbsp;INITIAL.&nbsp;"&nbsp;last&nbsp;line&nbsp;empty?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;LT_STATEMENT&nbsp;INDEX&nbsp;L_NO_OF_LINES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;"&nbsp;last&nbsp;line&nbsp;that&nbsp;is&nbsp;not&nbsp;initial<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_STRLEN&nbsp;=&nbsp;STRLEN(&nbsp;L_STMTLINE&nbsp;)&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_STMTLINE+L_STRLEN(1)&nbsp;=&nbsp;';'.&nbsp;&nbsp;"&nbsp;delete&nbsp;ending&nbsp;';'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_STMTLINE+L_STRLEN(1)&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_STATEMENT&nbsp;INDEX&nbsp;L_NO_OF_LINES&nbsp;FROM&nbsp;L_STMTLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.&nbsp;"&nbsp;line&nbsp;not&nbsp;empty<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;LT_STATEMENT&nbsp;LINES&nbsp;L_NO_OF_LINES.&nbsp;"&nbsp;next&nbsp;last<br />
+&nbsp;&nbsp;ENDDO.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;convert&nbsp;the&nbsp;statement&nbsp;into&nbsp;a&nbsp;string<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_STATEMENT&nbsp;INTO&nbsp;L_STMTLINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;P_SQL_STATEMENT&nbsp;L_STMTLINE&nbsp;INTO&nbsp;P_SQL_STATEMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;PT_SQL_STATEMENT[]&nbsp;=&nbsp;LT_STATEMENT.<br />
+ENDFORM.                    " get_sql_statement<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;make_fieldname<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;build&nbsp;a&nbsp;valid&nbsp;fieldname<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtPS_COLUMN_ALIAS&nbsp;Alias&nbsp;name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_FIELDNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Field&nbsp;name<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM MAKE_FIELDNAME  USING    VALUE(PS_COLUMN_ALIAS) TYPE DSQLPCOLALIAS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;P_FIELDNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;DSQLPCOLALIAS.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_CHAR(1)&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_LEN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;P_FIELDNAME&nbsp;=&nbsp;PS_COLUMN_ALIAS.<br />
+&nbsp;&nbsp;L_LEN&nbsp;=&nbsp;STRLEN(&nbsp;P_FIELDNAME&nbsp;).<br />
+&nbsp;&nbsp;WHILE&nbsp;L_OFF&nbsp;&lt&nbsp;L_LEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_FIELDNAME+L_OFF(1)&nbsp;=&nbsp;'-'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_FIELDNAME+L_OFF(1)&nbsp;=&nbsp;'%'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_FIELDNAME+L_OFF(1)&nbsp;CN&nbsp;'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_FIELDNAME+L_OFF(1)&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;L_OFF.<br />
+&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;CONDENSE&nbsp;P_FIELDNAME&nbsp;NO-GAPS.<br />
+ENDFORM.                    " make_fieldname<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;parse_and_exec_statement<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;the&nbsp;sql&nbsp;statement&nbsp;will&nbsp;be&nbsp;pulled&nbsp;from&nbsp;the&nbsp;editor,&nbsp;parsed,&nbsp;tables&nbsp;will<br />
+*&nbsp;be&nbsp;checked&nbsp;for&nbsp;SYS.&nbsp;Then&nbsp;a&nbsp;subroutine&nbsp;pool&nbsp;for&nbsp;readig&nbsp;the&nbsp;data&nbsp;is<br />
+*&nbsp;generated,&nbsp;the&nbsp;data&nbsp;is&nbsp;read&nbsp;and&nbsp;finally&nbsp;outputted&nbsp;to&nbsp;the&nbsp;screen<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PARSE_AND_EXEC_STATEMENT .<br />
+&nbsp;&nbsp;DATA:&nbsp;L_SQL_STATEMENT&nbsp;&nbsp;TYPE&nbsp;STRING.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;sql&nbsp;statement&nbsp;as&nbsp;string<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_SQL_STATEMENT&nbsp;TYPE&nbsp;TY_TEXTTAB.&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;sql&nbsp;statement&nbsp;as&nbsp;table<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_TABLES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TSQLPTABLES.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_COLUMNS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TSQLPCOL.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_SQL_REPORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;TRDIR-NAME.&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;name&nbsp;of&nbsp;generated&nbsp;sql-prg<br />
+&nbsp;&nbsp;DATA:&nbsp;L_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;processing<br />
+*&nbsp;get&nbsp;the&nbsp;statement&nbsp;from&nbsp;the&nbsp;editor<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;GET_SQL_STATEMENT&nbsp;CHANGING&nbsp;L_SQL_STATEMENT&nbsp;LT_SQL_STATEMENT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;scan&nbsp;/&nbsp;parse&nbsp;oracle&nbsp;select&nbsp;statement<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;PARSE_SQL_STATEMENT&nbsp;USING&nbsp;L_SQL_STATEMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;LT_TABLES&nbsp;LT_COLUMNS&nbsp;L_RC.<br />
+&nbsp;&nbsp;CHECK&nbsp;L_RC&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;check&nbsp;tables&nbsp;for&nbsp;owner&nbsp;SYS,&nbsp;table&nbsp;names&nbsp;without&nbsp;$<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;CHECK_TABLES_OWNER&nbsp;USING&nbsp;LT_TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_RC.<br />
+&nbsp;&nbsp;CHECK&nbsp;L_RC&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;create&nbsp;a&nbsp;subroutine&nbsp;pool&nbsp;which&nbsp;is&nbsp;able&nbsp;to&nbsp;read&nbsp;the&nbsp;data&nbsp;and<br />
+*&nbsp;write&nbsp;the&nbsp;list<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;CREATE_SUBROUTINE_POOL&nbsp;USING&nbsp;L_SQL_STATEMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_SQL_STATEMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_COLUMNS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_SQL_REPORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RC.<br />
+&nbsp;&nbsp;CHECK&nbsp;L_RC&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Execute&nbsp;the&nbsp;sql&nbsp;command<br />
+*&gtRH:04.04.2006<br />
+*&nbsp;&nbsp;PERFORM&nbsp;read_data&nbsp;IN&nbsp;PROGRAM&nbsp;(l_sql_report).&nbsp;"&nbsp;TABLES&nbsp;gt_data.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;READ_DATA&nbsp;IN&nbsp;PROGRAM&nbsp;(L_SQL_REPORT)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;L_SQL_STATEMENT.<br />
+   </div>
+   <div class="codeComment">
+*&ltRH<br />
+<br />
+*&nbsp;Finally&nbsp;print&nbsp;data<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SET&nbsp;TITLEBAR&nbsp;'T200'.<br />
+&nbsp;&nbsp;PERFORM&nbsp;WRITE_ALV_LIST&nbsp;IN&nbsp;PROGRAM&nbsp;(L_SQL_REPORT).<br />
+&nbsp;&nbsp;SET&nbsp;TITLEBAR&nbsp;'T100'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;PERFORM&nbsp;write_list&nbsp;USING&nbsp;gt_data&nbsp;lt_columns.<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " parse_and_exec_statement<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;parse_editor_statement<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;the&nbsp;sql&nbsp;statement&nbsp;will&nbsp;be&nbsp;pulled&nbsp;from&nbsp;the&nbsp;editor,&nbsp;parsed&nbsp;and&nbsp;a<br />
+*&nbsp;parsing&nbsp;message&nbsp;will&nbsp;be&nbsp;returned<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PARSE_EDITOR_STATEMENT .<br />
+&nbsp;&nbsp;DATA:&nbsp;L_SQL_STATEMENT&nbsp;TYPE&nbsp;STRING.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;sql&nbsp;statement&nbsp;as&nbsp;string<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_STATEMENT&nbsp;TYPE&nbsp;TY_TEXTTAB.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;sql&nbsp;statement&nbsp;as&nbsp;table<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_TABLES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TSQLPTABLES.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_COLUMNS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TSQLPCOL.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;processing<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;GET_SQL_STATEMENT&nbsp;CHANGING&nbsp;L_SQL_STATEMENT&nbsp;LT_STATEMENT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;scan&nbsp;/&nbsp;parse&nbsp;oracle&nbsp;select&nbsp;statement<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;PARSE_SQL_STATEMENT&nbsp;USING&nbsp;L_SQL_STATEMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;LT_TABLES&nbsp;LT_COLUMNS&nbsp;L_RC.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;check&nbsp;tables&nbsp;for&nbsp;owner&nbsp;SYS,&nbsp;table&nbsp;names&nbsp;without&nbsp;$<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;L_RC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CHECK_TABLES_OWNER&nbsp;USING&nbsp;LT_TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;L_RC.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;L_RC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'S1'&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;899&nbsp;WITH&nbsp;TEXT-M02.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " parse_editor_statement<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;parse_sql_statement<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;parse&nbsp;the&nbsp;given&nbsp;sql&nbsp;statement&nbsp;and&nbsp;if&nbsp;given,&nbsp;process&nbsp;error&nbsp;message<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_SQL_STATEMENT&nbsp;&nbsp;statement&nbsp;that&nbsp;has&nbsp;to&nbsp;be&nbsp;parsed<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--PT_TABLES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db&nbsp;tables&nbsp;that&nbsp;belong&nbsp;to&nbsp;the&nbsp;statement<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--PT_COLUMNS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;columns&nbsp;that&nbsp;should&nbsp;be&nbsp;read&nbsp;by&nbsp;the&nbsp;statmt.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--P_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;code&nbsp;&lt&gt&nbsp;0&nbsp;if&nbsp;error&nbsp;occured<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PARSE_SQL_STATEMENT  USING VALUE(P_SQL_STATEMENT) TYPE STRING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;PT_TABLES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TSQLPTABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PT_COLUMNS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TSQLPCOL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;SY-MSGID,&nbsp;SY-MSGNO,&nbsp;SY-MSGTY.<br />
+&nbsp;&nbsp;CALL FUNCTION 'SCAN_ORA_SELECT_STATEMENT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATEMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_SQL_STATEMENT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;operation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&ltnot&nbsp;needed&gt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PTABLES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PT_TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PCOLUMNS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PT_COLUMNS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_STATEMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_OPERATION_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_SQL_OPERATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_IN_HINT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_IN_PARSING_SELECT_LIST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_IN_TABLE_REFERENCES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLUMNS_NOT_MATCHING_WITH_TABS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_REDUCING_DISTINCT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_IN_SET_OPERATOR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_FROM_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;10<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;11.<br />
+&nbsp;&nbsp;P_RC&nbsp;=&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;IF&nbsp;P_RC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;DISPLAY_ERROR_MESSAGE&nbsp;USING&nbsp;P_RC.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " parse_sql_statement<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;user_command_0100_input<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;perform&nbsp;the&nbsp;user&nbsp;commands<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM USER_COMMAND_0100_INPUT .<br />
+&nbsp;&nbsp;DATA:&nbsp;L_OKCODE&nbsp;TYPE&nbsp;SY-UCOMM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;C20040123<br />
+&nbsp;&nbsp;L_OKCODE&nbsp;=&nbsp;OK_CODE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;C20040123<br />
+&nbsp;&nbsp;CLEAR&nbsp;OK_CODE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;C20040123<br />
+&nbsp;&nbsp;CASE&nbsp;L_OKCODE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;C20040123<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BACK'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;ASK_AND_LEAVE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'PARS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PARSE_EDITOR_STATEMENT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'EXEC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PARSE_AND_EXEC_STATEMENT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'EXPL'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;EXPLAIN_STATEMENT.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    " user_command_0100_input<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;EXPLAIN_STATEMENT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM EXPLAIN_STATEMENT .<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_SQL_STATEMENT&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_SQL_STATEMENT&nbsp;TYPE&nbsp;TY_TEXTTAB.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;RC&nbsp;LIKE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LEN&nbsp;TYPE&nbsp;I.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;GET_SQL_STATEMENT&nbsp;CHANGING&nbsp;L_SQL_STATEMENT&nbsp;LT_SQL_STATEMENT.<br />
+&nbsp;&nbsp;PERFORM&nbsp;EXPL_SQL_STMT(RSXPLAIN)&nbsp;USING&nbsp;'SELECT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_SQL_STATEMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC.<br />
+ENDFORM.                    " EXPLAIN_STATEMENT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;T100&nbsp;--&gt&nbsp;Edit&nbsp;SQL&nbsp;SELECT&nbsp;statement<br />
+*&nbsp;T200&nbsp;--&gt&nbsp;Result&nbsp;of&nbsp;the&nbsp;SELECT&nbsp;statement<br />
+*&nbsp;T100&nbsp;--&gt&nbsp;Edit&nbsp;SQL&nbsp;SELECT&nbsp;statement<br />
+*&nbsp;T200&nbsp;--&gt&nbsp;Result&nbsp;of&nbsp;the&nbsp;SELECT&nbsp;statement<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;001&nbsp;Unsaved&nbsp;statements&nbsp;will&nbsp;be&nbsp;lost.<br />
+*&nbsp;002&nbsp;Do&nbsp;you&nbsp;really&nbsp;want&nbsp;to&nbsp;leave?<br />
+*&nbsp;003&nbsp;End&nbsp;SQL&nbsp;statement&nbsp;editor<br />
+*&nbsp;100&nbsp;Result&nbsp;of&nbsp;the&nbsp;SELECT&nbsp;statement<br />
+*&nbsp;M00&nbsp;Following&nbsp;texts&nbsp;are&nbsp;used&nbsp;as&nbsp;error&nbsp;messages<br />
+*&nbsp;M01&nbsp;Error&nbsp;in&nbsp;parsing&nbsp;SQL&nbsp;statement:<br />
+*&nbsp;M02&nbsp;SQL&nbsp;statement&nbsp;is&nbsp;accepted<br />
+*&nbsp;M03&nbsp;The&nbsp;following&nbsp;table&nbsp;has&nbsp;not&nbsp;owner&nbsp;SYS<br />
+*&nbsp;M04&nbsp;or&nbsp;is&nbsp;unknown:<br />
+*&nbsp;M06&nbsp;Use&nbsp;table&nbsp;names&nbsp;without&nbsp;underscore,<br />
+*&nbsp;M07&nbsp;e.g.&nbsp;V$SQL&nbsp;instead&nbsp;of&nbsp;V_$SQL<br />
+*&nbsp;M08&nbsp;Error&nbsp;while&nbsp;creating&nbsp;select&nbsp;program<br />
+*&nbsp;M09&nbsp;Data&nbsp;base&nbsp;field&nbsp;not&nbsp;found:<br />
+*&nbsp;M10&nbsp;Syntax&nbsp;error&nbsp;in&nbsp;generated&nbsp;program:<br />
+*&nbsp;M11&nbsp;Source&nbsp;code<br />
+*&nbsp;M12&nbsp;(Details&nbsp;see&nbsp;following&nbsp;message)<br />
+*&nbsp;M13&nbsp;Select&nbsp;statement&nbsp;cannot&nbsp;be&nbsp;executed.<br />
+*&nbsp;M14&nbsp;Please&nbsp;restart&nbsp;current&nbsp;program.<br />
+*&nbsp;M15&nbsp;(For&nbsp;&nbsp;reason&nbsp;see&nbsp;following&nbsp;message&nbsp;and&nbsp;note&nbsp;64201)<br />
+*&nbsp;M20&nbsp;Error&nbsp;during&nbsp;initialization&nbsp;of&nbsp;frontend&nbsp;/&nbsp;GUI<br />
+*&nbsp;M21&nbsp;The&nbsp;following&nbsp;table&nbsp;does&nbsp;not&nbsp;exist:<br />
+*&nbsp;M22&nbsp;The&nbsp;following&nbsp;table&nbsp;has&nbsp;not&nbsp;owner&nbsp;PUBLIC&nbsp;or&nbsp;SYS:<br />
+*&nbsp;M23&nbsp;ADBC&nbsp;SQL-Error;&nbsp;Returncode&nbsp;=<br />
+*&nbsp;M24&nbsp;Error&nbsp;Text&nbsp;=<br />
+*&nbsp;M99&nbsp;Data&nbsp;base&nbsp;system&nbsp;is&nbsp;not&nbsp;Oracle:<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;S1<br />
+*899&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

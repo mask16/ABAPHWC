@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPM_CREATE_DOCUMENT_MASS_UPLOD</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZPM_CREATE_DOCUMENT_MASS_UPLOD</h2>
+<h3> Description: 첨부파일 대량 업로드</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZPM_CREATE_DOCUMENT_MASS_UPLOD.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_DOKAR) LIKE  DRAW-DOKAR<br />
+*"     VALUE(I_DOKNR) LIKE  DRAW-DOKNR OPTIONAL<br />
+*"     REFERENCE(I_DOKVR) LIKE  DRAW-DOKVR<br />
+*"     REFERENCE(I_DOKTL) LIKE  DRAW-DOKTL<br />
+*"     REFERENCE(I_FILE) LIKE  DRAW-FILEP<br />
+*"  EXPORTING<br />
+*"     REFERENCE(E_RETURN) LIKE  ZPMS0010 STRUCTURE  ZPMS0010<br />
+*"     REFERENCE(E_DOKNR) LIKE  DRAW-DOKNR<br />
+*"  TABLES<br />
+*"      T_FILES STRUCTURE  BAPI_DOC_FILES2<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zpm_create_document_mass_uplod.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+DATA: LS_DOCUMENTDATA TYPE BAPI_DOC_DRAW2.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_DOCUMENTFILES&nbsp;TYPE&nbsp;BAPI_DOC_FILES2&nbsp;OCCURS&nbsp;10&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_BAPI_RETURN&nbsp;LIKE&nbsp;BAPIRET2.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_FRONTEND&nbsp;LIKE&nbsp;DMS_FRONTEND_DATA.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DTTRG&nbsp;LIKE&nbsp;DRAW-DTTRG.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_LAST_DIRECTORY&nbsp;LIKE&nbsp;DRAW-FILEP.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DAPPL&nbsp;LIKE&nbsp;DRAW-DAPPL.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_FILE&nbsp;LIKE&nbsp;DRAW-FILEP.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DUMMY&nbsp;LIKE&nbsp;DRAW-FILEP.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_FLAG&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DOCUMENTNUMBER&nbsp;LIKE&nbsp;BAPI_DOC_AUX-DOCNUMBER.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+**로컬파일 받기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LS_FRONTEND-HOSTNAME&nbsp;=&nbsp;'DEFAULT'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  ls_frontend-hostname = 'ERPDB'.<br />
+*  ls_frontend-hostname = 'ERPCS'.<br />
+*  ls_frontend-hostname = '192.168.30.47'.<br />
+<br />
+*  CALL FUNCTION 'CV120_DOC_GET_FILE'<br />
+*    EXPORTING<br />
+*      PF_HOSTNAME     = LS_FRONTEND-HOSTNAME<br />
+*      PF_DTTRG        = L_DTTRG<br />
+*      PF_PATH         = L_LAST_DIRECTORY<br />
+*      PF_DAPPL        = L_DAPPL<br />
+*      PF_MODE         = 'O'<br />
+*      PF_TITLE        = ''<br />
+*    IMPORTING<br />
+*      PFX_FILE        = L_FILE<br />
+*      PFX_MASK_CHANGE = L_FLAG<br />
+*    EXCEPTIONS<br />
+*      WRONG_APPL      = 1<br />
+*      ERROR           = 2<br />
+*      OTHERS          = 3.<br />
+*<br />
+*  IF L_FILE IS INITIAL.<br />
+*    E_RETURN-TYPE = 'N'.<br />
+*    E_RETURN-MESSAGE = '사용자에의해 취소 되었습니다'.<br />
+*    EXIT.<br />
+*  ENDIF.<br />
+<br />
+**경로와 파일명 분리<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'CV120_SPLIT_PATH'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_PATH&nbsp;&nbsp;=&nbsp;I_FILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_PATH&nbsp;=&nbsp;L_LAST_DIRECTORY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_FILE&nbsp;=&nbsp;L_DUMMY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**어플리케이션 유형 구하기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'CV120_DOC_GET_APPL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_DIALOG&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_TYPDT&nbsp;&nbsp;=&nbsp;LS_FRONTEND-FRONTEND_TYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_FILE&nbsp;&nbsp;&nbsp;=&nbsp;L_DUMMY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_DAPPL&nbsp;=&nbsp;L_DAPPL.<br />
+<br />
+&nbsp;&nbsp;"*&nbsp;문서내역&nbsp;받기<br />
+   </div>
+   <div class="codeComment">
+*  CLEAR drat.<br />
+*  CALL SCREEN 30 STARTING AT 1 1 ENDING AT 57 1.<br />
+*  CHECK g_old_okcode EQ 'OKAY'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTTYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKAR.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTNUMBER&nbsp;&nbsp;=&nbsp;I_DOKNR.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTVERSION&nbsp;=&nbsp;I_DOKVR.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTPART&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKTL.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DESCRIPTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_DUMMY.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-USERNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTTYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKAR.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTNUMBER&nbsp;&nbsp;=&nbsp;I_DOKNR.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTPART&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKTL.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTVERSION&nbsp;=&nbsp;I_DOKVR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  IF SY-SYSID = 'SSD'.<br />
+*    LT_DOCUMENTFILES-STORAGECATEGORY = 'ZDMS_400'.<br />
+*  ELSEIF SY-SYSID = 'SSQ'.<br />
+*    LT_DOCUMENTFILES-STORAGECATEGORY = 'ZDMS_200'.<br />
+*  ELSEIF SY-SYSID = 'SSP'.<br />
+*    LT_DOCUMENTFILES-STORAGECATEGORY = 'ZDMS_100'.<br />
+*  ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LT_DOCUMENTFILES-STORAGECATEGORY&nbsp;=&nbsp;'DMS_C1_ST'.<br />
+<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCPATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_LAST_DIRECTORY.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCFILE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_DUMMY.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-WSAPPLICATION&nbsp;&nbsp;&nbsp;=&nbsp;L_DAPPL.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-LANGUAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-CHECKEDIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-CREATED_AT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-CREATED_BY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;APPEND&nbsp;LT_DOCUMENTFILES.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_DOCUMENT_CREATE2'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENTDATA&nbsp;&nbsp;&nbsp;=&nbsp;LS_DOCUMENTDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENTNUMBER&nbsp;=&nbsp;L_DOCUMENTNUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_BAPI_RETURN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENTFILES&nbsp;&nbsp;=&nbsp;LT_DOCUMENTFILES.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  WAIT UP TO 1 SECONDS.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;L_DOCUMENTNUMBER&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_BAPI_RETURN&nbsp;TO&nbsp;E_RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_DOKNR&nbsp;&nbsp;&nbsp;=&nbsp;L_DOCUMENTNUMBER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;T_FILES[]&nbsp;=&nbsp;LT_DOCUMENTFILES[].<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Text elements<br />
+*----------------------------------------------------------<br />
+* T01 No.<br />
+* T02 어플리케이션<br />
+* T03 파일명<br />
+* T04 문서번호<br />
+* T05 변경일<br />
+* T06 변경시간<br />
+* T07 변경자<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZPMM<br />
+*000   &<br />
+*001   & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

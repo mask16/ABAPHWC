@@ -1,0 +1,1277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZCOR0020</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZCOR0020</h2>
+<h3> Description: 제품별 실제원가 리포트 (직,간접구분)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ZCOR0020.<br />
+*&&nbsp;DESCRIPTION&nbsp;:&nbsp;표준원가&nbsp;대비&nbsp;실제원가&nbsp;리포트.<br />
+*&&nbsp;DEVELOPER&nbsp;&nbsp;&nbsp;:&nbsp;Kim&nbsp;Hyun&nbsp;Pyo.<br />
+*&&nbsp;CREATED&nbsp;DATE:&nbsp;2013.01.31.<br />
+*&&nbsp;Changed&nbsp;DATE:<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;HISTORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zcor0020 MESSAGE-ID zcom.<br />
+<br />
+include <a href ="zcoi_common_01.html">zcoi_common_01</a>.<br />
+<br />
+TABLES: ckmlprkeph, mbew.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--&nbsp;Grid&nbsp;Varialbe&nbsp;Setting&nbsp;----<br />
+   </div>
+   <div class="code">
+DATA: g_docking_container TYPE REF TO cl_gui_docking_container,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_grid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_gui_alv_grid.<br />
+<br />
+DATA: gt_fcat       TYPE lvc_t_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_fcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_layo,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_t_sort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_sort,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_toolbar&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ui_functions,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_button&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;stb_button,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_stbl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_variant&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;disvariant,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_selected_row&nbsp;TYPE&nbsp;lvc_t_row.<br />
+<br />
+DATA: ok_code TYPE syucomm.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;---------------------------------------------------------<br />
+<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF gs_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bukrs&nbsp;&nbsp;&nbsp;TYPE&nbsp;bukrs,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kalnr	&nbsp;&nbsp;TYPE&nbsp;ck_kalnr,&nbsp;&nbsp;"원가추정번호.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bdatj	&nbsp;&nbsp;TYPE&nbsp;bdatj,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"게시일&nbsp;YYYY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;poper	&nbsp;&nbsp;TYPE&nbsp;poper,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"전기&nbsp;기간.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prtyp	&nbsp;&nbsp;TYPE&nbsp;ck_prtyp,&nbsp;&nbsp;"가격유형.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matnr	&nbsp;&nbsp;TYPE&nbsp;matnr,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"자재코드.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwkey	&nbsp;&nbsp;TYPE&nbsp;bwkey,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"평가영역-플랜트.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwtar	&nbsp;&nbsp;TYPE&nbsp;bwtar_d,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"평가유형.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bklas	&nbsp;&nbsp;TYPE&nbsp;bklas,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"평가클래스.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;losgr&nbsp;&nbsp;&nbsp;TYPE&nbsp;ck_losgr,&nbsp;&nbsp;&nbsp;&nbsp;"MARC&nbsp;-&nbsp;제품&nbsp;원가계산&nbsp;로트크기.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;meins&nbsp;&nbsp;&nbsp;TYPE&nbsp;meins,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"MARA&nbsp;-&nbsp;단위.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waers	&nbsp;&nbsp;TYPE&nbsp;waers,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ksttot&nbsp;&nbsp;TYPE&nbsp;wertv9,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"합계.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst001&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(원)Wire/장비재료비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst003&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(원)Flux재료비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst005&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(원)Binder재료비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst007&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(원)포장재료<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst009&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(원)포장소모재료<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst011&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"간접재료비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst011_1&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"간접재료비-직접<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst011_2&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"간접재료비-간접<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst013&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"외주가공비<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst015&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"직접노무비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst015_1&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"직접노무비-직접<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst015_2&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"직접노무비-간접<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst017&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"간접노무비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst017_1&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"간접노무비-직접<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst017_2&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"간접노무비-간접<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst019&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"일반경비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst019_1&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"일반경비-직접<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst019_2&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"일반경비-간접<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst021&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"동력비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst021_1&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"동력비-직접<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst021_2&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"동력비-간접<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst023&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"감가상각비<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst023_1&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"감가상각비-직접<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kst023_2&nbsp;&nbsp;TYPE&nbsp;mlccs_d_kstel,&nbsp;&nbsp;&nbsp;"감가상각비-간접<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cellcolor&nbsp;TYPE&nbsp;lvc_t_scol,&nbsp;&nbsp;"Color.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_data&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_data.<br />
+<br />
+&nbsp;&nbsp;"Direct,&nbsp;Indirect&nbsp;Amount&nbsp;Saved.<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;gs_total,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kstarnm&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnrnm&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;poper	&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;poper,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"전기&nbsp;기간.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d_tot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;wertv9,&nbsp;&nbsp;&nbsp;&nbsp;"Direct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_tot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;wertv9,&nbsp;&nbsp;&nbsp;&nbsp;"Indirect.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_total,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_total&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_total.<br />
+<br />
+DATA: BEGIN OF gs_tckh,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elehk	TYPE&nbsp;ck_elesmhk,&nbsp;&nbsp;"원가구성요소&nbsp;구조.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elemt	TYPE&nbsp;ck_element,&nbsp;&nbsp;"원가구성요소&nbsp;번호.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;el_hv	TYPE&nbsp;ck_el_hv,&nbsp;&nbsp;&nbsp;&nbsp;"총원가.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;txele	TYPE&nbsp;ck_txele,&nbsp;&nbsp;&nbsp;&nbsp;"원가구성요소&nbsp;이름.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_tckh,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_tckh&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_tckh.<br />
+<br />
+DATA: BEGIN OF gs_t001k,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwkey&nbsp;TYPE&nbsp;bwkey,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bukrs&nbsp;TYPE&nbsp;bukrs,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;butxt&nbsp;TYPE&nbsp;butxt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waers&nbsp;TYPE&nbsp;waers,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ktopl&nbsp;TYPE&nbsp;ktopl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_t001k,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_t001k&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_t001k.<br />
+<br />
+DATA: gt_setleaf  TYPE TABLE OF setleaf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_setleaf&nbsp;&nbsp;TYPE&nbsp;setleaf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_cosp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;cosp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_cosp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cosp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_coss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;coss,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_coss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;coss.<br />
+<br />
+DATA: gr_kostl TYPE RANGE OF kostl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_kostl&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;gr_kostl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;j_objnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_objnr&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;gr_objnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr002&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;j_objnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr003&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;j_objnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr004&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;j_objnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr005&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;j_objnr.<br />
+<br />
+DATA: gr_kstp100 TYPE RANGE OF kstar,  "P100, 5번대.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_kstp200&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,&nbsp;&nbsp;"P200,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_kstp300&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,&nbsp;&nbsp;"P300,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_kstp400&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,&nbsp;&nbsp;"P400,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_ksty400&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,&nbsp;&nbsp;&nbsp;"Y400.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_kstp500&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,&nbsp;&nbsp;"P500,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_kstp600&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,&nbsp;&nbsp;&nbsp;"P600.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_kstar&nbsp;&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;gr_kstp500.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&nbsp;SELECTION-SCREEN<br />
+*&---------------------------------------------------------------------*<br />
+*SELECTION-SCREEN&nbsp;FUNCTION&nbsp;KEY&nbsp;1.<br />
+<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK blk1 WITH FRAME TITLE text-t01.<br />
+PARAMETERS: p_kokrs TYPE kokrs OBLIGATORY DEFAULT '1000',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_bukrs&nbsp;TYPE&nbsp;bukrs&nbsp;OBLIGATORY&nbsp;DEFAULT&nbsp;'1000'.<br />
+SELECT-OPTIONS: s_bwkey FOR mbew-bwkey,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_matnr	FOR&nbsp;mbew-matnr.<br />
+PARAMETERS: p_bdatj TYPE bdatj OBLIGATORY DEFAULT sy-datum(4).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_bdatj&nbsp;&nbsp;FOR&nbsp;ckmlprkeph-bdatj,<br />
+   </div>
+   <div class="code">
+SELECT-OPTIONS: s_poper	FOR ckmlprkeph-poper.<br />
+PARAMETERS: p_prtyp TYPE ckmlprkeph-prtyp OBLIGATORY DEFAULT 'V'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_bklas&nbsp;FOR&nbsp;mbew-bklas,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_bwkey&nbsp;FOR&nbsp;mbew-bwkey.<br />
+<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN END OF BLOCK blk1.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*INITIALIZATION.<br />
+*----------------------------------------------------------------------*<br />
+<br />
+**----------------------------------------------------------------------*<br />
+*AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;p_path.<br />
+**----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;PERFORM&nbsp;get_filename&nbsp;CHANGING&nbsp;p_path.<br />
+<br />
+**----------------------------------------------------------------------*<br />
+*AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;p_group.<br />
+**----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;PERFORM&nbsp;f4_group.<br />
+*&nbsp;&nbsp;PERFORM&nbsp;set_gname.<br />
+<br />
+**----------------------------------------------------------------------*<br />
+*AT&nbsp;SELECTION-SCREEN.<br />
+**----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;PERFORM&nbsp;at_selection_screen.<br />
+<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;get_base_data.<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_data.<br />
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;100.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_data .<br />
+&nbsp;&nbsp;DATA:&nbsp;l_kkzst&nbsp;TYPE&nbsp;ck_stufe&nbsp;VALUE&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_prtyp&nbsp;TYPE&nbsp;ck_prtyp&nbsp;VALUE&nbsp;'V',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_index&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_bklas&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;bklas,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_bklas&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_bklas.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_data[],&nbsp;gt_total[].<br />
+&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;lr_bklas&nbsp;ls_bklas&nbsp;'I'&nbsp;'EQ'&nbsp;'7900'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_bklas&nbsp;ls_bklas&nbsp;'I'&nbsp;'EQ'&nbsp;'7920'&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;&nbsp;a~kalnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~bdatj<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~prtyp<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~bwtar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~bklas<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c~losgr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d~meins<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst005<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst007<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst009<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst011<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst013<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst015<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst017<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst019<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst021<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~kst023<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ckmlprkeph&nbsp;AS&nbsp;a&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;ckmlcr&nbsp;AS&nbsp;e&nbsp;ON&nbsp;a~kalnr&nbsp;=&nbsp;e~kalnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~bdatj&nbsp;=&nbsp;e~bdatj<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~poper&nbsp;=&nbsp;e~poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;mbew&nbsp;AS&nbsp;b&nbsp;ON&nbsp;e~kalnr&nbsp;=&nbsp;b~kaln1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;marc&nbsp;AS&nbsp;c&nbsp;ON&nbsp;b~matnr&nbsp;=&nbsp;c~matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bwkey&nbsp;=&nbsp;c~werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;mara&nbsp;AS&nbsp;d&nbsp;ON&nbsp;c~matnr&nbsp;=&nbsp;d~matnr<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;a~bdatj&nbsp;EQ&nbsp;p_bdatj<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~poper&nbsp;IN&nbsp;s_poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~prtyp&nbsp;EQ&nbsp;p_prtyp&nbsp;"IN&nbsp;s_prtyp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~kkzst&nbsp;NE&nbsp;l_kkzst<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;e~pvprs&nbsp;NE&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~matnr&nbsp;IN&nbsp;s_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bwkey&nbsp;IN&nbsp;s_bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bklas&nbsp;IN&nbsp;lr_bklas.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bklas&nbsp;IN&nbsp;s_bklas.<br />
+<br />
+*&nbsp;&nbsp;--&nbsp;Adjust&nbsp;Data&nbsp;-----------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CHECK&nbsp;gt_data[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;SORT&nbsp;gt_data&nbsp;BY&nbsp;bklas&nbsp;bwkey&nbsp;poper.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_data&nbsp;INTO&nbsp;gs_data.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_index&nbsp;=&nbsp;sy-tabix.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_data-bukrs&nbsp;=&nbsp;p_bukrs.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;간접재료비.&nbsp;P100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;process_data&nbsp;USING&nbsp;&nbsp;gs_data-kst011<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P100'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-kst011_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst011_2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;직접노무비.&nbsp;P200.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;process_data&nbsp;USING&nbsp;&nbsp;gs_data-kst015<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P200'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-kst015_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst015_2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;간접노무비.&nbsp;P300.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;process_data&nbsp;USING&nbsp;&nbsp;gs_data-kst017<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P300'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-kst017_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst017_2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;일반경비.&nbsp;P400.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;process_data&nbsp;USING&nbsp;&nbsp;gs_data-kst019<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P400'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-kst019_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst019_2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;동력비.&nbsp;&nbsp;P500.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;process_data&nbsp;USING&nbsp;&nbsp;gs_data-kst021<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P500'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-kst021_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst021_2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;감가상각비.&nbsp;P600.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;process_data&nbsp;USING&nbsp;&nbsp;gs_data-kst023<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P600'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-bwkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-poper<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gs_data-kst023_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst023_2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_data-ksttot&nbsp;=&nbsp;&nbsp;gs_data-kst001&nbsp;+&nbsp;gs_data-kst003&nbsp;+&nbsp;gs_data-kst005&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst007&nbsp;+&nbsp;gs_data-kst009&nbsp;+&nbsp;gs_data-kst013&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst011&nbsp;+&nbsp;gs_data-kst015&nbsp;+&nbsp;gs_data-kst017&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-kst019&nbsp;+&nbsp;gs_data-kst021&nbsp;+&nbsp;gs_data-kst023.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_data&nbsp;FROM&nbsp;gs_data&nbsp;INDEX&nbsp;l_index.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_data.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    " GET_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_BASE_DATA<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_base_data .<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_csks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;csks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_csks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;csks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;j_objnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs&gt&nbsp;TYPE&nbsp;table.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_setclass&nbsp;&nbsp;TYPE&nbsp;setclass&nbsp;VALUE&nbsp;'0102',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_subclass&nbsp;&nbsp;TYPE&nbsp;setsubcls.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;lr_setname&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;setnamenew,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_setname&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_setname.<br />
+<br />
+&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;lr_setname&nbsp;ls_setname&nbsp;'I'&nbsp;'EQ'&nbsp;'P100'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_setname&nbsp;ls_setname&nbsp;'I'&nbsp;'EQ'&nbsp;'P200'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_setname&nbsp;ls_setname&nbsp;'I'&nbsp;'EQ'&nbsp;'P300'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_setname&nbsp;ls_setname&nbsp;'I'&nbsp;'EQ'&nbsp;'P400'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_setname&nbsp;ls_setname&nbsp;'I'&nbsp;'EQ'&nbsp;'P500'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_setname&nbsp;ls_setname&nbsp;'I'&nbsp;'EQ'&nbsp;'P600'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_setname&nbsp;ls_setname&nbsp;'I'&nbsp;'EQ'&nbsp;'Y400'&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;l_subclass&nbsp;=&nbsp;p_bukrs.<br />
+<br />
+&nbsp;&nbsp;"--&nbsp;원가요소&nbsp;구하기...<br />
+&nbsp;&nbsp;IF&nbsp;gt_setleaf[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_setleaf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;setleaf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;setclass&nbsp;=&nbsp;l_setclass<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;subclass&nbsp;=&nbsp;l_subclass<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;setname&nbsp;&nbsp;IN&nbsp;lr_setname.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;gt_setleaf&nbsp;BY&nbsp;setname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lr_setname&nbsp;INTO&nbsp;ls_setname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'GR_KST'&nbsp;ls_setname-low&nbsp;INTO&nbsp;l_name.&nbsp;&nbsp;"gr_kstp100.&nbsp;...<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;(l_name)&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_setleaf&nbsp;INTO&nbsp;gs_setleaf&nbsp;WHERE&nbsp;setname&nbsp;EQ&nbsp;ls_setname-low.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;&ltfs&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_kstar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_setleaf-valsign<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_setleaf-valoption<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_setleaf-valfrom<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_setleaf-valto.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gs_setleaf,&nbsp;gs_kstar.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_setname,&nbsp;l_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"---&nbsp;회사코드&nbsp;관련&nbsp;정보...<br />
+&nbsp;&nbsp;IF&nbsp;gt_t001k[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_t001k<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t001&nbsp;AS&nbsp;a&nbsp;INNER&nbsp;JOIN&nbsp;t001k&nbsp;AS&nbsp;b&nbsp;ON&nbsp;a~bukrs&nbsp;=&nbsp;b~bukrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;a~bukrs&nbsp;=&nbsp;p_bukrs.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"--&nbsp;필드명...<br />
+&nbsp;&nbsp;IF&nbsp;gt_tckh[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;b~elehk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~elemt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~el_hv<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~txele<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_tckh<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;tckh1&nbsp;AS&nbsp;a&nbsp;INNER&nbsp;JOIN&nbsp;tckh3&nbsp;AS&nbsp;b<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;a~elehk&nbsp;=&nbsp;b~elehk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~elemt&nbsp;=&nbsp;b~elemt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;a~spras&nbsp;=&nbsp;sy-langu<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~elehk&nbsp;=&nbsp;'10'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"--&nbsp;Cost&nbsp;Center&nbsp;List.<br />
+&nbsp;&nbsp;IF&nbsp;gr_kostl[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;lt_csks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;csks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;kokrs&nbsp;&nbsp;EQ&nbsp;p_kokrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;bukrs&nbsp;&nbsp;EQ&nbsp;p_bukrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;kosar&nbsp;&nbsp;EQ&nbsp;'F'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;lt_csks&nbsp;BY&nbsp;kostl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_csks&nbsp;INTO&nbsp;ls_csks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'KS'&nbsp;p_kokrs&nbsp;ls_csks-kostl&nbsp;INTO&nbsp;l_objnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;gr_kostl&nbsp;gs_kostl&nbsp;'I'&nbsp;'EQ'&nbsp;ls_csks-kostl&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr&nbsp;gs_objnr&nbsp;'I'&nbsp;'EQ'&nbsp;l_objnr&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;ls_csks-kostl(4).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'0002'.&nbsp;_set_ranges:&nbsp;gr_objnr002&nbsp;gs_objnr&nbsp;'I'&nbsp;'EQ'&nbsp;l_objnr&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'0003'.&nbsp;_set_ranges:&nbsp;gr_objnr003&nbsp;gs_objnr&nbsp;'I'&nbsp;'EQ'&nbsp;l_objnr&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'0004'.&nbsp;_set_ranges:&nbsp;gr_objnr004&nbsp;gs_objnr&nbsp;'I'&nbsp;'EQ'&nbsp;l_objnr&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'0005'.&nbsp;_set_ranges:&nbsp;gr_objnr005&nbsp;gs_objnr&nbsp;'I'&nbsp;'EQ'&nbsp;l_objnr&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gs_kostl,&nbsp;ls_csks,&nbsp;l_objnr,&nbsp;gs_objnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;s_poper,&nbsp;l_datum1,&nbsp;l_datum2.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;SORT:&nbsp;gr_objnr002&nbsp;BY&nbsp;low,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr003&nbsp;BY&nbsp;low,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr004&nbsp;BY&nbsp;low,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr005&nbsp;BY&nbsp;low.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM:&nbsp;&nbsp;gr_objnr002&nbsp;COMPARING&nbsp;low,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr003&nbsp;COMPARING&nbsp;low,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr004&nbsp;COMPARING&nbsp;low,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_objnr005&nbsp;COMPARING&nbsp;low.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;gr_kostl&nbsp;BY&nbsp;low.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;gr_kostl&nbsp;COMPARING&nbsp;low.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"--&nbsp;COSP,&nbsp;COSS&nbsp;테이블&nbsp;구하기..<br />
+&nbsp;&nbsp;IF&nbsp;gt_cosp[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;objnr&nbsp;gjahr&nbsp;wrttp&nbsp;kstar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg001&nbsp;)&nbsp;AS&nbsp;wkg001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg002&nbsp;)&nbsp;AS&nbsp;wkg002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg003&nbsp;)&nbsp;AS&nbsp;wkg003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg004&nbsp;)&nbsp;AS&nbsp;wkg004<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg005&nbsp;)&nbsp;AS&nbsp;wkg005<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg006&nbsp;)&nbsp;AS&nbsp;wkg006<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg007&nbsp;)&nbsp;AS&nbsp;wkg007<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg008&nbsp;)&nbsp;AS&nbsp;wkg008<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg009&nbsp;)&nbsp;AS&nbsp;wkg009<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg010&nbsp;)&nbsp;AS&nbsp;wkg010<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg011&nbsp;)&nbsp;AS&nbsp;wkg011<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg012&nbsp;)&nbsp;AS&nbsp;wkg012<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_cosp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;cosp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;objnr&nbsp;IN&nbsp;gr_objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;gjahr&nbsp;EQ&nbsp;p_bdatj<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;wrttp&nbsp;EQ&nbsp;'04'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;objnr&nbsp;gjahr&nbsp;wrttp&nbsp;kstar&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;objnr&nbsp;gjahr&nbsp;wrttp&nbsp;kstar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg001&nbsp;)&nbsp;AS&nbsp;wkg001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg002&nbsp;)&nbsp;AS&nbsp;wkg002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg003&nbsp;)&nbsp;AS&nbsp;wkg003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg004&nbsp;)&nbsp;AS&nbsp;wkg004<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg005&nbsp;)&nbsp;AS&nbsp;wkg005<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg006&nbsp;)&nbsp;AS&nbsp;wkg006<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg007&nbsp;)&nbsp;AS&nbsp;wkg007<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg008&nbsp;)&nbsp;AS&nbsp;wkg008<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg009&nbsp;)&nbsp;AS&nbsp;wkg009<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg010&nbsp;)&nbsp;AS&nbsp;wkg010<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg011&nbsp;)&nbsp;AS&nbsp;wkg011<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(&nbsp;wkg012&nbsp;)&nbsp;AS&nbsp;wkg012<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_cosp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;coss<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;objnr&nbsp;IN&nbsp;gr_objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;gjahr&nbsp;EQ&nbsp;p_bdatj<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;wrttp&nbsp;EQ&nbsp;'04'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;beknz&nbsp;EQ&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROUP&nbsp;BY&nbsp;objnr&nbsp;gjahr&nbsp;wrttp&nbsp;kstar&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;gt_cosp&nbsp;BY&nbsp;objnr&nbsp;kstar.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " GET_BASE_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;process_data<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM process_data USING p_amount p_setname p_werks p_month p_waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;c_amount1&nbsp;c_amount2.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs_kstar&gt&nbsp;TYPE&nbsp;table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs_objnr&gt&nbsp;TYPE&nbsp;table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs&gt.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_cosp&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;cosp.<br />
+&nbsp;&nbsp;DATA:&nbsp;lr_kstar005&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_kstar008&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;kstar,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_kstar&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_kstar005.<br />
+&nbsp;&nbsp;DATA:&nbsp;l_name1&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_name2&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tot1&nbsp;&nbsp;TYPE&nbsp;wertv9,&nbsp;&nbsp;"직접비.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tot2&nbsp;&nbsp;TYPE&nbsp;wertv9,&nbsp;&nbsp;"간접비.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_amt&nbsp;&nbsp;&nbsp;TYPE&nbsp;wertv8,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_amt1&nbsp;&nbsp;TYPE&nbsp;wertv8,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_amt2&nbsp;&nbsp;TYPE&nbsp;wertv8.<br />
+<br />
+&nbsp;&nbsp;"--추가.<br />
+&nbsp;&nbsp;CHECK&nbsp;p_amount&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;CLEAR&nbsp;gs_total.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;(&nbsp;p_setname&nbsp;EQ&nbsp;'P500'&nbsp;OR&nbsp;p_setname&nbsp;EQ&nbsp;'P600'&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;p_werks&nbsp;EQ&nbsp;'1040'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;c_amount1,&nbsp;c_amount2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;MOVE&nbsp;p_amount&nbsp;TO&nbsp;l_amt.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE:&nbsp;&nbsp;'WKG'&nbsp;p_month&nbsp;INTO&nbsp;l_fname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'GR_KST'&nbsp;p_setname&nbsp;INTO&nbsp;l_name1.<br />
+&nbsp;&nbsp;IF&nbsp;p_setname&nbsp;EQ&nbsp;'P400'&nbsp;AND&nbsp;p_werks&nbsp;EQ&nbsp;'1040'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_name1&nbsp;=&nbsp;'GR_KSTY400'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;p_werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'1010'.&nbsp;l_name2&nbsp;=&nbsp;'GR_OBJNR002'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'1020'.&nbsp;l_name2&nbsp;=&nbsp;'GR_OBJNR003'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'1030'.&nbsp;l_name2&nbsp;=&nbsp;'GR_OBJNR004'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'1040'.&nbsp;l_name2&nbsp;=&nbsp;'GR_OBJNR005'.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;"Check&nbsp;Exist&nbsp;or&nbsp;Not.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_total&nbsp;INTO&nbsp;gs_total&nbsp;WITH&nbsp;KEY&nbsp;kstarnm&nbsp;=&nbsp;l_name1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnrnm&nbsp;=&nbsp;l_name2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;poper&nbsp;&nbsp;&nbsp;=&nbsp;p_month.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN:&nbsp;(l_name1)&nbsp;TO&nbsp;&ltfs_kstar&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(l_name2)&nbsp;TO&nbsp;&ltfs_objnr&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;lr_kstar005&nbsp;ls_kstar&nbsp;'I'&nbsp;'CP'&nbsp;'005*'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_kstar008&nbsp;ls_kstar&nbsp;'I'&nbsp;'CP'&nbsp;'008*'&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_cosp[]&nbsp;=&nbsp;gt_cosp[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE:&nbsp;lt_cosp&nbsp;WHERE&nbsp;objnr&nbsp;NOT&nbsp;IN&nbsp;&ltfs_objnr&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_cosp&nbsp;WHERE&nbsp;kstar&nbsp;NOT&nbsp;IN&nbsp;&ltfs_kstar&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;직접비..기준.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_cosp&nbsp;INTO&nbsp;gs_cosp&nbsp;WHERE&nbsp;kstar&nbsp;IN&nbsp;lr_kstar005.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;l_fname&nbsp;OF&nbsp;STRUCTURE&nbsp;gs_cosp&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;&ltfs&gt&nbsp;TO&nbsp;l_tot1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_cosp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;간접비...기준.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_cosp&nbsp;INTO&nbsp;gs_cosp&nbsp;WHERE&nbsp;kstar&nbsp;IN&nbsp;lr_kstar008.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;l_fname&nbsp;OF&nbsp;STRUCTURE&nbsp;gs_cosp&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;&ltfs&gt&nbsp;TO&nbsp;l_tot2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_cosp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;l_name1&nbsp;&nbsp;&nbsp;TO&nbsp;gs_total-kstarnm,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_name2&nbsp;&nbsp;&nbsp;TO&nbsp;gs_total-objnrnm,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_month&nbsp;&nbsp;&nbsp;TO&nbsp;gs_total-poper,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tot1&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;gs_total-d_tot,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tot2&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;gs_total-i_tot.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gs_total&nbsp;TO&nbsp;gt_total.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_tot1&nbsp;=&nbsp;gs_total-d_tot.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_tot2&nbsp;=&nbsp;gs_total-i_tot.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;PERFORM&nbsp;currency_sap_to_display&nbsp;USING&nbsp;p_waers&nbsp;CHANGING:&nbsp;l_amt,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tot1,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tot2.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CHECK&nbsp;l_tot1&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;l_amt1&nbsp;=&nbsp;l_amt&nbsp;*&nbsp;l_tot1&nbsp;/&nbsp;(&nbsp;l_tot1&nbsp;+&nbsp;l_tot2&nbsp;).<br />
+&nbsp;&nbsp;l_amt2&nbsp;=&nbsp;l_amt&nbsp;-&nbsp;l_amt1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;PERFORM&nbsp;currency_display_to_sap&nbsp;USING&nbsp;p_waers&nbsp;CHANGING:&nbsp;l_amt1,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_amt2.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MOVE:&nbsp;l_amt1&nbsp;TO&nbsp;c_amount1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_amt2&nbsp;TO&nbsp;c_amount2.<br />
+ENDFORM.                    "process_data<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;PBO&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE pbo OUTPUT.<br />
+&nbsp;&nbsp;SET:&nbsp;&nbsp;PF-STATUS&nbsp;'MAIN100',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLEBAR&nbsp;'MAIN100'.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;display_grid.<br />
+ENDMODULE.                 " PBO  OUTPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;PAI&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE pai INPUT.<br />
+&nbsp;&nbsp;CASE&nbsp;ok_code.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BACK'&nbsp;OR&nbsp;'EXIT'&nbsp;OR&nbsp;'CANC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_grid-&gtfree(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_docking_container-&gtfree(&nbsp;).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;SCREEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;SCREEN.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;ok_code.<br />
+ENDMODULE.                 " PAI  INPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DISPLAY_GRID<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM display_grid .<br />
+&nbsp;&nbsp;IF&nbsp;g_docking_container&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_docking_container<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-repid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dynnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-dynnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;side&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_docking_container-&gtdock_at_top<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extension&nbsp;=&nbsp;'1500'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_grid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_parent&nbsp;=&nbsp;g_docking_container.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM:&nbsp;&nbsp;build_fieldcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_layout,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_color,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_exclude_toolbar.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_style,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_event.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;gs_variant-report&nbsp;=&nbsp;sy-repid.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_variant-handle&nbsp;=&nbsp;'100'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid-&gtset_table_for_first_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_layout<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_variant<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_data<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;=&nbsp;gt_fcat.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll-row&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll-col&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid-&gtrefresh_table_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_stable&nbsp;=&nbsp;gs_scroll.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " DISPLAY_GRID<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_FIELDCAT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_fieldcat .<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_fcat&nbsp;TYPE&nbsp;lvc_s_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_index&nbsp;TYPE&nbsp;i.<br />
+&nbsp;&nbsp;CLEAR&nbsp;gt_fcat[].<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;build_fieldcatalog&nbsp;TABLES&nbsp;gt_fcat&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'BUKRS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'8',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h01,&nbsp;"'회사코드',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'BKLAS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h02,&nbsp;"'평가클래스',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'BWKEY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'6',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h03,&nbsp;"'플랜트',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MATNR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CONVEXIT'&nbsp;&nbsp;'ALPHA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h04,&nbsp;"'자재',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'BDATJ',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h05,&nbsp;"'연도',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'POPER',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CONVEXIT'&nbsp;&nbsp;'ALPHA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h06,&nbsp;"'기간',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'PRTYP',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h07,&nbsp;"'가격유형',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'LOSGR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'6',<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'DECIMALS'&nbsp;&nbsp;'3',<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'DECIMALS_O'&nbsp;'3',<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h08,&nbsp;"'로트크기',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'6',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h09,&nbsp;"'단위',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KSTTOT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h10,&nbsp;"'원가합계',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;text-h11,&nbsp;"'통화',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST001',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST003',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST005',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST007',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST009',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST011_1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST011_2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST013',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST015_1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST015_2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST017_1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST017_2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST019_1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST019_2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST021_1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST021_2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST023_1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'KST023_2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_coltxt&nbsp;&nbsp;TYPE&nbsp;lvc_txtcol,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_coltxt1&nbsp;TYPE&nbsp;lvc_txtcol,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_coltxt2&nbsp;TYPE&nbsp;lvc_txtcol,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname1&nbsp;&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname2&nbsp;&nbsp;TYPE&nbsp;fieldname.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_tckh&nbsp;INTO&nbsp;gs_tckh.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_coltxt&nbsp;=&nbsp;gs_tckh-txele.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'KST'&nbsp;gs_tckh-el_hv&nbsp;INTO&nbsp;l_fname.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_tckh-el_hv&nbsp;&lt&nbsp;'010'&nbsp;OR&nbsp;gs_tckh-el_hv&nbsp;EQ&nbsp;'013'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_fcat&nbsp;INTO&nbsp;ls_fcat&nbsp;WITH&nbsp;KEY&nbsp;fieldname&nbsp;=&nbsp;l_fname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat-coltext&nbsp;=&nbsp;l_coltxt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_fcat&nbsp;FROM&nbsp;ls_fcat&nbsp;INDEX&nbsp;sy-tabix&nbsp;TRANSPORTING&nbsp;coltext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE:&nbsp;&nbsp;l_fname&nbsp;'_1'&nbsp;INTO&nbsp;l_fname1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;'_2'&nbsp;INTO&nbsp;l_fname2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_coltxt&nbsp;text-a01&nbsp;INTO&nbsp;l_coltxt1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_coltxt&nbsp;text-a02&nbsp;INTO&nbsp;l_coltxt2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_fcat&nbsp;INTO&nbsp;ls_fcat&nbsp;WITH&nbsp;KEY&nbsp;fieldname&nbsp;=&nbsp;l_fname1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat-coltext&nbsp;=&nbsp;l_coltxt1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_fcat&nbsp;FROM&nbsp;ls_fcat&nbsp;INDEX&nbsp;sy-tabix&nbsp;TRANSPORTING&nbsp;coltext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_fcat&nbsp;INTO&nbsp;ls_fcat&nbsp;WITH&nbsp;KEY&nbsp;fieldname&nbsp;=&nbsp;l_fname2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat-coltext&nbsp;=&nbsp;l_coltxt2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_fcat&nbsp;FROM&nbsp;ls_fcat&nbsp;INDEX&nbsp;sy-tabix&nbsp;TRANSPORTING&nbsp;coltext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gs_tckh,&nbsp;l_coltxt,&nbsp;l_coltxt1,&nbsp;l_coltxt2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname,&nbsp;l_fname1,&nbsp;l_fname2,&nbsp;ls_fcat.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    " BUILD_FIELDCAT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_LAYOUT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_layout .<br />
+&nbsp;&nbsp;CLEAR&nbsp;gs_layout.<br />
+&nbsp;&nbsp;gs_layout-zebra&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout-cwidth_opt&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;gs_layout-no_toolbar&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;gs_layout-sel_mode&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;gs_layout-ctab_fname&nbsp;&nbsp;=&nbsp;'CELLCOLOR'.<br />
+*&nbsp;&nbsp;gs_layout-stylefname&nbsp;&nbsp;=&nbsp;'CELLTAB'.<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " BUILD_LAYOUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_EXCLUDE_TOOLBAR<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_exclude_toolbar .<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_toolbar[].<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;append_exclude_functions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES&nbsp;&nbsp;gt_toolbar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_undo,&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_auf,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;소계확장&nbsp;&AUF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_average,&nbsp;&nbsp;"&nbsp;&AVERAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_back_classic,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_abc,&nbsp;"&nbsp;&ABC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_chain,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_crbatch,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_crweb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_lineitems,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_master_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_more,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_report,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_xint,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_xxl,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_col_invisible,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_col_optimize,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_current_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_data_save,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_delete_filter,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_deselect_all,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_detail,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrdesig,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrtempl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expmdb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_extend,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_f4,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_filter,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_find,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_fix_columns,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_graph,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_help,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_info,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_load_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_copy,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행&nbsp;카피<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_html,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_copy_row,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행&nbsp;카피<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_cut,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;가위<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_delete_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행삭제<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_insert_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행삽입<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_move_row,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_append_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;라인생성<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_paste,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;겹쳐쓰기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_paste_new_row,&nbsp;"&nbsp;겹쳐쓰기<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_maintain_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_maximum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_minimum,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_pc_file,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print_back,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print_prev,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_reprep,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_save_variant,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_select_all,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_send,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_separator,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort_asc,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort_dsc,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_subtot,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sum,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_to_office,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_to_rep_tree,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_unfix_columns,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_views,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_crystal,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_excel,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_grid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_word_processor,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_refresh,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_check.<br />
+ENDFORM.                    " BUILD_EXCLUDE_TOOLBAR<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;APPEND_EXCLUDE_FUNCTIONS<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_GT_TOOLBAR&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_CL_GUI_ALV_GRID=&gtMC_FC_LOC_UND&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM append_exclude_functions  TABLES   pt_toolbar TYPE ui_functions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;p_value.<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_exclude&nbsp;&nbsp;TYPE&nbsp;ui_func.<br />
+&nbsp;&nbsp;ls_exclude&nbsp;=&nbsp;p_value.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_exclude&nbsp;TO&nbsp;pt_toolbar.<br />
+ENDFORM.                    " APPEND_EXCLUDE_FUNCTIONS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_COLOR<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_color .<br />
+&nbsp;&nbsp;DATA:&nbsp;l_index&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_color&nbsp;&nbsp;TYPE&nbsp;lvc_t_scol,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_color&nbsp;&nbsp;TYPE&nbsp;lvc_s_scol,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_color&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_col.<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_fcat&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_fcat.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;lr_fname1&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname2&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fname&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_fname2.<br />
+&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;lr_fname1&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST011_1'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname1&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST011_2'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname1&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST017_1'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname1&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST017_2'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname1&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST021_1'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname1&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST021_2'&nbsp;'',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname2&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST015_1'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname2&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST015_2'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname2&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST019_1'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname2&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST019_2'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname2&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST023_1'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname2&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'KST023_2'&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_data&nbsp;INTO&nbsp;gs_data.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_index&nbsp;=&nbsp;sy-tabix.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_fcat&nbsp;INTO&nbsp;ls_fcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_color,&nbsp;l_color.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_fcat-fieldname&nbsp;IN&nbsp;lr_fname1.&nbsp;l_color&nbsp;=&nbsp;'3'.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_fcat-fieldname&nbsp;IN&nbsp;lr_fname2.&nbsp;l_color&nbsp;=&nbsp;'5'.&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;l_color&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;ls_fcat-fieldname&nbsp;TO&nbsp;ls_color-fname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_color&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_color-color-col,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_color-color-int,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_color-color-inv.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_color&nbsp;TO&nbsp;lt_color.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;ls_fcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_data-cellcolor[]&nbsp;=&nbsp;lt_color[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_data&nbsp;FROM&nbsp;gs_data&nbsp;INDEX&nbsp;l_index&nbsp;TRANSPORTING&nbsp;cellcolor.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gs_data,&nbsp;lt_color[],&nbsp;l_index.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    " BUILD_COLOR<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;MAIN100&nbsp;--&gt&nbsp;#品###成本#告(直接、#接#分）<br />
+*&nbsp;MAIN100&nbsp;--&gt&nbsp;제품별&nbsp;실제원가&nbsp;리포트&nbsp;(직,간접구분)<br />
+*&nbsp;MAIN100&nbsp;--&gt&nbsp;Product&nbsp;Cost&nbsp;Report&nbsp;((In)Direct)<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;A01&nbsp;(직접)<br />
+*&nbsp;A02&nbsp;(간접)<br />
+*&nbsp;H01&nbsp;회사코드<br />
+*&nbsp;H02&nbsp;평가클래스<br />
+*&nbsp;H03&nbsp;플랜트<br />
+*&nbsp;H04&nbsp;자재<br />
+*&nbsp;H05&nbsp;연도<br />
+*&nbsp;H06&nbsp;기간<br />
+*&nbsp;H07&nbsp;가격유형<br />
+*&nbsp;H08&nbsp;로트크기<br />
+*&nbsp;H09&nbsp;단위<br />
+*&nbsp;H10&nbsp;원가합계<br />
+*&nbsp;H11&nbsp;통화<br />
+*&nbsp;T01&nbsp;선택조건<br />
+<br />
+<br />
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_BDATJ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연도<br />
+*&nbsp;P_BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;회사코드<br />
+*&nbsp;P_KOKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;관리회계영역<br />
+*&nbsp;P_PRTYP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;가격유형<br />
+*&nbsp;S_BWKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;플랜트<br />
+*&nbsp;S_MATNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재코드<br />
+*&nbsp;S_POPER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;전기&nbsp;기간<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;Hard&nbsp;coded<br />
+*&nbsp;&nbsp;&nbsp;Check&nbsp;File&nbsp;Path&nbsp;&&nbsp;File&nbsp;Name.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

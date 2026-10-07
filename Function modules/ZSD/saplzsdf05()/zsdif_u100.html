@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSDIF_U100</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZSDIF_U100</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZSDIF_U100<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+CLEAR : LV_CNT, LS_TAB, LS_TAB2, LT_TAB2, LV_PLANT2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB,&nbsp;LT_TAB,&nbsp;LS_TAB_C,&nbsp;LT_TAB_C.&nbsp;"LS_USER,<br />
+<br />
+IF &ltFS_DATA&gt IS NOT ASSIGNED.<br />
+&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'바코드&nbsp;할당에&nbsp;실패하였습니다.'.<br />
+&nbsp;&nbsp;RETURN.<br />
+ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;1.&nbsp;필드&nbsp;심볼&nbsp;매핑<br />
+   </div>
+   <div class="code">
+ASSIGN COMPONENT 'MATNR' OF STRUCTURE &ltFS_DATA&gt TO &ltFS_MATNR&gt.<br />
+ASSIGN COMPONENT 'REMNG' OF STRUCTURE &ltFS_DATA&gt TO &ltFS_REMNG&gt.<br />
+<br />
+IF &ltFS_MATNR&gt IS INITIAL OR &ltFS_MATNR&gt IS NOT ASSIGNED.<br />
+&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'팔레트바코드의&nbsp;자재코드가&nbsp;존재하지&nbsp;않습니다.'.<br />
+&nbsp;&nbsp;EXIT.<br />
+ENDIF.<br />
+<br />
+LOOP AT T_TAB WHERE MATNR EQ &ltFS_MATNR&gt.<br />
+&nbsp;&nbsp;LV_CNT&nbsp;=&nbsp;LV_CNT&nbsp;+&nbsp;1.<br />
+ENDLOOP.<br />
+<br />
+IF LV_CNT EQ 0.<br />
+&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'납품&nbsp;내역에&nbsp;스캔한&nbsp;자재와&nbsp;동일한&nbsp;자재가&nbsp;존재하지&nbsp;않습니다.'.<br />
+&nbsp;&nbsp;EXIT.<br />
+ENDIF.<br />
+<br />
+" 2. 타겟 라인(LS_TAB) 확정<br />
+IF LV_CNT EQ 1.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;T_TAB&nbsp;INTO&nbsp;LS_TAB&nbsp;WITH&nbsp;KEY&nbsp;MATNR&nbsp;=&nbsp;&ltFS_MATNR&gt.<br />
+ELSE.<br />
+&nbsp;&nbsp;IF&nbsp;I_FLAG&nbsp;EQ&nbsp;'1'.&nbsp;"내수<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_TAB&nbsp;INTO&nbsp;LS_TAB&nbsp;WHERE&nbsp;MATNR&nbsp;EQ&nbsp;&ltFS_MATNR&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TAB&nbsp;TO&nbsp;LT_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;I_FLAG&nbsp;EQ&nbsp;'2'.&nbsp;"수출<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_TAB&nbsp;INTO&nbsp;LS_TAB&nbsp;WHERE&nbsp;ZFLAG&nbsp;NE&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MATNR&nbsp;EQ&nbsp;&ltFS_MATNR&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TAB&nbsp;TO&nbsp;LT_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LT_TAB&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'바코드&nbsp;스캔&nbsp;시&nbsp;동일한&nbsp;자재가&nbsp;존재할&nbsp;경우&nbsp;상차할&nbsp;납품문서를&nbsp;선택해야합니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDIF.<br />
+<br />
+"플랜트 유저 CHK + 저장된 내역 합산<br />
+IF LT_TAB IS INITIAL. "단건일 때<br />
+<br />
+&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zsdif_u103&nbsp;if&nbsp;found.html">ZSDIF_U103&nbsp;IF&nbsp;FOUND</a>.<br />
+&nbsp;&nbsp;IF&nbsp;E_RET&nbsp;EQ&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.&nbsp;"&nbsp;오류&nbsp;발생&nbsp;시&nbsp;중단<br />
+<br />
+&nbsp;&nbsp;LS_TAB_C-MATNR&nbsp;=&nbsp;LS_TAB-MATNR.<br />
+&nbsp;&nbsp;LS_TAB_C-LFIMG&nbsp;&nbsp;=&nbsp;LS_TAB-LFIMG.<br />
+&nbsp;&nbsp;LS_TAB_C-MENGE&nbsp;=&nbsp;LS_TAB-MENGE.<br />
+&nbsp;&nbsp;COLLECT&nbsp;LS_TAB_C&nbsp;INTO&nbsp;LT_TAB_C.<br />
+<br />
+ELSE. "다건일 때<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_TAB&nbsp;INTO&nbsp;LS_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LV_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zsdif_u103&nbsp;if&nbsp;found.html">ZSDIF_U103&nbsp;IF&nbsp;FOUND</a>.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;E_RET&nbsp;EQ&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;"&nbsp;오류&nbsp;발생&nbsp;시&nbsp;중단<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_TAB_C.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB_C-MATNR&nbsp;=&nbsp;LS_TAB-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB_C-LFIMG&nbsp;&nbsp;=&nbsp;LS_TAB-LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB_C-MENGE&nbsp;=&nbsp;LS_TAB-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;LS_TAB_C&nbsp;INTO&nbsp;LT_TAB_C.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDIF.<br />
+<br />
+IF E_RET EQ 'E'.<br />
+&nbsp;&nbsp;EXIT.<br />
+ENDIF. " 오류 발생 시 중단<br />
+<br />
+"MATNR + CHK / 단건 = 합계<br />
+READ TABLE LT_TAB_C INTO LS_TAB_C INDEX 1.<br />
+IF LS_TAB_C-MENGE &lt LS_TAB_C-LFIMG + &ltFS_REMNG&gt.<br />
+&nbsp;&nbsp;E_RET&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'납품예정수량보다&nbsp;바코드&nbsp;스캔수량이&nbsp;더&nbsp;많습니다.'.<br />
+&nbsp;&nbsp;EXIT.<br />
+ENDIF.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

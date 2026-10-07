@@ -1,0 +1,1796 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZCOR0011</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZCOR0011</h2>
+<h3> Description: 제품 자재 수불명세서 (상세)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ZCOR0011.<br />
+*&&nbsp;DESCRIPTION&nbsp;:&nbsp;제품/자재&nbsp;수불명세서&nbsp;Program.<br />
+*&&nbsp;DEVELOPER&nbsp;&nbsp;&nbsp;:&nbsp;Kim&nbsp;Hyun&nbsp;Pyo<br />
+*&&nbsp;CREATED&nbsp;DATE:&nbsp;2012.10.15.<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;HISTORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;[REF]&nbsp;ZCOR0511&nbsp;.<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zcor0011 MESSAGE-ID zcom.<br />
+<br />
+INCLUDE     &lticon&gt.<br />
+INCLUDE     &ltsymbol&gt.<br />
+include <a href ="zcoi_common_01.html">zcoi_common_01</a>.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+****************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tables&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************<br />
+   </div>
+   <div class="code">
+TABLES: mara,         " 일반자재데이타<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;marc,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;자재에&nbsp;대한&nbsp;플랜트데이타<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mbew,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;자재평가<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;glfunct,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bseg,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zcot0096,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;제품/자재&nbsp;수불&nbsp;집계&nbsp;관리&nbsp;HISTORY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zcot0097.&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;제품/자재&nbsp;수불&nbsp;현황<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+****************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Selection&nbsp;Screen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************<br />
+*----&nbsp;선택옵션<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK bk1 WITH FRAME TITLE text-001.<br />
+PARAMETERS:      p_bukrs    LIKE zcot0096-bukrs OBLIGATORY. "UP01. -----<br />
+SELECT-OPTIONS:  s_spmon    FOR  zcot0096-spmon OBLIGATORY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO-EXTENSION,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S_bukrs&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;bseg-bukrs,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S_gjahr&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;bseg-gjahr,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_monat&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;glfunct-rpmax,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_werks&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;zcot0096-werks&nbsp;MEMORY&nbsp;ID&nbsp;wrk,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_mtart&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;mara-mtart,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_matkl&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;mara-matkl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_bklas&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;mbew-bklas,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_dispo&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;marc-dispo,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_prctr&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;marc-prctr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_matnr&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;&nbsp;mara-matnr.<br />
+SELECTION-SCREEN END OF BLOCK bk1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--&nbsp;출력&nbsp;조건<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK bk2 WITH FRAME TITLE text-002.<br />
+<br />
+PARAMETERS: p_form1 RADIOBUTTON GROUP form DEFAULT 'X', "자재별 현황<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_form2&nbsp;RADIOBUTTON&nbsp;GROUP&nbsp;form,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"플랜트+평가클래<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_FORM3&nbsp;RADIOBUTTON&nbsp;GROUP&nbsp;FORM,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"플랜트별&nbsp;계<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_form4&nbsp;RADIOBUTTON&nbsp;GROUP&nbsp;form.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"플랜트+손익센터<br />
+SELECTION-SCREEN END OF BLOCK bk2.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+****************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Internal&nbsp;&nbsp;&nbsp;Tables&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*----&nbsp;출력자료&nbsp;보관&nbsp;INTERNAL&nbsp;TABLE<br />
+*DATA:&nbsp;BEGIN&nbsp;OF&nbsp;st_zcot097&nbsp;OCCURS&nbsp;0&nbsp;.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;zcos0003.<br />
+*DATA:&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;st_zcot097.<br />
+<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF st_zcot097 OCCURS 0 .<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zcos0003/dictionary-zcos0003.html">zcos0003</a>.<br />
+DATA:   bukrs TYPE bukrs,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;st_zcot097.<br />
+<br />
+DATA: it_zcot097 LIKE st_zcot097 OCCURS 0 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wk_zcot097&nbsp;LIKE&nbsp;st_zcot097&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;ZCOS003&nbsp;구조&nbsp;필드&nbsp;보관&nbsp;INTERNAL&nbsp;TABLE<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF it_dd03l OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;dd03l-fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;dd03l-position,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reffield&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;dd03l-reffield,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;it_dd03l.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;전역변수&nbsp;선언<br />
+   </div>
+   <div class="code">
+DATA: g_bdatj TYPE mlcd-bdatj,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_poper&nbsp;TYPE&nbsp;mlcd-poper,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_werks_text&nbsp;TYPE&nbsp;t001w-name1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_maktx&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;makt-maktx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_matnr&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0097-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_bwtar&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0097-bwtar,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_matkl&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcos0003-matkl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mtart&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcos0003-mtart,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_werks&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcos0003-werks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_bklas&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcos0003-bklas,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_prctr&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcos0003-prctr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_dispo&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcos0003-dispo,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_meins&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0097-meins,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_waers&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0097-waers,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mbasis&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0097-mbasis,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_wbasis&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0097-wbasis,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mbwbest&nbsp;&nbsp;LIKE&nbsp;zcot0097-mbwbest,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_wbwbest&nbsp;&nbsp;LIKE&nbsp;zcot0097-wbwbest,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_first(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'Y',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_cpudt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0096-cpudt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_cputm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0096-cputm,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_spmon&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;zcot0096-spmon,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_t_cputm(08),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_t_cpudt(10).<br />
+<br />
+DATA: gr_fieldname TYPE RANGE OF fieldname.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+****************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data&nbsp;Declaration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************<br />
+*----&nbsp;ALV&nbsp;GRID&nbsp;필요&nbsp;항목<br />
+   </div>
+   <div class="code">
+TYPE-POOLS:  slis.<br />
+DATA:  it_fieldcat   TYPE  slis_t_fieldcat_alv,  "필드text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;slis_t_sortinfo_alv,&nbsp;&nbsp;"sort<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_sp_group&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;slis_t_sp_group_alv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_events&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;slis_t_event,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"event<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;slis_layout_alv,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"리포트layout<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_light&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;lvc_s_layo,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"상태버튼<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_print&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;slis_print_alv,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"print<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'A',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"조회변형&nbsp;저장<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gx_variant&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;disvariant,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"variant<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;disvariant.<br />
+<br />
+DATA  g_status  TYPE slis_formname  VALUE '1000'.<br />
+   </div>
+   <div class="codeComment">
+*DATA&nbsp;&nbsp;G_STATUS&nbsp;&nbsp;TYPE&nbsp;SLIS_FORMNAME&nbsp;&nbsp;VALUE&nbsp;'PF_STATUS_SET'.<br />
+*----&nbsp;상태를&nbsp;상태명으로&nbsp;설정<br />
+   </div>
+   <div class="code">
+DATA : g_user_command TYPE slis_formname VALUE 'USER_COMMAND'.<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;user-command&nbsp;를&nbsp;form&nbsp;명으로&nbsp;설정<br />
+   </div>
+   <div class="code">
+DATA : g_lights_fieldname TYPE slis_fieldname VALUE 'LIGHTS'.<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;상태버튼은&nbsp;필드명으로&nbsp;설정<br />
+   </div>
+   <div class="code">
+DATA : g_repid LIKE sy-repid.  " 리포트ID<br />
+DATA : gt_list_top_of_page TYPE slis_t_listheader, "top of page<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_top_of_page&nbsp;&nbsp;TYPE&nbsp;slis_formname&nbsp;VALUE&nbsp;'TOP_OF_PAGE'.<br />
+<br />
+DATA : ls_fieldcat  TYPE slis_fieldcat_alv.<br />
+DATA : ls_sort      TYPE slis_sortinfo_alv.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--&gt&nbsp;POPUP&nbsp;ALV&nbsp;Grid&nbsp;항목...<br />
+   </div>
+   <div class="code">
+DATA: g_docking_container2  TYPE REF TO cl_gui_docking_container,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_custom_container2&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_gui_custom_container,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_alv_grid2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_gui_alv_grid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_fieldcat2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_t_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_toolbar2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ui_functions,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_layout2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_layo,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_detail(1).<br />
+<br />
+DATA: BEGIN OF gs_detail,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hkont&nbsp;&nbsp;&nbsp;TYPE&nbsp;hkont,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"G/L&nbsp;계정,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;belnr	&nbsp;&nbsp;TYPE&nbsp;belnr_d,&nbsp;&nbsp;&nbsp;"전표번호,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blart&nbsp;&nbsp;&nbsp;TYPE&nbsp;blart,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"전표유형,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;awkey&nbsp;&nbsp;&nbsp;TYPE&nbsp;awkey,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"오브젝트키,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shkzg&nbsp;&nbsp;&nbsp;TYPE&nbsp;shkzg,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"차/대변&nbsp;지시자,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matnr&nbsp;&nbsp;&nbsp;TYPE&nbsp;matnr,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"자재,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebeln&nbsp;&nbsp;&nbsp;TYPE&nbsp;ebeln,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"구매문서,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebelp&nbsp;&nbsp;&nbsp;TYPE&nbsp;ebelp,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"구매문서&nbsp;품목,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vbel2	&nbsp;&nbsp;TYPE&nbsp;vbeln_va,&nbsp;&nbsp;"판매문서,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;posn2	&nbsp;&nbsp;TYPE&nbsp;posnr_va,&nbsp;&nbsp;"판매&nbsp;문서&nbsp;품목,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;werks&nbsp;&nbsp;&nbsp;TYPE&nbsp;werks_d,&nbsp;&nbsp;&nbsp;"플랜트,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prctr&nbsp;&nbsp;&nbsp;TYPE&nbsp;prctr,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"손익센터,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dmbtr&nbsp;&nbsp;&nbsp;TYPE&nbsp;dmbtr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waers&nbsp;&nbsp;&nbsp;TYPE&nbsp;waers,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_detail,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_detail&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_detail.<br />
+<br />
+DATA: gt_wzubb_pu   TYPE TABLE OF zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_po&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_su&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_st&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_et&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_mt&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_pr&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_th&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_co&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_cp&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_ivp&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_ivs&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_sap&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wzubb_mlp&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_jr&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_mc&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_ys&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_st&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_mt&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_su&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_et&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_th&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_pi&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_wagbb_co&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zcos0005.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+****************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Initialization&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+   </div>
+   <div class="code">
+INITIALIZATION.<br />
+&nbsp;&nbsp;PERFORM&nbsp;p0100_initialize_all_data.&nbsp;&nbsp;&nbsp;"DATA&nbsp;초기화<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+****************&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Event&nbsp;Processing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*******************************<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN.<br />
+&nbsp;&nbsp;PERFORM&nbsp;p0200_check.<br />
+&nbsp;&nbsp;PERFORM&nbsp;initialize_fieldcat&nbsp;USING&nbsp;it_fieldcat[].<br />
+&nbsp;&nbsp;PERFORM&nbsp;initialize_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;it_sort[].<br />
+&nbsp;&nbsp;PERFORM&nbsp;variant_init.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;PERFORM&nbsp;LAYOUT_INIT&nbsp;USING&nbsp;GS_LAYOUT.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;eventtab_build&nbsp;USING&nbsp;it_events[].<br />
+&nbsp;&nbsp;PERFORM&nbsp;comment_build&nbsp;USING&nbsp;gt_list_top_of_page[].<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************<br />
+*&nbsp;&nbsp;Start-of-Selection&nbsp;&nbsp;*<br />
+************************<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;AUTHORITY_CHECK_BUKRS_PA(ZCOC0070)&nbsp;USING&nbsp;P_BUKRS&nbsp;'R'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;UP01.&nbsp;추가...-----------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;get_detail_data.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;월&nbsp;수불&nbsp;자료&nbsp;READ<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;p1000_read_zcot097_rtn.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;평가클래스를&nbsp;재&nbsp;조정<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_zcot097&nbsp;WHERE&nbsp;NOT&nbsp;bwtar&nbsp;EQ&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;bklas&nbsp;INTO&nbsp;it_zcot097-bklas&nbsp;FROM&nbsp;mbew<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bwtar&nbsp;EQ&nbsp;it_zcot097-bwtar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;EQ&nbsp;it_zcot097-matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;it_zcot097.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;기간이&nbsp;2개월이상인&nbsp;경우<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;s_spmon&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;s_spmon-high&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;s_spmon-high&nbsp;=&nbsp;s_spmon-low.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;s_spmon-low&nbsp;NE&nbsp;s_spmon-high.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p2000_calc_zcot097_sum.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;GET_WARES&nbsp;USING&nbsp;P_BUKRS&nbsp;G_WAERS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;출력양식&nbsp;선택에&nbsp;따라&nbsp;합산<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;p_form2&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"플랜트+평가클래스별합계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p2500_summation_for_form2.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;ELSEIF&nbsp;P_FORM3&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;P2500_SUMMATION_FOR_FORM3.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ELSEIF&nbsp;p_form4&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"플랜트+손익센터별합계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p2500_summation_for_form4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;g_bdatj&nbsp;=&nbsp;s_spmon-high+0(4).<br />
+&nbsp;&nbsp;g_poper&nbsp;=&nbsp;s_spmon-high+4(2).<br />
+<br />
+   </div>
+   <div class="codeComment">
+***&nbsp;평가클레스&nbsp;명으로&nbsp;출력시<br />
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_ZCOT097.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;IT_ZCOT097-BKLAS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'3000'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_ZCOT097-BKLAS&nbsp;=&nbsp;'원자재'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'3001'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_ZCOT097-BKLAS&nbsp;=&nbsp;'포장재'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'3100'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_ZCOT097-BKLAS&nbsp;=&nbsp;'상품'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'7900'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_ZCOT097-BKLAS&nbsp;=&nbsp;'반제품'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'7920'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_ZCOT097-BKLAS&nbsp;=&nbsp;'제품'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_ZCOT097-BKLAS&nbsp;=&nbsp;IT_ZCOT097-BKLAS.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;IT_ZCOT097.<br />
+*&nbsp;&nbsp;ENDLOOP.<br />
+***<br />
+************************<br />
+*&nbsp;&nbsp;End-of-Selection&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************<br />
+   </div>
+   <div class="code">
+END-OF-SELECTION.<br />
+&nbsp;&nbsp;SET&nbsp;PF-STATUS&nbsp;'1000'.<br />
+&nbsp;&nbsp;PERFORM&nbsp;move_to_alv_grid_rtn.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P0100_INITIALIZE_ALL_DATA<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p0100_initialize_all_data.<br />
+<br />
+&nbsp;&nbsp;"UP01.------------------<br />
+&nbsp;&nbsp;IF&nbsp;p_bukrs&nbsp;IS&nbsp;INITIAL.&nbsp;p_bukrs&nbsp;=&nbsp;'1000'.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;gr_fieldname[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DATA:&nbsp;ls_fieldname&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;gr_fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_PU'&nbsp;'',&nbsp;"입고금액(구매).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_PO'&nbsp;'',&nbsp;"입고금액(생산).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_SU'&nbsp;'',&nbsp;"입고금액(외주가공).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_ST'&nbsp;'',&nbsp;"입고금액(공장이전).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_MT'&nbsp;'',&nbsp;"입고금액(자재간이전).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_ET'&nbsp;'',&nbsp;"입고금액(타계정).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_PR'&nbsp;'',&nbsp;"입고금액(가격변경).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_TH'&nbsp;'',&nbsp;"입고금액(삼자거래).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_CO'&nbsp;'',&nbsp;"입고금액(원가차이).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_CP'&nbsp;'',&nbsp;"입고금액(구매가격차이).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_IVP'&nbsp;'',"입고금액(IV구매).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_IVS'&nbsp;'',"입고금액(IV사급).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_SAP'&nbsp;'',"입고금액(SA정산).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WZUBB_MLP'&nbsp;'',"입고금액(ML정산).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_JR'&nbsp;'',&nbsp;"출고금액(재료비).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_MC'&nbsp;'',&nbsp;"출고금액(매출원가).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_YS'&nbsp;'',&nbsp;"출고금액(유상매각).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_ST'&nbsp;'',&nbsp;"출고금액(공장이전).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_MT'&nbsp;'',&nbsp;"출고금액(자재간이전).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_SU'&nbsp;'',&nbsp;"출고금액(사급자재).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_ET'&nbsp;'',&nbsp;"출고금액(타계정).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_TH'&nbsp;'',&nbsp;"출고금액(삼자거래).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_PI'&nbsp;''.&nbsp;"출고금액(실사차이).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gr_fieldname&nbsp;ls_fieldname&nbsp;'I'&nbsp;'EQ'&nbsp;'WAGBB_CO'&nbsp;''.&nbsp;"출고금액(원가차이).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;g_first&nbsp;=&nbsp;'Y'.<br />
+<br />
+&nbsp;&nbsp;s_spmon-low&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-datum(6).<br />
+&nbsp;&nbsp;s_spmon-sign&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;s_spmon-option&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;APPEND&nbsp;s_spmon.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;g_first.<br />
+<br />
+&nbsp;&nbsp;g_repid&nbsp;=&nbsp;sy-repid.&nbsp;"&nbsp;리포트&nbsp;ID<br />
+<br />
+ENDFORM.                    " P0100_INITIALIZE_ALL_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P0200_CHECK<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p0200_check.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;집계일과&nbsp;시간&nbsp;READ<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR:&nbsp;g_cpudt,&nbsp;g_cputm.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;s_spmon&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;s_spmon-high&nbsp;&gt&nbsp;'000000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;g_spmon&nbsp;=&nbsp;s_spmon-high.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;g_spmon&nbsp;=&nbsp;s_spmon-low.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;cpudt&nbsp;cputm<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(g_cpudt,&nbsp;g_cputm)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zcot0096<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;=&nbsp;&nbsp;p_bukrs&nbsp;&nbsp;"UP01.&nbsp;-------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;spmon&nbsp;=&nbsp;&nbsp;g_spmon<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;IN&nbsp;s_werks.<br />
+<br />
+&nbsp;&nbsp;WRITE&nbsp;g_cpudt&nbsp;TO&nbsp;g_t_cpudt&nbsp;USING&nbsp;EDIT&nbsp;MASK&nbsp;'____.__.__'.<br />
+&nbsp;&nbsp;WRITE&nbsp;g_cputm&nbsp;TO&nbsp;g_t_cputm&nbsp;USING&nbsp;EDIT&nbsp;MASK&nbsp;'__:__:__'.<br />
+<br />
+ENDFORM.                    " P0200_CHECK<br />
+   </div>
+   <div class="codeComment">
+*&-----------------------------------------------------------<br />
+*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INITIALIZE_FIELDCAT<br />
+*&-----------------------------------------------------------<br />
+   </div>
+   <div class="code">
+FORM initialize_fieldcat USING    p_it_fieldcat.<br />
+<br />
+&nbsp;&nbsp;REFRESH:&nbsp;it_fieldcat,&nbsp;it_dd03l.<br />
+&nbsp;&nbsp;DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_lines&nbsp;&nbsp;TYPE&nbsp;i.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;&nbsp;&nbsp;g_lines.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;fieldname&nbsp;position&nbsp;reffield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_dd03l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;dd03l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tabname&nbsp;=&nbsp;'ZCOS0003'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ORDER&nbsp;BY&nbsp;position.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e000&nbsp;WITH&nbsp;'구조&nbsp;ZCOS0003&nbsp;를&nbsp;찾지&nbsp;못했습니다.'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;ALV&nbsp;목록&nbsp;헤더&nbsp;ASSIGN<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;&nbsp;ls_fieldcat.<br />
+&nbsp;&nbsp;ls_fieldcat-key&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ls_fieldcat-key_sel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_dd03l.<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;기초재고수량부터&nbsp;DATA&nbsp;필드<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_dd03l-fieldname&nbsp;=&nbsp;'MBASIS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_fieldcat-key,&nbsp;ls_fieldcat-key_sel.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_fieldcat-cfieldname,&nbsp;ls_fieldcat-qfieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-just.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_dd03l-reffield&nbsp;=&nbsp;'WAERS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-cfieldname&nbsp;=&nbsp;'WAERS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-just&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'R'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;it_dd03l-reffield&nbsp;=&nbsp;'MEINS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-qfieldname&nbsp;=&nbsp;'MEINS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-just&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'R'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;출력길이&nbsp;DEFINE<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;it_dd03l-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;14.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-key&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MATKL'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BKLAS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;&nbsp;6.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-key&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'PRCTR'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-key&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MTART'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MEINS'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WAERS'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SPMON'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MZUBB_TH'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WZUBB_TH'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MZUBB_MT'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WZUBB_MT'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WZUBB_IVP'.&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WZUBB_IVS'.&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WZUBB_SAP'.&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MAGBB_TH'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WAGBB_TH'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MAGBB_MT'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WAGBB_MT'.&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'WAERS'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MAKTX'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MTART'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MATKL'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'DISPO'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-no_out&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-outputlen&nbsp;=&nbsp;12.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-fieldname&nbsp;&nbsp;&nbsp;=&nbsp;it_dd03l-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-ddictxt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'M'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat-ref_tabname&nbsp;=&nbsp;'ZCOS0003'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_fieldcat&nbsp;TO&nbsp;it_fieldcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&nbsp;ls_fieldcat.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " INITIALIZE_FIELDCAT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MOVE_TO_ALV_GRID_RTN<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM move_to_alv_grid_rtn.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'<br />
+&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_interface_check&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'ALV_BACKGROUD'<br />
+**&nbsp;&nbsp;&nbsp;I_BYPASSING_BUFFER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;I_BUFFER_ACTIVE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_program&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_repid<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;I_CALLBACK_PF_STATUS_SET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_STATUS<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_callback_user_command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_user_command<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;&nbsp;&nbsp;I_CALLBACK_TOP_OF_PAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+**&nbsp;&nbsp;&nbsp;I_CALLBACK_HTML_TOP_OF_PAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+**&nbsp;&nbsp;&nbsp;I_CALLBACK_HTML_END_OF_LIST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+**&nbsp;&nbsp;&nbsp;I_STRUCTURE_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;I_BACKGROUND_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+**&nbsp;&nbsp;&nbsp;I_GRID_TITLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;I_GRID_SETTINGS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IS_LAYOUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_LAYOUT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_fieldcat<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;&nbsp;&nbsp;IT_EXCLUDING&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;IT_SPECIAL_GROUPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_sort<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;&nbsp;&nbsp;IT_FILTER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;IS_SEL_HIDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;I_DEFAULT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_save<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_variant<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_events&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_events[]<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;&nbsp;&nbsp;IT_EVENT_EXIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;IS_PRINT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;IS_REPREP_ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;I_SCREEN_START_COLUMN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+**&nbsp;&nbsp;&nbsp;I_SCREEN_START_LINE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+**&nbsp;&nbsp;&nbsp;I_SCREEN_END_COLUMN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+**&nbsp;&nbsp;&nbsp;I_SCREEN_END_LINE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+**&nbsp;&nbsp;&nbsp;IT_ALV_GRAPHICS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;IT_ADD_FIELDCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;IT_HYPERLINK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;IMPORTING<br />
+**&nbsp;&nbsp;&nbsp;E_EXIT_CAUSED_BY_CALLER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+**&nbsp;&nbsp;&nbsp;ES_EXIT_CAUSED_BY_USER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;it_zcot097.<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;EXCEPTIONS<br />
+**&nbsp;&nbsp;&nbsp;PROGRAM_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+**&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+*&nbsp;MESSAGE&nbsp;ID&nbsp;SY-MSGID&nbsp;TYPE&nbsp;SY-MSGTY&nbsp;NUMBER&nbsp;SY-MSGNO<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;SY-MSGV1&nbsp;SY-MSGV2&nbsp;SY-MSGV3&nbsp;SY-MSGV4.<br />
+*ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " MOVE_TO_ALV_GRID_RTN<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;user_command<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM user_command USING p_ucomm     LIKE sy-ucomm<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rs_selfield&nbsp;TYPE&nbsp;slis_selfield.<br />
+&nbsp;&nbsp;CASE&nbsp;p_ucomm.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'&IC1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;it_zcot097&nbsp;INTO&nbsp;st_zcot097&nbsp;INDEX&nbsp;rs_selfield-tabindex.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rs_selfield-fieldname&nbsp;=&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;_call_transaction&nbsp;USING&nbsp;st_zcot097-matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'MAT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'MM03'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;rs_selfield-fieldname&nbsp;=&nbsp;'WERKS'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;rs_selfield-fieldname&nbsp;=&nbsp;'BKLAS'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;rs_selfield-fieldname&nbsp;=&nbsp;'PRCTR'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;rs_selfield-fieldname&nbsp;IN&nbsp;gr_fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;show_detail&nbsp;USING&nbsp;st_zcot097<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rs_selfield-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s155(gr).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    " user_command<br />
+   </div>
+   <div class="codeComment">
+*&-----------------------------------------------------------<br />
+*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INITIALIZE_SORT<br />
+*&-----------------------------------------------------------<br />
+   </div>
+   <div class="code">
+FORM initialize_sort USING    p_it_sort.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;it_sort.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;&nbsp;it_sort.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;move_to_it_sort.<br />
+<br />
+ENDFORM.                    " INITIALIZE_SORT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;VARIANT_INIT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM variant_init.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;g_variant.<br />
+&nbsp;&nbsp;g_variant-report&nbsp;=&nbsp;g_repid.<br />
+<br />
+&nbsp;&nbsp;gx_variant&nbsp;=&nbsp;g_variant.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_VARIANT_DEFAULT_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_save<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cs_variant&nbsp;=&nbsp;gx_variant<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_found&nbsp;&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;p_vari&nbsp;=&nbsp;gx_variant-variant.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " VARIANT_INIT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;layout_init<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtRS_LAYOUT&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM layout_init USING  rs_layout TYPE slis_layout_alv.<br />
+&nbsp;&nbsp;rs_layout-detail_popup&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;rs_layout-lights_fieldname&nbsp;=&nbsp;g_lights_fieldname.<br />
+&nbsp;&nbsp;rs_layout-box_fieldname&nbsp;&nbsp;&nbsp;=&nbsp;'SELECTED'.<br />
+ENDFORM.                    " layout_init<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MOVE_TO_IT_SORT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM move_to_it_sort.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;SORT&nbsp;기준<br />
+*----&nbsp;플랜트<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;ls_sort.<br />
+&nbsp;&nbsp;ls_sort-spos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;1.<br />
+&nbsp;&nbsp;ls_sort-fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'WERKS'.<br />
+&nbsp;&nbsp;ls_sort-up&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_sort&nbsp;TO&nbsp;it_sort.<br />
+<br />
+&nbsp;&nbsp;ls_sort-spos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;2.<br />
+&nbsp;&nbsp;ls_sort-fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'BKLAS'.<br />
+&nbsp;&nbsp;ls_sort-up&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_sort&nbsp;TO&nbsp;it_sort.<br />
+<br />
+<br />
+&nbsp;&nbsp;ls_sort-spos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;3.<br />
+&nbsp;&nbsp;ls_sort-fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'BWTAR'.<br />
+&nbsp;&nbsp;ls_sort-up&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_sort&nbsp;TO&nbsp;it_sort.<br />
+<br />
+&nbsp;&nbsp;ls_sort-spos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;4.<br />
+&nbsp;&nbsp;ls_sort-fieldname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;ls_sort-up&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_sort&nbsp;TO&nbsp;it_sort.<br />
+<br />
+ENDFORM.                    " MOVE_TO_IT_SORT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P1000_READ_ZCOT097_RTN<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p1000_read_zcot097_rtn.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;wk_zcot097[],&nbsp;wk_zcot097.<br />
+   </div>
+   <div class="codeComment">
+*-&nbsp;Field&nbsp;Add-On:&nbsp;MARC-PRCTR&nbsp;04.09.24&nbsp;SMKANG<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;a~werks&nbsp;&nbsp;&nbsp;&nbsp;a~matnr&nbsp;&nbsp;&nbsp;a~spmon&nbsp;&nbsp;&nbsp;a~meins&nbsp;a~bwtar<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~mbasis&nbsp;&nbsp;a~wbasis&nbsp;&nbsp;a~mzubb&nbsp;&nbsp;&nbsp;a~wzubb<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~magbb&nbsp;&nbsp;&nbsp;a~wagbb&nbsp;&nbsp;&nbsp;a~mbwbest&nbsp;a~wbwbest<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~mzubb_pu&nbsp;a~wzubb_pu&nbsp;a~mzubb_po&nbsp;a~wzubb_po<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~mzubb_su&nbsp;a~wzubb_su&nbsp;a~mzubb_st&nbsp;a~wzubb_st&nbsp;a~mzubb_mt&nbsp;a~wzubb_mt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~mzubb_et&nbsp;a~wzubb_et&nbsp;a~mzubb_th&nbsp;a~wzubb_th&nbsp;&nbsp;a~wzubb_sap&nbsp;a~wzubb_mlp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~wzubb_pr&nbsp;a~wzubb_co&nbsp;a~wzubb_cp&nbsp;a~wzubb_ivp&nbsp;a~wzubb_ivs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~magbb_jr&nbsp;a~wagbb_jr&nbsp;a~magbb_mc&nbsp;a~wagbb_mc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~magbb_ys&nbsp;a~wagbb_ys&nbsp;a~magbb_st&nbsp;a~wagbb_st&nbsp;a~magbb_mt&nbsp;a~wagbb_mt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~magbb_su&nbsp;a~wagbb_su&nbsp;a~magbb_et&nbsp;a~wagbb_et<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~magbb_th&nbsp;a~wagbb_th&nbsp;a~wagbb_co<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~waers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~maktx&nbsp;&nbsp;&nbsp;&nbsp;c~mtart&nbsp;&nbsp;&nbsp;&nbsp;c~matkl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d~bklas<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e~dispo&nbsp;&nbsp;&nbsp;&nbsp;e~prctr<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;wk_zcot097<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zcot0097&nbsp;AS&nbsp;a&nbsp;INNER&nbsp;JOIN&nbsp;makt&nbsp;AS&nbsp;b<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;a~matnr&nbsp;=&nbsp;b~matnr&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~spras&nbsp;=&nbsp;sy-langu<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;mara&nbsp;AS&nbsp;c<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;a~matnr&nbsp;=&nbsp;c~matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;mbew&nbsp;AS&nbsp;d<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;a~matnr&nbsp;=&nbsp;d~matnr&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~werks&nbsp;=&nbsp;d~bwkey&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d~bwtar&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;marc&nbsp;AS&nbsp;e<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;a~matnr&nbsp;=&nbsp;e~matnr&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a~werks&nbsp;=&nbsp;e~werks<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;a~bukrs&nbsp;EQ&nbsp;p_bukrs&nbsp;&nbsp;"UP01.&nbsp;------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~werks&nbsp;IN&nbsp;s_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~spmon&nbsp;IN&nbsp;s_spmon<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~matnr&nbsp;IN&nbsp;s_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;c~mtart&nbsp;IN&nbsp;s_mtart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;c~matkl&nbsp;IN&nbsp;s_matkl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~bklas&nbsp;IN&nbsp;s_bklas<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;e~dispo&nbsp;IN&nbsp;s_dispo<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;e~prctr&nbsp;IN&nbsp;s_prctr.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;wk_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;wk_zcot097&nbsp;&nbsp;TO&nbsp;it_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;it_zcot097.&nbsp;CLEAR&nbsp;it_zcot097.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;it_zcot097&nbsp;BY&nbsp;werks&nbsp;bwtar&nbsp;bklas&nbsp;matnr.<br />
+<br />
+ENDFORM.                    " P1000_READ_ZCOT097_RTN<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;TOP_OF_PAGE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM top_of_page.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_COMMENTARY_WRITE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_logo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'ENJOYSAP_LOGO'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_list_commentary&nbsp;=&nbsp;gt_list_top_of_page.<br />
+<br />
+ENDFORM.                    "TOP_OF_PAGE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;COMMENT_BUILD<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM comment_build USING lt_top_of_page TYPE slis_t_listheader.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_line&nbsp;TYPE&nbsp;slis_listheader.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;lt_top_of_page.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;LIST&nbsp;HEADING&nbsp;LINE:&nbsp;TYPE&nbsp;H<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;ls_line.<br />
+&nbsp;&nbsp;ls_line-typ&nbsp;&nbsp;=&nbsp;'H'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;LS_LINE-KEY:&nbsp;&nbsp;NOT&nbsp;USED&nbsp;FOR&nbsp;THIS&nbsp;TYPE<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ls_line-info&nbsp;=&nbsp;'제품/자재&nbsp;월&nbsp;수불명세서'.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_line&nbsp;TO&nbsp;lt_top_of_page.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**----&nbsp;STATUS&nbsp;LINE:&nbsp;TYPE&nbsp;S<br />
+*&nbsp;&nbsp;CLEAR&nbsp;LS_LINE.<br />
+*&nbsp;&nbsp;LS_LINE-TYP&nbsp;&nbsp;=&nbsp;'S'.<br />
+*&nbsp;&nbsp;LS_LINE-KEY&nbsp;&nbsp;=&nbsp;'플랜트&nbsp;:'.<br />
+*&nbsp;&nbsp;CONCATENATE&nbsp;P_WERKS&nbsp;G_WERKS_TEXT&nbsp;INTO&nbsp;LS_LINE-INFO<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+*&nbsp;&nbsp;APPEND&nbsp;LS_LINE&nbsp;TO&nbsp;LT_TOP_OF_PAGE.<br />
+*<br />
+*----&nbsp;STATUS&nbsp;LINE:&nbsp;TYPE&nbsp;S<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;s_spmon-high&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;s_spmon-high&nbsp;=&nbsp;s_spmon-low.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;ls_line.<br />
+&nbsp;&nbsp;ls_line-typ&nbsp;&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;ls_line-key&nbsp;&nbsp;=&nbsp;'년&nbsp;&nbsp;월&nbsp;:'.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;s_spmon-low&nbsp;'~'&nbsp;s_spmon-high<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;ls_line-info&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_line&nbsp;TO&nbsp;lt_top_of_page.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;STATUS&nbsp;LINE:&nbsp;TYPE&nbsp;S<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;ls_line.<br />
+&nbsp;&nbsp;ls_line-typ&nbsp;&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;ls_line-key&nbsp;&nbsp;=&nbsp;'집계일&nbsp;:'.<br />
+&nbsp;&nbsp;ls_line-info+00(10)&nbsp;=&nbsp;g_t_cpudt.<br />
+&nbsp;&nbsp;ls_line-info+14(08)&nbsp;=&nbsp;g_t_cputm.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_line&nbsp;TO&nbsp;lt_top_of_page.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;STATUS&nbsp;LINE:&nbsp;TYPE&nbsp;S<br />
+*&nbsp;&nbsp;CLEAR&nbsp;ls_line.<br />
+*&nbsp;&nbsp;ls_line-typ&nbsp;&nbsp;=&nbsp;'S'.<br />
+*&nbsp;&nbsp;ls_line-key&nbsp;&nbsp;=&nbsp;'평가클래스&nbsp;:'.<br />
+*&nbsp;&nbsp;ls_line-info&nbsp;=&nbsp;'3000:원자재,&nbsp;3001:포장재,&nbsp;3040-3041:저장품,3050:포장재,&nbsp;3090:부산물<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;,&nbsp;3100:상품,&nbsp;3101:상품&nbsp;매입&nbsp;완제품,&nbsp;3102:상품&nbsp;중국&nbsp;완제품,&nbsp;7900:반제품,&nbsp;7930:방산&nbsp;완제품'.<br />
+*&nbsp;&nbsp;APPEND&nbsp;ls_line&nbsp;TO&nbsp;lt_top_of_page.<br />
+<br />
+*----&nbsp;ACTION&nbsp;LINE:&nbsp;TYPE&nbsp;A<br />
+*&nbsp;&nbsp;CLEAR&nbsp;LS_LINE.<br />
+*&nbsp;&nbsp;LS_LINE-TYP&nbsp;&nbsp;=&nbsp;'A'.<br />
+**&nbsp;LS_LINE-KEY:&nbsp;&nbsp;NOT&nbsp;USED&nbsp;FOR&nbsp;THIS&nbsp;TYPE<br />
+*&nbsp;&nbsp;LS_LINE-INFO&nbsp;=&nbsp;'ACTION&nbsp;LINE'.<br />
+*&nbsp;&nbsp;APPEND&nbsp;LS_LINE&nbsp;TO&nbsp;LT_TOP_OF_PAGE.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " COMMENT_BUILD<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;EVENTTAB_BUILD<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM eventtab_build USING rt_events TYPE slis_t_event.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*"Registration&nbsp;of&nbsp;events&nbsp;to&nbsp;happen&nbsp;during&nbsp;list&nbsp;display<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;ls_event&nbsp;TYPE&nbsp;slis_alv_event.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_EVENTS_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_list_type&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;et_events&nbsp;&nbsp;&nbsp;=&nbsp;rt_events.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;rt_events&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;slis_ev_top_of_page<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;ls_event.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;g_top_of_page&nbsp;TO&nbsp;ls_event-form.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_event&nbsp;TO&nbsp;rt_events.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    "EVENTTAB_BUILD<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P2000_CALC_ZCOT097_SUM<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p2000_calc_zcot097_sum.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;te_zcot097&nbsp;LIKE&nbsp;st_zcot097&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;it_zcot097&nbsp;BY&nbsp;werks&nbsp;bwtar&nbsp;bklas&nbsp;matnr.<br />
+<br />
+&nbsp;&nbsp;te_zcot097[]&nbsp;=&nbsp;it_zcot097[].<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;it_zcot097.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;te_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;g_matnr&nbsp;NE&nbsp;te_zcot097-matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_matnr&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_maktx&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-maktx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mtart&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-mtart.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_matkl&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-matkl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_bklas&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-bklas.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_meins&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-meins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_waers&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-waers.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*----&nbsp;자재의&nbsp;최초월&nbsp;기초/기말&nbsp;보관<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;te_zcot097-spmon&nbsp;=&nbsp;s_spmon-low.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mbasis&nbsp;&nbsp;=&nbsp;te_zcot097-mbasis.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_wbasis&nbsp;&nbsp;=&nbsp;te_zcot097-wbasis.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;te_zcot097-spmon&nbsp;=&nbsp;s_spmon-high.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mbwbest&nbsp;=&nbsp;te_zcot097-mbwbest.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_wbwbest&nbsp;=&nbsp;te_zcot097-wbwbest.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;te_zcot097&nbsp;TO&nbsp;st_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-matnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-maktx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_maktx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-mtart&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_mtart.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-matkl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_matkl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-bklas&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_bklas.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-meins&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_meins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-waers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_waers.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-mbasis&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_mbasis.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-wbasis&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_wbasis.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-mbwbest&nbsp;&nbsp;&nbsp;=&nbsp;g_mbwbest.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-wbwbest&nbsp;&nbsp;&nbsp;=&nbsp;g_wbwbest.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;st_zcot097&nbsp;TO&nbsp;it_zcot097.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;g_mbwbest,&nbsp;g_wbwbest,&nbsp;g_mbasis,&nbsp;&nbsp;g_wbasis.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " P2000_CALC_ZCOT097_SUM<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P2500_SUMMATION_FOR_FORM3<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p2500_summation_for_form3.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;te_zcot097&nbsp;LIKE&nbsp;st_zcot097&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;it_zcot097&nbsp;BY&nbsp;werks&nbsp;bklas&nbsp;matnr.<br />
+<br />
+&nbsp;&nbsp;te_zcot097[]&nbsp;=&nbsp;it_zcot097[].<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;it_zcot097.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;te_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;NEW&nbsp;werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_werks&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_waers&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;te_zcot097&nbsp;TO&nbsp;st_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-waers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_waers.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;st_zcot097&nbsp;TO&nbsp;it_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " P2500_SUMMATION_FOR_FORM3<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P2500_SUMMATION_FOR_FORM2<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p2500_summation_for_form2.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;te_zcot097&nbsp;LIKE&nbsp;st_zcot097&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;it_zcot097&nbsp;BY&nbsp;werks&nbsp;bwtar&nbsp;bklas&nbsp;matnr.<br />
+<br />
+&nbsp;&nbsp;te_zcot097[]&nbsp;=&nbsp;it_zcot097[].<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;it_zcot097.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;te_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;NEW&nbsp;bklas.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_werks&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_bklas&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-bklas.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_bwtar&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-bwtar.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_waers&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;bklas.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;te_zcot097&nbsp;TO&nbsp;st_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-bklas&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_bklas.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-bwtar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_bwtar.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-waers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_waers.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;st_zcot097&nbsp;TO&nbsp;it_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " P2500_SUMMATION_FOR_FORM2<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P2500_SUMMATION_FOR_FORM4<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p2500_summation_for_form4 .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;te_zcot097&nbsp;LIKE&nbsp;st_zcot097&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;it_zcot097&nbsp;BY&nbsp;werks&nbsp;bwtar&nbsp;bklas&nbsp;prctr&nbsp;matnr.<br />
+<br />
+&nbsp;&nbsp;te_zcot097[]&nbsp;=&nbsp;it_zcot097[].<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;it_zcot097.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;te_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;NEW&nbsp;prctr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_werks&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_prctr&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-prctr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_bwtar&nbsp;&nbsp;&nbsp;=&nbsp;te_zcot097-bwtar.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_waers&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;prctr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;te_zcot097&nbsp;TO&nbsp;st_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-prctr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_prctr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-bwtar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_bwtar.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_zcot097-waers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_waers.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;st_zcot097&nbsp;TO&nbsp;it_zcot097.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " P2500_SUMMATION_FOR_FORM4<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CALL_TRANSACTION<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ITAB01_MATNR&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0758&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0759&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0760&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0761&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0762&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0763&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM _call_transaction  USING    p_v1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_v2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_v3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_p1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_p2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_p3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_tcode.<br />
+<br />
+&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;p_p1&nbsp;FIELD&nbsp;p_v1.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_p2&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;p_p2&nbsp;FIELD&nbsp;p_v2.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_p3&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;p_p3&nbsp;FIELD&nbsp;p_v3.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;p_tcode&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+<br />
+ENDFORM.                    " CALL_TRANSACTION<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CALL_TRANSACTION_1<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ST_ZCOT097_MATNR&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ST_ZCOT097_WERKS&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0782&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0783&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0784&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0785&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0786&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM call_transaction_1  USING  p_v1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_v2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_v3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_v4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_p1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_p2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_p3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_p4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_tcode.<br />
+<br />
+&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;p_p1&nbsp;FIELD&nbsp;p_v1.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_p2&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;p_p2&nbsp;FIELD&nbsp;p_v2.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_p3&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;p_p3&nbsp;FIELD&nbsp;p_v3.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_p4&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;p_p4&nbsp;FIELD&nbsp;p_v4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;p_tcode.&nbsp;"&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+<br />
+ENDFORM.                    " CALL_TRANSACTION_1<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SHOW_DETAIL<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM show_detail  USING    ps_zcot097 LIKE st_zcot097<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_fieldname.<br />
+&nbsp;&nbsp;DATA:&nbsp;l_tabname&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_fields&nbsp;TYPE&nbsp;abap_compdescr_tab,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_data&nbsp;&nbsp;&nbsp;TYPE&nbsp;zcos0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dyn_wa&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_detail[].<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_component_fields&nbsp;TABLES&nbsp;lt_fields&nbsp;USING&nbsp;'GS_DETAIL'.<br />
+<br />
+&nbsp;&nbsp;l_fname&nbsp;=&nbsp;p_fieldname.<br />
+&nbsp;&nbsp;CONDENSE&nbsp;l_fname.<br />
+&nbsp;&nbsp;TRANSLATE&nbsp;l_fname&nbsp;TO&nbsp;UPPER&nbsp;CASE.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltdyn_table&gt&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs&gt&nbsp;TYPE&nbsp;zcos0005.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'GT_'&nbsp;l_fname&nbsp;INTO&nbsp;l_tabname.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;(l_tabname)&nbsp;TO&nbsp;&ltdyn_table&gt.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltdyn_table&gt&nbsp;INTO&nbsp;ls_data.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;ls_data-werks&nbsp;EQ&nbsp;ps_zcot097-werks&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_data-matnr&nbsp;EQ&nbsp;ps_zcot097-matnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;ls_data&nbsp;TO&nbsp;gs_detail.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gs_detail&nbsp;TO&nbsp;gt_detail.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gs_detail,&nbsp;ls_data.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;50&nbsp;STARTING&nbsp;AT&nbsp;30&nbsp;2.<br />
+ENDFORM.                    " SHOW_DETAIL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_DETAIL_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_detail_data .<br />
+&nbsp;&nbsp;call function <a href ="functions/zcof01_get_subul_detail(제품 자재 월 수불 집계 상세목록)/zcof01_get_subul_detail.html">'ZCOF01_GET_SUBUL_DETAIL'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_bukrs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_bukrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_spmon&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;s_spmon-low<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_epmon&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;s_spmon-high<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_pu&nbsp;&nbsp;=&nbsp;gt_wzubb_pu<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_po&nbsp;&nbsp;=&nbsp;gt_wzubb_po<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_su&nbsp;&nbsp;=&nbsp;gt_wzubb_su<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_st&nbsp;&nbsp;=&nbsp;gt_wzubb_st<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_mt&nbsp;&nbsp;=&nbsp;gt_wzubb_mt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_et&nbsp;&nbsp;=&nbsp;gt_wzubb_et<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_pr&nbsp;&nbsp;=&nbsp;gt_wzubb_pr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_th&nbsp;&nbsp;=&nbsp;gt_wzubb_th<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_co&nbsp;&nbsp;=&nbsp;gt_wzubb_co<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_cp&nbsp;&nbsp;=&nbsp;gt_wzubb_cp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_ivp&nbsp;=&nbsp;gt_wzubb_ivp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_ivs&nbsp;=&nbsp;gt_wzubb_ivs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_sap&nbsp;=&nbsp;gt_wzubb_sap<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wzubb_mlp&nbsp;=&nbsp;gt_wzubb_mlp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_jr&nbsp;&nbsp;=&nbsp;gt_wagbb_jr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_mc&nbsp;&nbsp;=&nbsp;gt_wagbb_mc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_ys&nbsp;&nbsp;=&nbsp;gt_wagbb_ys<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_st&nbsp;&nbsp;=&nbsp;gt_wagbb_st<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_mt&nbsp;&nbsp;=&nbsp;gt_wagbb_mt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_su&nbsp;&nbsp;=&nbsp;gt_wagbb_su<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_et&nbsp;&nbsp;=&nbsp;gt_wagbb_et<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_th&nbsp;&nbsp;=&nbsp;gt_wagbb_th<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_pi&nbsp;&nbsp;=&nbsp;gt_wagbb_pi<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_wagbb_co&nbsp;&nbsp;=&nbsp;gt_wagbb_co<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;s_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_matnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;s_matnr.<br />
+ENDFORM.                    " GET_DETAIL_DATA<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;MODULE&nbsp;pbo_050&nbsp;OUTPUT<br />
+*----------------------------------------------------------------------*<br />
+*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE pbo_050 OUTPUT.<br />
+&nbsp;&nbsp;SET:&nbsp;PF-STATUS&nbsp;'050',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLEBAR&nbsp;'050'.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;display_grid_050.<br />
+ENDMODULE.                 " STATUS_0050  OUTPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;USER_COMMAND_0050&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE pai_050 INPUT.<br />
+&nbsp;&nbsp;CASE&nbsp;sy-ucomm.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'ESC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;TO&nbsp;SCREEN&nbsp;0.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDMODULE.                 " USER_COMMAND_0050  INPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DISPLAY_GRID_050<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM display_grid_050 .<br />
+&nbsp;&nbsp;IF&nbsp;g_custom_container2&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT:&nbsp;&nbsp;g_custom_container2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;container_name&nbsp;=&nbsp;'CUSTOM_CONTAINER2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_alv_grid2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_parent&nbsp;&nbsp;=&nbsp;g_custom_container2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM:&nbsp;&nbsp;build_fieldcat_050,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_layout_050,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_exclude_toolbar_050.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_alv_grid2-&gtset_table_for_first_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_layout2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;=&nbsp;gt_fieldcat2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_detail.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;g_alv_grid2-&gtrefresh_table_display(&nbsp;).<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;cl_gui_control=&gtset_focus(&nbsp;g_alv_grid2&nbsp;).<br />
+ENDFORM.                    " DISPLAY_GRID_050<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_FIELDCAT_050<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_fieldcat_050 .<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_fcat&nbsp;TYPE&nbsp;lvc_s_fcat.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;build_fieldcatalog&nbsp;TABLES&nbsp;gt_fieldcat2&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'WERKS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'6',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'플랜트',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'PRCTR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'8',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'손익센터',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MATNR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'자재',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'HKONT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'G/L&nbsp;계정',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'BELNR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'전표번호',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'BLART',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'8',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'전표유형',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'AWKEY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'16',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'오브젝트키',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'SHKZG',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'차/대&nbsp;지시자',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'DMBTR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CFIELDNAME'&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'금액',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'WAERS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'6',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'통화키',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'EBELN',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'구매문서',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'EBELP',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'구매문서품목',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'VBEL2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'판매문서',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'POSN2',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'12',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'판매문서품목'.<br />
+<br />
+ENDFORM.                    " BUILD_FIELDCAT_050<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_LAYOUT_050<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_layout_050 .<br />
+&nbsp;&nbsp;CLEAR&nbsp;gs_layout2.<br />
+&nbsp;&nbsp;gs_layout2-zebra&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout2-cwidth_opt&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;gs_layout2-no_toolbar&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;gs_layout2-sel_mode&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'.<br />
+ENDFORM.                    " BUILD_LAYOUT_050<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_TOOLBAR_050<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_exclude_toolbar_050 .<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_toolbar2[].<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;append_exclude_functions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES&nbsp;&nbsp;gt_toolbar2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_undo,&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_auf,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;소계확장&nbsp;&AUF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_average,&nbsp;&nbsp;"&nbsp;&AVERAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_back_classic,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_abc,&nbsp;"&nbsp;&ABC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_chain,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_crbatch,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_crweb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_lineitems,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_master_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_more,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_report,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_xint,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_xxl,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_col_invisible,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_col_optimize,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_current_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_data_save,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_delete_filter,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_deselect_all,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_detail,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrdesig,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrtempl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expmdb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_extend,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_f4,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_filter,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_find,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_fix_columns,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_graph,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_help,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_info,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_load_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_copy,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행&nbsp;카피<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_html,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_copy_row,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행&nbsp;카피<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_cut,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;가위<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_delete_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행삭제<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_insert_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행삽입<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_move_row,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_append_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;라인생성<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_paste,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;겹쳐쓰기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_paste_new_row,&nbsp;"&nbsp;겹쳐쓰기<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_maintain_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_maximum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_minimum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_pc_file,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print_back,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print_prev,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_reprep,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_save_variant,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_select_all,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_send,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_separator,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort_asc,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort_dsc,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_subtot,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sum,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_to_office,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_to_rep_tree,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_unfix_columns,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_views,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_crystal,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_excel,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_grid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_word_processor,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_refresh,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_check.<br />
+ENDFORM.                    " BUILD_TOOLBAR_050<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;APPEND_EXCLUDE_FUNCTIONS<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM append_exclude_functions  TABLES   pt_toolbar TYPE ui_functions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;p_value.<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_exclude&nbsp;&nbsp;TYPE&nbsp;ui_func.<br />
+&nbsp;&nbsp;ls_exclude&nbsp;=&nbsp;p_value.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_exclude&nbsp;TO&nbsp;pt_toolbar.<br />
+ENDFORM.                    " APPEND_EXCLUDE_FUNCTIONS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;050&nbsp;--&gt&nbsp;제품/자재&nbsp;수불명세서&nbsp;상세내역<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;001&nbsp;선택조건<br />
+<br />
+<br />
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;회사코드<br />
+*&nbsp;P_FORM1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재별&nbsp;현황<br />
+*&nbsp;P_FORM2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;플랜트+평가클래스<br />
+*&nbsp;P_FORM4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;플랜트+손익센터<br />
+*&nbsp;S_BKLAS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;평가클래스<br />
+*&nbsp;S_DISPO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MRP관리자<br />
+*&nbsp;S_MATKL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재그룹<br />
+*&nbsp;S_MATNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재코드<br />
+*&nbsp;S_MTART&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재유형<br />
+*&nbsp;S_PRCTR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;손익센터<br />
+*&nbsp;S_SPMON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;분석기간<br />
+*&nbsp;S_WERKS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;플랜트<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;GR<br />
+*155&nbsp;&nbsp;&nbsp;유효한&nbsp;열에&nbsp;커서를&nbsp;놓으십시오.<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;Hard&nbsp;coded<br />
+*&nbsp;&nbsp;&nbsp;Check&nbsp;File&nbsp;Path&nbsp;&&nbsp;File&nbsp;Name.<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;ZCOM<br />
+*000&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

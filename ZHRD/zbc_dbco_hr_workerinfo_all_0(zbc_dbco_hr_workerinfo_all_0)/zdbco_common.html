@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDBCO_COMMON</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZDBCO_COMMON</h2>
+<h3> Description: Include ZDBCO_COMMON</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZDBCO_COMMON<br />
+*&---------------------------------------------------------------------*<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;GLOBAL&nbsp;VARIANT<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+CONSTANTS : db_conn LIKE dbcon-con_name VALUE 'GW_MSDB_PRD' .<br />
+<br />
+"결과 메시지 체크<br />
+DATA: gv_err TYPE REF TO cx_sy_native_sql_error,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_symsg&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_retry&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_subrc&nbsp;TYPE&nbsp;sy-subrc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbcnt&nbsp;TYPE&nbsp;sy-dbcnt.<br />
+<br />
+"인터페이스 로그<br />
+   </div>
+   <div class="codeComment">
+*DATA:&nbsp;gs_log&nbsp;TYPE&nbsp;zbiift0001.<br />
+   </div>
+   <div class="code">
+DATA: gv_jobname TYPE	btcjob,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_jobcount	TYPE&nbsp;btcjobcnt.<br />
+<br />
+"다이내믹 Native SQL<br />
+DATA: gv_con_ref TYPE REF TO cl_sql_connection.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;FORM&nbsp;CONNECT_DB<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;TEXT&nbsp;:&nbsp;DB&nbsp;CONNECTION<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p001_connect_db.<br />
+<br />
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONNECT&nbsp;TO&nbsp;:DB_CONN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_sy_native_sql_error&nbsp;INTO&nbsp;gv_err.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;gv_err-&gtget_text(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e000(su)&nbsp;WITH&nbsp;'DB&nbsp;conn&nbsp;error:'&nbsp;db_conn&nbsp;INTO&nbsp;gv_symsg.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p003_interface_log&nbsp;USING&nbsp;''&nbsp;''.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;PROGRAM.<br />
+&nbsp;&nbsp;ENDTRY.<br />
+<br />
+<br />
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;CONNECTION&nbsp;:DB_CONN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_sy_native_sql_error&nbsp;INTO&nbsp;gv_err.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;gv_err-&gtget_text(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e000(su)&nbsp;WITH&nbsp;'Set&nbsp;conn&nbsp;error:'&nbsp;db_conn&nbsp;INTO&nbsp;gv_symsg.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p003_interface_log&nbsp;USING&nbsp;''&nbsp;''.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;PROGRAM.<br />
+&nbsp;&nbsp;ENDTRY.<br />
+<br />
+ENDFORM. "P0001_CONNECT_DB<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;FORM&nbsp;DISCONN_DB<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;TEXT&nbsp;:&nbsp;DB&nbsp;DISCONNECTION<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p002_disconn_db.<br />
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXEC&nbsp;SQL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISCONNECT&nbsp;:DB_CONN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDEXEC.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_sy_native_sql_error&nbsp;INTO&nbsp;gv_err.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gv_retry&nbsp;LE&nbsp;3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gv_err.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;gv_retry.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WAIT&nbsp;UP&nbsp;TO&nbsp;3&nbsp;SECONDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETRY.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gv_retry.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;gv_err-&gtget_text(&nbsp;).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e000(su)&nbsp;WITH&nbsp;'DB&nbsp;discon&nbsp;error:'&nbsp;&nbsp;db_conn&nbsp;INTO&nbsp;gv_symsg.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p003_interface_log&nbsp;USING&nbsp;''&nbsp;''.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDTRY.<br />
+<br />
+&nbsp;&nbsp;EXEC&nbsp;SQL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;CONNECTION&nbsp;DEFAULT<br />
+&nbsp;&nbsp;ENDEXEC.<br />
+<br />
+ENDFORM. "P0002_DISCONN_DB<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;FORM&nbsp;DISCONN_DB<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;TEXT&nbsp;:&nbsp;INTERFACE_LOG<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p003_interface_log USING tabname TYPE tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;querytype&nbsp;TYPE&nbsp;c.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DATA:&nbsp;lv_msg01&nbsp;TYPE&nbsp;bapi_msg,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_msg02&nbsp;TYPE&nbsp;bapi_msg.<br />
+*<br />
+*&nbsp;&nbsp;CLEAR:&nbsp;lv_msg01,&nbsp;lv_msg02.<br />
+*<br />
+*&nbsp;&nbsp;GET&nbsp;TIME.<br />
+*&nbsp;&nbsp;gs_log-ifdat&nbsp;=&nbsp;sy-datum.<br />
+*&nbsp;&nbsp;gs_log-iftim&nbsp;=&nbsp;sy-uzeit.<br />
+*&nbsp;&nbsp;gs_log-progname&nbsp;=&nbsp;sy-cprog.<br />
+*&nbsp;&nbsp;gs_log-batch&nbsp;=&nbsp;sy-batch.<br />
+*&nbsp;&nbsp;gs_log-jobcount&nbsp;=&nbsp;gv_jobcount.<br />
+*&nbsp;&nbsp;gs_log-jobname&nbsp;=&nbsp;gv_jobname.<br />
+*&nbsp;&nbsp;gs_log-ernam&nbsp;=&nbsp;sy-uname.<br />
+*&nbsp;&nbsp;gs_log-tabname&nbsp;=&nbsp;tabname.<br />
+*&nbsp;&nbsp;IF&nbsp;gv_dbcnt&nbsp;NE&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;gs_log-ifrow&nbsp;=&nbsp;gv_dbcnt.<br />
+*&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;gs_log-ifrow&nbsp;=&nbsp;sy-dbcnt&nbsp;.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;gs_log-querytype&nbsp;=&nbsp;querytype.<br />
+*&nbsp;&nbsp;IF&nbsp;sy-msgty&nbsp;&lt&gt&nbsp;'E'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;gs_log-msgty&nbsp;=&nbsp;'S'.<br />
+*&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;gs_log-msgty&nbsp;=&nbsp;sy-msgty.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;gs_log-symsg&nbsp;=&nbsp;gv_symsg.<br />
+*<br />
+*&nbsp;&nbsp;IF&nbsp;gv_dbmsg&nbsp;&lt&gt&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;SPLIT&nbsp;gv_dbmsg&nbsp;AT&nbsp;'BI):&nbsp;'&nbsp;INTO&nbsp;lv_msg01&nbsp;lv_msg02.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;lv_msg02.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_log-dbmsg&nbsp;=&nbsp;lv_msg02.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_log-dbmsg&nbsp;=&nbsp;gv_dbmsg.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*<br />
+*&nbsp;&nbsp;MODIFY&nbsp;zbiift0001&nbsp;FROM&nbsp;gs_log.<br />
+*&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+*<br />
+*&nbsp;&nbsp;IF&nbsp;gs_log-msgty&nbsp;=&nbsp;'E'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s001&nbsp;WITH&nbsp;'에러와&nbsp;함께&nbsp;종료되었습니다.'&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'.<br />
+*&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s001&nbsp;WITH&nbsp;'데이터&nbsp;전송이&nbsp;완료되었습니다.'.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*<br />
+*&nbsp;&nbsp;CLEAR:&nbsp;gs_log,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_symsg,&nbsp;gv_dbcnt,&nbsp;gv_dbmsg.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. "P003_INTERFACE_LOG<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;p004_get_jobname<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;:&nbsp;GET_JOBNAME<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p004_get_jobname.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gv_jobname,&nbsp;gv_jobcount.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'GET_JOB_RUNTIME_INFO'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jobcount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gv_jobcount<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jobname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gv_jobname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_runtime_info&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+ENDFORM. "p004_get_jobname<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P005_COMMIT_SQL<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;:&nbsp;COMMIT&nbsp;WORK<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p005_commit_sql.<br />
+&nbsp;&nbsp;EXEC&nbsp;SQL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK<br />
+&nbsp;&nbsp;ENDEXEC.<br />
+<br />
+&nbsp;&nbsp;WAIT&nbsp;UP&nbsp;TO&nbsp;3&nbsp;SECONDS.<br />
+ENDFORM. "P005_COMMIT_SQL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P006_ROLLBACK_SQL<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;:&nbsp;ROLLBACK<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p006_rollback_sql.<br />
+&nbsp;&nbsp;EXEC&nbsp;SQL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK<br />
+&nbsp;&nbsp;ENDEXEC.<br />
+<br />
+ENDFORM. "P006_ROLLBACK_SQL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P006_CREATE_TABLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;:&nbsp;CREATE_TABLE<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p006_create_table USING p_table TYPE tbname.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DATA:&nbsp;lv_tmp&nbsp;TYPE&nbsp;tbname,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_query&nbsp;TYPE&nbsp;string.<br />
+*<br />
+*&nbsp;&nbsp;DATA:<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;l_sqlerr_ref&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_sql_exception,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_ref&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_sql_statement.<br />
+*<br />
+*<br />
+*&nbsp;&nbsp;gv_con_ref&nbsp;=&nbsp;cl_sql_connection=&gtget_connection(&nbsp;db_conn&nbsp;).<br />
+*<br />
+*&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;"Create&nbsp;a&nbsp;statement&nbsp;object<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_ref&nbsp;=&nbsp;gv_con_ref-&gtcreate_statement(&nbsp;).<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_table&nbsp;&lt&gt&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;lv_tmp,&nbsp;gv_subrc.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'TMP_'&nbsp;p_table&nbsp;INTO&nbsp;lv_tmp.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'CREATE&nbsp;TABLE'&nbsp;lv_tmp<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'TABLESPACE&nbsp;USERS&nbsp;AS&nbsp;SELECT&nbsp;*&nbsp;FROM'&nbsp;p_table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'WHERE&nbsp;0&nbsp;=&nbsp;1'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;lv_query&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Create&nbsp;Temp&nbsp;Table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gv_subrc.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRY.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_ref-&gtexecute_ddl(&nbsp;lv_query&nbsp;).<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_sql_exception&nbsp;INTO&nbsp;l_sqlerr_ref.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_sqlerr_ref-&gtdbobject_exists&nbsp;=&nbsp;'X'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;l_sqlerr_ref-&gtinternal_error&nbsp;=&nbsp;1024.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Table&nbsp;Already&nbsp;Exists<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;l_sqlerr_ref-&gtget_text(&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_subrc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Other&nbsp;Errors<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;l_sqlerr_ref-&gtget_text(&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_subrc&nbsp;=&nbsp;2.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDTRY.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;gv_subrc.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e011&nbsp;WITH&nbsp;lv_tmp&nbsp;INTO&nbsp;gv_symsg.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;2.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e012&nbsp;WITH&nbsp;lv_tmp&nbsp;INTO&nbsp;gv_symsg.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;lv_query.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s013&nbsp;WITH&nbsp;lv_tmp&nbsp;INTO&nbsp;gv_symsg.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p003_interface_log&nbsp;USING&nbsp;lv_tmp&nbsp;'C'.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gv_subrc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p007_drop_table&nbsp;USING&nbsp;p_table&nbsp;.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. "P006_CREATE_TABLE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;P007_DROP_TABLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;:&nbsp;DROP_TABLE<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM p007_drop_table USING p_table TYPE tbname.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DATA:&nbsp;lv_tmp&nbsp;TYPE&nbsp;tbname,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_query&nbsp;TYPE&nbsp;string.<br />
+*<br />
+*&nbsp;&nbsp;DATA:<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;l_sqlerr_ref&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_sql_exception,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_ref&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_sql_statement.<br />
+*<br />
+*&nbsp;&nbsp;"Create&nbsp;a&nbsp;statement&nbsp;object<br />
+*&nbsp;&nbsp;IF&nbsp;gv_con_ref&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;l_stmt_ref.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_ref&nbsp;=&nbsp;gv_con_ref-&gtcreate_statement(&nbsp;).<br />
+*<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_table&nbsp;&lt&gt&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;lv_tmp,&nbsp;gv_subrc.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'TMP_'&nbsp;p_table&nbsp;INTO&nbsp;lv_tmp.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'DROP&nbsp;TABLE'&nbsp;lv_tmp<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;lv_query&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Drop&nbsp;Temp&nbsp;Table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRY.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_stmt_ref-&gtexecute_ddl(&nbsp;lv_query&nbsp;).<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_sql_exception&nbsp;INTO&nbsp;l_sqlerr_ref.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gv_dbmsg,&nbsp;gv_symsg.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;l_sqlerr_ref-&gtget_text(&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_subrc&nbsp;=&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDTRY.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gv_subrc&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_dbmsg&nbsp;=&nbsp;lv_query.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s015&nbsp;WITH&nbsp;lv_tmp&nbsp;INTO&nbsp;gv_symsg.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e014&nbsp;WITH&nbsp;lv_tmp&nbsp;INTO&nbsp;gv_symsg.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;p003_interface_log&nbsp;USING&nbsp;lv_tmp&nbsp;'D'.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. "P007_DROP_TABLE<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

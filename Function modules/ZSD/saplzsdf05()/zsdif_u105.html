@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSDIF_U105</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZSDIF_U105</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZSDIF_U105<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+*&nbsp;수량&nbsp;문제&nbsp;없으면&nbsp;MODIFY<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LS_TAB,&nbsp;LV_LFIMG,&nbsp;LV_TABIX,&nbsp;LV_TABIX2,&nbsp;LS_TAB2,&nbsp;LT_TAB2.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'MATNR'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltFS_DATA&gt&nbsp;TO&nbsp;&ltFS_MATNR&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'REMNG'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltFS_DATA&gt&nbsp;TO&nbsp;&ltFS_REMNG&gt.<br />
+&nbsp;&nbsp;SORT&nbsp;LT_TAB&nbsp;BY&nbsp;VBELN&nbsp;POSNR.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_TAB&nbsp;INTO&nbsp;LS_TAB&nbsp;WHERE&nbsp;MATNR&nbsp;EQ&nbsp;&ltFS_MATNR&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LV_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltFS_REMNG&gt&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_TAB-MENGE&nbsp;&lt&nbsp;LS_TAB-LFIMG&nbsp;+&nbsp;&ltFS_REMNG&gt.&nbsp;"초과한다면&nbsp;?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_TAB-MENGE&nbsp;&gt&nbsp;LS_TAB-LFIMG.&nbsp;"일부만&nbsp;채워졌거나&nbsp;스캔이&nbsp;더&nbsp;높다면?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_LFIMG&nbsp;=&nbsp;LS_TAB-MENGE&nbsp;-&nbsp;LS_TAB-LFIMG.&nbsp;"나머지&nbsp;구하기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS_REMNG&gt&nbsp;=&nbsp;&ltFS_REMNG&gt&nbsp;-&nbsp;LV_LFIMG.&nbsp;"잔량&nbsp;빼놓기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB-LFIMG&nbsp;=&nbsp;LS_TAB-LFIMG&nbsp;+&nbsp;LV_LFIMG.&nbsp;"나머지&nbsp;채우기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB2&nbsp;=&nbsp;LS_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_TAB&nbsp;FROM&nbsp;LS_TAB&nbsp;INDEX&nbsp;LV_TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB2-MENGE&nbsp;=&nbsp;LV_LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TAB2&nbsp;TO&nbsp;LT_TAB2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;"이미&nbsp;다&nbsp;채워짐<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;"초과하지&nbsp;않는다면<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB-LFIMG&nbsp;=&nbsp;LS_TAB-LFIMG&nbsp;+&nbsp;&ltFS_REMNG&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB2&nbsp;=&nbsp;LS_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_TAB&nbsp;FROM&nbsp;LS_TAB&nbsp;INDEX&nbsp;LV_TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TAB2-MENGE&nbsp;=&nbsp;&ltFS_REMNG&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TAB2&nbsp;TO&nbsp;LT_TAB2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS_REMNG&gt&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_5030&nbsp;INTO&nbsp;LS_5030&nbsp;WITH&nbsp;KEY&nbsp;VBELN&nbsp;=&nbsp;LS_TAB-VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POSNR&nbsp;=&nbsp;LS_TAB-POSNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_TABIX2&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-LFIMG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_TAB-LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-UPDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-UPTIM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-UPNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;LT_5030&nbsp;FROM&nbsp;LS_5030&nbsp;INDEX&nbsp;LV_TABIX2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;&ltFS_DATA&gt&nbsp;TO&nbsp;LS_5030.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-VBELN&nbsp;=&nbsp;LS_TAB-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-POSNR&nbsp;=&nbsp;LS_TAB-POSNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-LFIMG&nbsp;=&nbsp;LS_TAB-LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-ZSTATS&nbsp;=&nbsp;'10'.&nbsp;"임시저장<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-MOVE_TYPE&nbsp;=&nbsp;'GI'.&nbsp;"공장출하<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-USERID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_USERID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-ERDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-ERZET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5030-ERNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_5030&nbsp;TO&nbsp;LT_5030.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&ltFS_DATA&gt&nbsp;=&nbsp;바코드&nbsp;데이터&nbsp;저장<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_TAB2&nbsp;INTO&nbsp;LS_TAB2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;&ltFS_DATA&gt&nbsp;TO&nbsp;LS_5031.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_5031-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-MENGE&nbsp;=&nbsp;LS_TAB2-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-VBELN&nbsp;=&nbsp;LS_TAB2-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-POSNR&nbsp;=&nbsp;LS_TAB2-POSNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-MOVE_TYPE&nbsp;=&nbsp;I_MTYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-VEHICLE_NO&nbsp;=&nbsp;I_VENO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-USERID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_USERID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-UPLANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_USER-PLANT1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-ERDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-ERZET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UZEIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_5031-ERNAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_5031&nbsp;TO&nbsp;LT_5031.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

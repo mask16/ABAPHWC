@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZBCR0010</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZBCR0010</h2>
+<h3> Description: USR41_MLD 일자환산 수집 프로그램(백그라운드)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;Report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ZBCR0010<br />
+*&nbsp;Module/Sub-Module&nbsp;:&nbsp;BC<br />
+*&nbsp;Type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Background<br />
+*&nbsp;T_CODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<br />
+*&nbsp;Previous&nbsp;Vesion&nbsp;&nbsp;&nbsp;:<br />
+*&nbsp;Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;USR41_MLD&nbsp;테이블을&nbsp;일자&nbsp;환산하여&nbsp;수집(백그라운드)<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;Change&nbsp;History<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Developer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Description<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;2017/08/24&nbsp;&nbsp;&nbsp;&nbsp;천준필&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Initial&nbsp;Release<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT zbcr0010.<br />
+<br />
+DATA: gt_source TYPE TABLE OF usr41_mld,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_source&nbsp;TYPE&nbsp;usr41_mld,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_target&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zbct0002,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_target&nbsp;TYPE&nbsp;zbct0002,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_update&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;usr41_mld.<br />
+<br />
+<br />
+START-OF-SELECTION.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_source,&nbsp;gt_target,&nbsp;gt_update.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_source<br />
+&nbsp;&nbsp;FROM&nbsp;usr41_mld<br />
+&nbsp;&nbsp;WHERE&nbsp;cal_year&nbsp;=&nbsp;sy-datum(4).<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_source&nbsp;INTO&nbsp;gs_source.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;gs_source&nbsp;TO&nbsp;gs_target.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_target-cal_day&nbsp;=&nbsp;sy-datum.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"PEAK,&nbsp;COUNT&nbsp;CHECK&nbsp;&&nbsp;INITIALIZE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_source-counter&nbsp;&nbsp;GT&nbsp;800.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gs_source&nbsp;TO&nbsp;gt_update.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_target-clear_date&nbsp;=&nbsp;sy-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gs_target&nbsp;TO&nbsp;gt_target.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_target.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gt_target[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;zbct0002&nbsp;FROM&nbsp;TABLE&nbsp;gt_target.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_update&nbsp;INTO&nbsp;gs_source.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;usr41_mld<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bname&nbsp;=&nbsp;gs_source-bname<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;cal_year&nbsp;=&nbsp;gs_source-cal_year.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;ENDLOOP.<br />
+*<br />
+*&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

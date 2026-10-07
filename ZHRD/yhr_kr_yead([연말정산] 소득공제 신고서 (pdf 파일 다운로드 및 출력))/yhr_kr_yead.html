@@ -1,0 +1,700 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>YHR_KR_YEAD</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: YHR_KR_YEAD</h2>
+<h3> Description: [연말정산] 소득공제 신고서 (PDF 파일 다운로드 및 출력)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&nbsp;Program&nbsp;ID&nbsp;&nbsp;:&nbsp;YHR_KR_YEAD<br />
+*&nbsp;Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;소득공제&nbsp;신고서&nbsp;(PDF&nbsp;파일&nbsp;다운로드&nbsp;및&nbsp;출력)<br />
+*&nbsp;Created&nbsp;By&nbsp;&nbsp;:<br />
+*&nbsp;Create&nbsp;Date&nbsp;:<br />
+*&nbsp;Description&nbsp;:<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;Development&nbsp;/&nbsp;Modification&nbsp;History<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;YYYY.MM.DD&nbsp;&nbsp;:<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+REPORT  YHR_KR_YEAD USING DATABASE PNP MESSAGE-ID PN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO&nbsp;STANDARD&nbsp;PAGE&nbsp;HEADING.<br />
+<br />
+<br />
+TABLES: PERNR.<br />
+<br />
+DATA: OK_CODE LIKE SY-UCOMM.<br />
+DATA: FCODE LIKE SY-TCODE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;pdf!&nbsp;copy<br />
+*&nbsp;html/pdf&nbsp;control<br />
+   </div>
+   <div class="code">
+DATA: PDF_HTML_CONTROL TYPE REF TO CL_GUI_HTML_VIEWER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_MY_CONTAINER&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_GUI_CUSTOM_CONTAINER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_ALIGNMENT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;XSTRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_SIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+<br />
+DATA: GT_OTF LIKE ITCOO OCCURS 0 WITH HEADER LINE.<br />
+DATA: OTF_TABLE LIKE ITCOO OCCURS 0 WITH HEADER LINE.<br />
+<br />
+DATA: PDF_TABLE   TYPE XSTRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_FSIZE&nbsp;TYPE&nbsp;I.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Abrechnungsergebnis:&nbsp;Ergebnistabelle<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF RT OCCURS 0.<br />
+INCLUDE STRUCTURE PC207 .<br />
+DATA: END OF RT .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Payroll&nbsp;Result&nbsp;Korea&nbsp;:&nbsp;Tax<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF KRTAX OCCURS 0.<br />
+INCLUDE STRUCTURE PC2H1 .<br />
+DATA: END OF KRTAX .<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;Selection&nbsp;screen<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK BOX1 WITH FRAME TITLE TEXT-001.<br />
+SELECTION-SCREEN BEGIN OF LINE.<br />
+SELECTION-SCREEN COMMENT 1(30) TEXT-CO1 FOR FIELD TAXYR.<br />
+SELECTION-SCREEN POSITION 33.<br />
+PARAMETERS: TAXYR(4) TYPE N DEFAULT SY-DATUM+0(4).<br />
+SELECTION-SCREEN END OF LINE.<br />
+SELECTION-SCREEN END OF BLOCK BOX1.<br />
+<br />
+SELECTION-SCREEN BEGIN OF BLOCK FROM WITH FRAME TITLE TEXT-012.<br />
+   </div>
+   <div class="codeComment">
+*JINQUE&nbsp;YEA2008&nbsp;Begin<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK OPTION WITH FRAME TITLE TEXT-015.<br />
+SELECTION-SCREEN BEGIN OF LINE.<br />
+PARAMETERS: D_BEYEA RADIOBUTTON GROUP LIST DEFAULT 'X'.<br />
+SELECTION-SCREEN COMMENT 4(25) TEXT-016 FOR FIELD D_BEYEA.<br />
+PARAMETERS: D_AFYEA RADIOBUTTON GROUP LIST.<br />
+SELECTION-SCREEN COMMENT 33(25) TEXT-017 FOR FIELD D_AFYEA.<br />
+SELECTION-SCREEN END OF LINE.<br />
+SELECTION-SCREEN END OF BLOCK OPTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+*PARAMETERS:&nbsp;d_pernr&nbsp;&nbsp;AS&nbsp;CHECKBOX&nbsp;DEFAULT&nbsp;'X'.<br />
+*SELECTION-SCREEN&nbsp;COMMENT&nbsp;4(36)&nbsp;TEXT-013&nbsp;FOR&nbsp;FIELD&nbsp;d_pernr.<br />
+*SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;LINE.<br />
+**JINQUE&nbsp;YEA2008&nbsp;End<br />
+*<br />
+*PARAMETERS:&nbsp;n_format(2)&nbsp;TYPE&nbsp;C.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"N2046051<br />
+*<br />
+*SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;LINE.<br />
+*SELECTION-SCREEN&nbsp;COMMENT&nbsp;1(20)&nbsp;TEXT-014&nbsp;FOR&nbsp;FIELD&nbsp;form<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIF&nbsp;ID&nbsp;swf.&nbsp;&nbsp;&nbsp;&nbsp;"ACC<br />
+*SELECTION-SCREEN&nbsp;POSITION&nbsp;33.<br />
+*PARAMETERS&nbsp;form&nbsp;LIKE&nbsp;rsscf-tdform&nbsp;DEFAULT&nbsp;'HR_KR_YEAD&nbsp;&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIF&nbsp;ID&nbsp;swf.&nbsp;&nbsp;&nbsp;&nbsp;"ACC<br />
+*SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;LINE.<br />
+*<br />
+*PARAMETERS:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ACC&nbsp;&gt&gt&gt<br />
+*&nbsp;&nbsp;px_lform&nbsp;LIKE&nbsp;hr99b_form_sel-folname&nbsp;&nbsp;&nbsp;MODIF&nbsp;ID&nbsp;swg.<br />
+*SELECTION-SCREEN&nbsp;COMMENT<br />
+*&nbsp;&nbsp;64(16)&nbsp;lform_r1&nbsp;FOR&nbsp;FIELD&nbsp;px_lform&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIF&nbsp;ID&nbsp;swg.<br />
+*PARAMETERS:<br />
+*&nbsp;&nbsp;px_lfvar&nbsp;LIKE&nbsp;hr99b_form_sel-fovariant&nbsp;MODIF&nbsp;ID&nbsp;swg.<br />
+*SELECTION-SCREEN&nbsp;COMMENT<br />
+*&nbsp;&nbsp;64(16)&nbsp;lfvar_r1&nbsp;FOR&nbsp;FIELD&nbsp;px_lfvar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIF&nbsp;ID&nbsp;swg.&nbsp;&nbsp;&nbsp;&nbsp;"ACC&nbsp;&lt&lt&lt<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN END OF BLOCK FROM.<br />
+<br />
+PARAMETERS: SIM_YEA(1) NO-DISPLAY.                          "N1624558<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;SUBMIT&nbsp;HKRCYED0&nbsp;&nbsp;"VIA&nbsp;SELECTION-SCREEN<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PNPPERNR&nbsp;=&nbsp;PNPPERNR-LOW<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PNPABKRS&nbsp;=&nbsp;PNPABKRS-LOW<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;TAXYR&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TAXYR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;D_BEYEA&nbsp;&nbsp;=&nbsp;D_BEYEA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;D_AFYEA&nbsp;&nbsp;=&nbsp;D_AFYEA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PNPESSCF&nbsp;=&nbsp;'X'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;D_PERNR&nbsp;&nbsp;=&nbsp;'X'&nbsp;AND&nbsp;RETURN.<br />
+*<br />
+**&nbsp;&nbsp;CLEAR:&nbsp;OTF_TABLE,&nbsp;OTF_TABLE[].<br />
+*&nbsp;&nbsp;IMPORT&nbsp;pdf_table&nbsp;TO&nbsp;pdf_table&nbsp;FROM&nbsp;MEMORY&nbsp;ID&nbsp;'PDFF'.<br />
+*&nbsp;&nbsp;IMPORT&nbsp;PDF_FSIZE&nbsp;TO&nbsp;PDF_FSIZE&nbsp;FROM&nbsp;MEMORY&nbsp;ID&nbsp;'PDSZ'.<br />
+*<br />
+*<br />
+*&nbsp;&nbsp;DATA:&nbsp;L_DUMMY&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;TLINE.<br />
+*<br />
+**#&nbsp;PDF&nbsp;로&nbsp;변환<br />
+*&nbsp;&nbsp;IF&nbsp;GT_OTF[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'CONVERT_OTF'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'PDF'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIN_FILESIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PDF_SIZE<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIN_FILE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PDF_DATA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIN_FILESIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pdf_table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIN_FILE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PDF_FSIZE<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_OTF<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_DUMMY<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_MAX_LINEWIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_FORMAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_CONV_NOT_POSSIBLE&nbsp;=&nbsp;3<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_BAD_OTF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*<br />
+**#&nbsp;PDF&nbsp;미리보기<br />
+**&nbsp;&nbsp;DATA:&nbsp;L_OTF&nbsp;TYPE&nbsp;TSFOTF.<br />
+**&nbsp;&nbsp;L_OTF&nbsp;=&nbsp;GT_OTF[].<br />
+***<br />
+**&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'SSFCOMP_PDF_PREVIEW'<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_OTF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_OTF<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONVERT_OTF_TO_PDF_ERROR&nbsp;=&nbsp;1<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNTL_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+*<br />
+*<br />
+*&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;9000.<br />
+**}<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+get pernr.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBMIT&nbsp;(reportname)&nbsp;WITH&nbsp;pnppernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;pernr-pernr&nbsp;"personnel&nbsp;number<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBMIT&nbsp;HKRCALC0&nbsp;&nbsp;"VIA&nbsp;SELECTION-SCREEN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;pnppernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;pernr-pernr&nbsp;"personnel&nbsp;number<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;pnpxabkr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'K2'&nbsp;&nbsp;"payroll&nbsp;area<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PNPTIMR9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"current&nbsp;period<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PNPTIMRA&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PNPPABRP&nbsp;=&nbsp;'12'&nbsp;&nbsp;"Month<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PNPPABRJ&nbsp;=&nbsp;'2014'&nbsp;&nbsp;"Year<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;pnpabkrs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'K2'&nbsp;&nbsp;&nbsp;"payroll&nbsp;area<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;OCRSN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'0005'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"off-cycle&nbsp;reason<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;OCRSN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"off-cycle&nbsp;reason<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;PAYTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"off-cycle&nbsp;pay&nbsp;type<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;BONDT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'20150105'&nbsp;&nbsp;&nbsp;&nbsp;"off-cycle&nbsp;date<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;test&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"test&nbsp;id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;tst_on&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"test&nbsp;run(no&nbsp;update)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;prt_prot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"display&nbsp;log<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;schema&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EQ&nbsp;'ZR00'&nbsp;&nbsp;&nbsp;&nbsp;"schema<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;SAP-SPOOL&nbsp;IMMEDIATELY&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEEP&nbsp;IN&nbsp;SPOOL&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITHOUT&nbsp;SPOOL&nbsp;DYNPRO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;RETURN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORT&nbsp;rt&nbsp;krtax&nbsp;FROM&nbsp;MEMORY&nbsp;ID&nbsp;'SIM_YEA'.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*=[&nbsp;PBO&nbsp;]==============================================================*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;HTML_CONTROL&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE HTML_CONTROL OUTPUT.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;PBO_HTML_CONTROL.<br />
+<br />
+ENDMODULE. " HTML_CONTROL OUTPUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;STATUS_0100&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE STATUS_0100 OUTPUT.<br />
+<br />
+&nbsp;&nbsp;SET&nbsp;PF-STATUS&nbsp;'PF_0100'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;SET&nbsp;TITLEBAR&nbsp;'xxx'.<br />
+<br />
+   </div>
+   <div class="code">
+ENDMODULE.                 " STATUS_0100  OUTPUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;SET_PDF&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE SET_PDF OUTPUT.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;OTF_TAB&nbsp;LIKE&nbsp;&nbsp;ITCOO&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_TABLE&nbsp;LIKE&nbsp;&nbsp;TLINE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_LINE_TAB&nbsp;LIKE&nbsp;&nbsp;TLINE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTML_TAB&nbsp;TYPE&nbsp;SWXMLCONT&nbsp;OCCURS&nbsp;0&nbsp;.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DATA:&nbsp;PDF_FSIZE&nbsp;TYPE&nbsp;I.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;G_HTML_CONTAINER&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_GUI_CUSTOM_CONTAINER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_HTML_CONTROL&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_GUI_HTML_VIEWER.<br />
+&nbsp;&nbsp;DATA:&nbsp;P_REPID&nbsp;TYPE&nbsp;SY-REPID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_DYNNR&nbsp;TYPE&nbsp;SY-DYNNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL(255),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXTNSION&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_CONTENT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;XSTRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PDF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TLINE.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS&nbsp;&ltFS_X&gt&nbsp;TYPE&nbsp;X.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;OTF_TAB[]&nbsp;=&nbsp;JOB_OUTPUT_INFO-OTFDATA[].<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;OTF_TAB[]&nbsp;=&nbsp;GT_OTF[].<br />
+<br />
+   </div>
+   <div class="codeComment">
+*//&nbsp;PDF&nbsp;미리보기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'SSFCOMP_PDF_PREVIEW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_OTF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;OTF_TAB[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONVERT_OTF_TO_PDF_ERROR&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNTL_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'CONVERT_OTF'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'PDF'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BIN_FILESIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PDF_FSIZE<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;OTF_TAB<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PDF_TABLE<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_MAX_LINEWIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_FORMAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERR_CONV_NOT_POSSIBLE&nbsp;=&nbsp;3<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4.<br />
+*<br />
+**&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LS_PDF,&nbsp;L_CONTENT.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;PDF_TABLE&nbsp;INTO&nbsp;LS_PDF.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;LS_PDF&nbsp;TO&nbsp;&ltFS_X&gt&nbsp;CASTING.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;L_CONTENT&nbsp;&ltFS_X&gt&nbsp;INTO&nbsp;L_CONTENT&nbsp;IN&nbsp;BYTE&nbsp;MODE.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+**<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'SCMS_XSTRING_TO_BINARY'<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUFFER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_CONTENT<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY_TAB&nbsp;=&nbsp;HTML_TAB[].<br />
+***&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_RESULT-PDF_STRING&nbsp;=&nbsp;L_CONTENT.<br />
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_RESULT-PDF_FSIZE&nbsp;=&nbsp;L_PDF_FSIZE.<br />
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_RESULT&nbsp;TO&nbsp;T_RESULT.<br />
+***&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+**&nbsp;&nbsp;ENDIF.<br />
+*<br />
+*&nbsp;&nbsp;PDF_LINE_TAB[]&nbsp;=&nbsp;PDF_TABLE[].<br />
+*<br />
+*&nbsp;&nbsp;IF&nbsp;G_HTML_CONTAINER&nbsp;IS&nbsp;INITIAL.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;P_REPID&nbsp;=&nbsp;SY-REPID.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;P_DYNNR&nbsp;=&nbsp;SY-DYNNR.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_HTML_CONTAINER<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTAINER_NAME&nbsp;=&nbsp;'HTML_CONTAINER'.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_HTML_CONTROL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARENT&nbsp;=&nbsp;G_HTML_CONTAINER.<br />
+*<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*<br />
+*&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_HTML_CONTROL-&gtLOAD_DATA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PDF_FSIZE<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'APPLICATION'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'PDF'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGNED_URL&nbsp;=&nbsp;URL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TABLE&nbsp;&nbsp;&nbsp;=&nbsp;HTML_TAB[].&nbsp;&nbsp;"PDF_LINE_TAB[].<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TABLE&nbsp;&nbsp;&nbsp;=&nbsp;PDF_LINE_TAB[].<br />
+*<br />
+**&nbsp;자동&nbsp;flush<br />
+*&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_GUI_CFW=&gtFLUSH.<br />
+*<br />
+*&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_HTML_CONTROL-&gtSHOW_DATA<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;URL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IN_PLACE&nbsp;=&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"SHOWN&nbsp;IN&nbsp;R/3&nbsp;GUI<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;=&nbsp;0.<br />
+<br />
+   </div>
+   <div class="code">
+ENDMODULE.                 " SET_PDF  OUTPUT<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*=[&nbsp;PAI&nbsp;]==============================================================*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;HTML_CONTROL&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE HTML_CONTROL INPUT.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;PAI_HTML_CONTROL.<br />
+<br />
+ENDMODULE. " HTML_CONTROL INPUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;EXIT&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE EXIT INPUT.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;OK_CODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'OKAY'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;TO&nbsp;SCREEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CANC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;TO&nbsp;SCREEN&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CLOSE2'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CLOSE_PROCESS.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+ENDMODULE.                 " EXIT  INPUT<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*=[&nbsp;Form&nbsp;]=============================================================*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;PBO_HTML_CONTROL<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PBO_HTML_CONTROL .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;SET&nbsp;PF-STATUS&nbsp;'HTML'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SET&nbsp;PF-STATUS&nbsp;'PF_0100'.<br />
+&nbsp;&nbsp;SET&nbsp;TITLEBAR&nbsp;&nbsp;'HTML'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;container<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;PDF_MY_CONTAINER&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;PDF_MY_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTAINER_NAME&nbsp;=&nbsp;'HTML'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;html&nbsp;control<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;PDF_HTML_CONTROL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;PDF_HTML_CONTROL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARENT&nbsp;=&nbsp;PDF_MY_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;alignment<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PDF_ALIGNMENT&nbsp;=&nbsp;PDF_HTML_CONTROL-&gtALIGN_AT_LEFT&nbsp;&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_HTML_CONTROL-&gtALIGN_AT_RIGHT&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_HTML_CONTROL-&gtALIGN_AT_TOP&nbsp;&nbsp;&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDF_HTML_CONTROL-&gtALIGN_AT_BOTTOM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;PDF_HTML_CONTROL-&gtSET_ALIGNMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALIGNMENT&nbsp;=&nbsp;PDF_ALIGNMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PDF_SHOW.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM. " PBO_HTML_CONTROL<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;PDF_SHOW<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PDF_SHOW .<br />
+<br />
+&nbsp;&nbsp;TYPES:&nbsp;LT_PDF_TABLE(1000)&nbsp;TYPE&nbsp;X.<br />
+&nbsp;&nbsp;DATA:&nbsp;&nbsp;L_URL(80)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_PDF_DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;LT_PDF_TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_PDF_LINE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LT_PDF_TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_OFFSET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_LEN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+<br />
+&nbsp;&nbsp;L_LEN&nbsp;=&nbsp;XSTRLEN(&nbsp;PDF_DATA&nbsp;).<br />
+&nbsp;&nbsp;WHILE&nbsp;L_LEN&nbsp;&gt=&nbsp;1000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L_PDF_LINE&nbsp;=&nbsp;PDF_DATA+L_OFFSET(1000).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;L_PDF_LINE&nbsp;TO&nbsp;L_PDF_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1000&nbsp;TO&nbsp;L_OFFSET.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;1000&nbsp;FROM&nbsp;L_LEN.<br />
+&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;IF&nbsp;L_LEN&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L_PDF_LINE&nbsp;=&nbsp;PDF_DATA+L_OFFSET(L_LEN).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;L_PDF_LINE&nbsp;TO&nbsp;L_PDF_DATA.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;PDF_HTML_CONTROL-&gtLOAD_DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'smart.pdf'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PDF_SIZE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'application'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'pdf'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGNED_URL&nbsp;=&nbsp;L_URL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TABLE&nbsp;&nbsp;&nbsp;=&nbsp;L_PDF_DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;show&nbsp;data<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;PDF_HTML_CONTROL-&gtSHOW_DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_URL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM. " PDF_SHOW<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;PAI_HTML_CONTROL<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PAI_HTML_CONTROL .<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;FCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BACK'&nbsp;OR&nbsp;'EXIT'&nbsp;OR&nbsp;'CANC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;PDF_HTML_CONTROL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;PDF_HTML_CONTROL-&gtFREE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FREE&nbsp;PDF_HTML_CONTROL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;PDF_MY_CONTAINER&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;PDF_MY_CONTAINER-&gtFREE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FREE&nbsp;PDF_MY_CONTAINER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;TO&nbsp;SCREEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_GUI_CFW=&gtDISPATCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;CNTL_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;FCODE.<br />
+<br />
+ENDFORM. " PAI_HTML_CONTROL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;HTML&nbsp;--&gt&nbsp;▶▷▶&nbsp;&nbsp;PDF&nbsp;미리보기&nbsp;(&nbsp;&nbsp;PDF&nbsp;파일&nbsp;다운로드&nbsp;및&nbsp;출력&nbsp;가능&nbsp;)<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;001&nbsp;과세일<br />
+*&nbsp;012&nbsp;인쇄&nbsp;정보<br />
+*&nbsp;013&nbsp;사번/조직코드&nbsp;출력<br />
+*&nbsp;014&nbsp;서식&nbsp;이름<br />
+*&nbsp;015&nbsp;출력&nbsp;옵션<br />
+*&nbsp;016&nbsp;연말정산&nbsp;이전&nbsp;출력<br />
+*&nbsp;017&nbsp;연말정산&nbsp;이후&nbsp;출력<br />
+*&nbsp;C01&nbsp;과세연도<br />
+*&nbsp;CO1&nbsp;과세연도<br />
+*&nbsp;E00&nbsp;오류&nbsp;메시지<br />
+*&nbsp;E04&nbsp;오류리스트<br />
+*&nbsp;L08&nbsp;인쇄&nbsp;서식<br />
+*&nbsp;R01&nbsp;본인<br />
+*&nbsp;R02&nbsp;배우자<br />
+*&nbsp;R03&nbsp;아버지<br />
+*&nbsp;R04&nbsp;어머니<br />
+*&nbsp;R05&nbsp;자녀<br />
+<br />
+<br />
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;D_AFYEA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연말정산&nbsp;이후&nbsp;출력<br />
+*&nbsp;D_BEYEA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연말정산&nbsp;이전&nbsp;출력<br />
+*&nbsp;D_PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사원&nbsp;번호&nbsp;및&nbsp;조직&nbsp;단위&nbsp;인쇄<br />
+*&nbsp;FORM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서식&nbsp;이름<br />
+*&nbsp;N_FORMAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사원&nbsp;이름&nbsp;포맷<br />
+*&nbsp;PX_LFORM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자&nbsp;정의&nbsp;가능&nbsp;서식<br />
+*&nbsp;PX_LFVAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서식&nbsp;이름<br />
+*&nbsp;TAXYR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;과세&nbsp;연도<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

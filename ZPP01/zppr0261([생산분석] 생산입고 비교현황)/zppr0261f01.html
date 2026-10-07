@@ -1,0 +1,1503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPPR0261F01</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZPPR0261F01</h2>
+<h3> Description: Include ZPPR0260F01</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZPPR0260F01<br />
+*&---------------------------------------------------------------------*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DOUBLE_CLICK<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM DOUBLE_CLICK USING P_ROW TYPE ANY P_COLUMN TYPE ANY.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_COL(40).<br />
+&nbsp;&nbsp;FIELD-SYMBOLS&nbsp;&ltFS&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;자재&nbsp;및&nbsp;오더번호에&nbsp;대해서&nbsp;DOUBLE&nbsp;CLICK한&nbsp;필드의&nbsp;값을&nbsp;읽어와서<br />
+*&nbsp;해당&nbsp;T-CODE를&nbsp;CALL한다.<br />
+<br />
+*&nbsp;선택한&nbsp;행으로&nbsp;INTERNAL&nbsp;TABLE을&nbsp;읽는다.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_DISPLAY&nbsp;INDEX&nbsp;P_ROW.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'GT_DISPLAY-'&nbsp;P_COLUMN&nbsp;&nbsp;INTO&nbsp;L_COL.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(L_COL)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS&gt.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;&ltFS&gt&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;P_COLUMN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'MAT'&nbsp;&nbsp;FIELD&nbsp;&ltFS&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'MXX'&nbsp;&nbsp;FIELD&nbsp;'K'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'MM03'&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;GT_DISPLAY-GUBUN&nbsp;=&nbsp;TEXT-T09.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GT_DETL[].<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_MSEG&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;GT_DISPLAY-MATNR<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;(&nbsp;BWART&nbsp;=&nbsp;'131'&nbsp;OR&nbsp;BWART&nbsp;=&nbsp;'132'&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;IT_MSEG&nbsp;TO&nbsp;GT_DETL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;IT_MSEG-BWART&nbsp;=&nbsp;'132'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DETL-MENGE&nbsp;=&nbsp;GT_DETL-MENGE&nbsp;*&nbsp;-1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;GT_DETL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;GT_DETL&nbsp;BY&nbsp;BUDAT&nbsp;MATNR.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;GT_DETL[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;DETAIL_INFO.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+ENDFORM. " 8000_DOUBLE_CLICK<br />
+<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLASS&nbsp;LCL_ALV_GRID&nbsp;IMPLEMENTATION<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+CLASS LCL_ALV_GRID IMPLEMENTATION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;PROTECTED인&nbsp;METHOD를&nbsp;재정의&nbsp;하여&nbsp;해당&nbsp;프로그램에서&nbsp;사용함.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;METHOD&nbsp;SET_OPTIMIZER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;ME-&gtOPTIMIZE_ALL_COLS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE_HEADER&nbsp;=&nbsp;HEADER.<br />
+&nbsp;&nbsp;ENDMETHOD.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"SET_OPTIMIZER<br />
+<br />
+ENDCLASS. "LCL_ALV_GRID IMPLEMENTATION<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CREATE_AND_INIT_CONTROLS<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM CREATE_AND_INIT_CONTROLS.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;L_ANSWER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_SUBRC&nbsp;LIKE&nbsp;SY-SUBRC.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;DOCKING_CONTAINER&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;BUILD_SORT_FIELD.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;CREATE_CONTROL.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;EXCLUDE_TB_FUNCTIONS&nbsp;USING&nbsp;'GT_EXCLUDE'.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Output&nbsp;Length<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;FILL_FIELD_CATEGORY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;Display<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;CHANGE_DISPLAY_ATTRIBUTE&nbsp;CHANGING&nbsp;GS_FCATLAYO.<br />
+<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_EVENT_RECEIVER.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;ALV&nbsp;GRID&nbsp;상에서&nbsp;사용할&nbsp;이벤트를&nbsp;등록한다.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SET&nbsp;HANDLER&nbsp;G_EVENT_RECEIVER-&gtHANDLE_TOP_OF_PAGE&nbsp;&nbsp;&nbsp;FOR&nbsp;G_GRID.<br />
+&nbsp;&nbsp;SET&nbsp;HANDLER&nbsp;G_EVENT_RECEIVER-&gtHANDLE_DOUBLE_CLICK&nbsp;&nbsp;FOR&nbsp;G_GRID.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;DATA&nbsp;.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;GRID_DISPLAY_PART.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_DOCUMENT-&gtINITIALIZE_DOCUMENT.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_GRID-&gtLIST_PROCESSING_EVENTS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_EVENT_NAME&nbsp;=&nbsp;'TOP_OF_PAGE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_DYNDOC_ID&nbsp;&nbsp;=&nbsp;G_DOCUMENT.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;HTML.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*B20K8A0R55&nbsp;for&nbsp;Excel&nbsp;Inplace&nbsp;HTML&nbsp;Header<br />
+*&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_GRID-&gtSET_HTML_HEADER.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. " 2000_CREATE_AND_INIT_CONTROLS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;exclude_tb_functions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM EXCLUDE_TB_FUNCTIONS USING P_TABNAME TYPE ANY.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS&nbsp;:&nbsp;&ltTABLE&gt&nbsp;TYPE&nbsp;UI_FUNCTIONS.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_TABLE_NAME&nbsp;LIKE&nbsp;FELD-NAME.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;P_TABNAME&nbsp;'[]'&nbsp;INTO&nbsp;&nbsp;L_TABLE_NAME.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(L_TABLE_NAME)&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&ltTABLE&gt.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;APPEND_EXCLUDE_FUNCTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES&nbsp;&ltTABLE&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;:&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_LOC_UNDO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_GRAPH,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_INFO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_MB_PASTE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_LOC_DELETE_ROW,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_LOC_INSERT_ROW,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_LOC_APPEND_ROW,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_LOC_COPY_ROW,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_LOC_CUT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_LOC_PASTE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_REFRESH.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_SUBTOT,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_FC_SUM.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. " 2100_exclude_tb_functions<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;fill_field_category<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM FILL_FIELD_CATEGORY_DETAIL USING P_GUB TYPE ANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_FNAME&nbsp;TYPE&nbsp;ANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_CON&nbsp;&nbsp;&nbsp;TYPE&nbsp;ANY.<br />
+&nbsp;&nbsp;IF&nbsp;P_GUB&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_FCAT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;MOVE<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;L_COL(40).<br />
+&nbsp;&nbsp;FIELD-SYMBOLS&nbsp;&ltFS&gt.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'GS_FCAT-'&nbsp;P_FNAME&nbsp;&nbsp;INTO&nbsp;L_COL.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(L_COL)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS&gt.<br />
+&nbsp;&nbsp;MOVE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_CON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS&gt.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_GUB&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GS_FCAT&nbsp;TO&nbsp;GT_FIELDCAT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM. " 2210_fill_field_category<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;change_display_attribute<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Properties&nbsp;of&nbsp;the&nbsp;ALV&nbsp;Grid&nbsp;Control<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM CHANGE_DISPLAY_ATTRIBUTE CHANGING P_FCATLAYO TYPE LVC_S_LAYO.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;General&nbsp;display&nbsp;options<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;P_FCATLAYO-CWIDTH_OPT&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;P_FCATLAYO-SEL_MODE&nbsp;=&nbsp;'D'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;P_FCATLAYO-EDIT&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;P_FCATLAYO-ZEBRA&nbsp;=&nbsp;'X'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;P_FCATLAYO-STYLEFNAME&nbsp;=&nbsp;'CELLTAB'.<br />
+&nbsp;&nbsp;P_FCATLAYO-CTAB_FNAME&nbsp;=&nbsp;'F_COL'.<br />
+&nbsp;&nbsp;GS_VARIANT-REPORT&nbsp;=&nbsp;SY-REPID.<br />
+ENDFORM. " 2300_change_display_attribute<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;grid_display_part<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM GRID_DISPLAY_PART.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;###&nbsp;Display#.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_GRID-&gtSET_TABLE_FOR_FIRST_DISPLAY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS_LAYOUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_FCATLAYO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_TOOLBAR_EXCLUDING&nbsp;=&nbsp;GT_EXCLUDE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_SAVE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'&nbsp;&nbsp;&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BYPASSING_BUFFER&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS_VARIANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_VARIANT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_OUTTAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_DISPLAY[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_SORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_SORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_FIELDCATALOG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_FIELDCAT[].<br />
+<br />
+ENDFORM. " 2500_grid_display_part<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;refresh_field_cat<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM REFRESH_FIELD_CAT.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_GRID-&gtREFRESH_TABLE_DISPLAY.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_GUI_CFW=&gtFLUSH.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. " 3100_refresh_field_cat<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;append_exclude_functions<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM APPEND_EXCLUDE_FUNCTIONS TABLES P_TABLE                "#EC *<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;P_VALUE.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LS_EXCLUDE&nbsp;TYPE&nbsp;UI_FUNC.<br />
+&nbsp;&nbsp;LS_EXCLUDE&nbsp;=&nbsp;P_VALUE.<br />
+&nbsp;&nbsp;APPEND&nbsp;LS_EXCLUDE&nbsp;TO&nbsp;P_TABLE.<br />
+<br />
+ENDFORM. " 2110_append_exclude_functions<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;event_top_of_page<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM EVENT_TOP_OF_PAGE USING E_DYNDOC_ID TYPE REF TO CL_DD_DOCUMENT.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;COMMENTARY_WRITE&nbsp;USING&nbsp;E_DYNDOC_ID.&nbsp;&nbsp;&nbsp;"if&nbsp;found.<br />
+<br />
+ENDFORM. " event_top_of_page<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;commentary_write<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM COMMENTARY_WRITE USING CL_DD TYPE REF TO CL_DD_DOCUMENT. "#EC *<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;L_TEXT(255)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_VTEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;VTEXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_SPACE(36)&nbsp;TYPE&nbsp;C.<br />
+<br />
+&nbsp;&nbsp;DEFINE&nbsp;M_APPEND_TEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_DD-&gtADD_TEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SAP_EMPHASIS&nbsp;=&nbsp;CL_DD_DOCUMENT=&gtSTRONG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SAP_COLOR&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;CL_DD_AREA=&gtLIST_BACKGROUND_INT.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_DD-&gtNEW_LINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPEAT&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;플랜트<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CONCATENATE&nbsp;TEXT-T01&nbsp;':'&nbsp;P_WERKS&nbsp;INTO&nbsp;L_TEXT&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;M_APPEND_TEXT&nbsp;L_TEXT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;자재유형<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CONCATENATE&nbsp;TEXT-I07&nbsp;':'&nbsp;P_MTART&nbsp;INTO&nbsp;L_TEXT&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+&nbsp;&nbsp;M_APPEND_TEXT&nbsp;L_TEXT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;연월<br />
+*<br />
+*&nbsp;&nbsp;IF&nbsp;S_MATNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;TEXT-T02&nbsp;':'&nbsp;S_MATNR-LOW&nbsp;INTO&nbsp;L_TEXT&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+*&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;TEXT-T02&nbsp;':'&nbsp;INTO&nbsp;L_TEXT&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;M_APPEND_TEXT&nbsp;L_TEXT.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. " f01_alv_event_html_top_of_page<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_SORT_FIELD<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM BUILD_SORT_FIELD .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Sort<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;GS_SORT-SPOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;GS_SORT-UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;GS_SORT-SUBTOT&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'MAKTX'.<br />
+*&nbsp;&nbsp;GS_SORT-SPOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+*&nbsp;&nbsp;GS_SORT-UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT.<br />
+*<br />
+*&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'MTART'.<br />
+*&nbsp;&nbsp;GS_SORT-SPOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+*&nbsp;&nbsp;GS_SORT-UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT.<br />
+<br />
+*&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'MEINS'.<br />
+*&nbsp;&nbsp;GS_SORT-SPOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
+*&nbsp;&nbsp;GS_SORT-UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT.<br />
+<br />
+*&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'LGORT'.<br />
+*&nbsp;&nbsp;GS_SORT-SPOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4.<br />
+*&nbsp;&nbsp;GS_SORT-UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT.<br />
+*<br />
+*&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'BUDAT'.<br />
+*&nbsp;&nbsp;GS_SORT-SPOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
+*&nbsp;&nbsp;GS_SORT-UP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT.<br />
+<br />
+**<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. " BUILD_SORT_FIELD<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INITIALIZE_DATA<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM INITIALIZE_DATA .<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;S_BUDAT[]&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;MOVE&nbsp;:&nbsp;'I'&nbsp;TO&nbsp;S_BUDAT-SIGN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BT'&nbsp;TO&nbsp;S_BUDAT-OPTION,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-DATUM&nbsp;TO&nbsp;S_BUDAT-LOW,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-DATUM&nbsp;TO&nbsp;S_BUDAT-HIGH.<br />
+&nbsp;&nbsp;S_BUDAT-LOW+6(2)&nbsp;=&nbsp;'01'.<br />
+<br />
+&nbsp;&nbsp;APPEND&nbsp;S_BUDAT.<br />
+<br />
+ENDFORM. " INITIALIZE_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CREATE_CONTROL<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM CREATE_CONTROL .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;create&nbsp;a&nbsp;custom&nbsp;container&nbsp;control&nbsp;for&nbsp;our&nbsp;alv&nbsp;control<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;DOCKING_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'0100'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-REPID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SIDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;DOCKING_CONTAINER-&gtDOCK_AT_TOP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXTENSION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;655<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNTL_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CNTL_SYSTEM_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CREATE_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIFETIME_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIFETIME_DYNPRO_DYNPRO_LINK&nbsp;=&nbsp;5.<br />
+<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_SPLITTER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARENT&nbsp;&nbsp;=&nbsp;DOCKING_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROWS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLUMNS&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_SPLITTER-&gtGET_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLUMN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RECEIVING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTAINER&nbsp;=&nbsp;G_PARENT_HTML.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_SPLITTER-&gtGET_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLUMN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RECEIVING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTAINER&nbsp;=&nbsp;G_PARENT_GRID.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;SPLITTER#&nbsp;##&nbsp;###&nbsp;##<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_SPLITTER-&gtSET_ROW_HEIGHT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEIGHT&nbsp;=&nbsp;13.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Create&nbsp;an&nbsp;Instance&nbsp;of&nbsp;ALV&nbsp;Control<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_GRID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_PARENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_PARENT_GRID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_APPL_EVENTS&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_HTML<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARENT&nbsp;=&nbsp;G_PARENT_HTML.<br />
+<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_DOCUMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STYLE&nbsp;=&nbsp;'ALV_GRID'.<br />
+<br />
+ENDFORM. " CREATE_CONTROL<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;HTML<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM HTML .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;set&nbsp;wallpaper<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_DOCUMENT-&gtSET_DOCUMENT_BACKGROUND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PICTURE_ID&nbsp;=&nbsp;'ALV_BACKGROUND'.&nbsp;&nbsp;&nbsp;"i_background_id.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;G_DOCUMENT-&gtHTML_CONTROL&nbsp;=&nbsp;G_HTML.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;display&nbsp;TOP&nbsp;document<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_DOCUMENT-&gtDISPLAY_DOCUMENT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REUSE_CONTROL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_PARENT_HTML<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTML_DISPLAY_ERROR&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"//DO&nbsp;NOTHING<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM. " HTML<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZSMSPGR919F02<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM SELECT_PART.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;실적은&nbsp;BLPK,&nbsp;BLPP&nbsp;TABLE의&nbsp;DATA를&nbsp;기준으로&nbsp;읽어온다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;SELECT_BLPK_BLPP_MSEG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;바코드&nbsp;입고<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;SELECT_ZPPT0170.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;IT_LIST,&nbsp;IT_LIST[].<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_MSEG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;IT_LIST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_MSEG-WERKS&nbsp;TO&nbsp;IT_LIST-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;IT_BLPK&nbsp;WITH&nbsp;KEY&nbsp;&nbsp;WERKS&nbsp;=&nbsp;IT_MSEG-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BELNR&nbsp;=&nbsp;IT_MSEG-MBLNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;IT_MSEG-BWART&nbsp;=&nbsp;'132'&nbsp;OR&nbsp;IT_MSEG-BWART&nbsp;=&nbsp;'532'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_MSEG-MENGE&nbsp;=&nbsp;IT_MSEG-MENGE&nbsp;*&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_MSEG-BUDAT&nbsp;TO&nbsp;IT_LIST-BUDAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_MSEG-MATNR&nbsp;TO&nbsp;IT_LIST-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_MSEG-LGORT&nbsp;TO&nbsp;IT_LIST-LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_MSEG-MEINS&nbsp;TO&nbsp;IT_LIST-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_MSEG-MENGE&nbsp;TO&nbsp;IT_LIST-PRMNG.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;IT_LIST.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_T170.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;IT_LIST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_T170-WERKS&nbsp;TO&nbsp;IT_LIST-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_T170-CREATED_DATE&nbsp;TO&nbsp;IT_LIST-BUDAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_T170-MATNR&nbsp;TO&nbsp;IT_LIST-MATNR.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_T170-LGORT&nbsp;TO&nbsp;IT_LIST-LGORT.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_T170-MEINS&nbsp;TO&nbsp;IT_LIST-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;IT_T170-MENGE&nbsp;TO&nbsp;IT_LIST-BRMNG.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;LGPRO&nbsp;INTO&nbsp;IT_LIST-LGORT&nbsp;FROM&nbsp;MARC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;IT_LIST-MATNR&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;=&nbsp;IT_LIST-WERKS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;IT_LIST.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;IT_LIST[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;MAKE_DISPLAY.<br />
+<br />
+ENDFORM. " 1000_select_part<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;fill_field_category<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM FILL_FIELD_CATEGORY.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_COL(40),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NAME1(40),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NAME2(40).<br />
+<br />
+&nbsp;&nbsp;DATA:L_INTERVAL&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;DATA:L_INT1(02)&nbsp;&nbsp;&nbsp;TYPE&nbsp;N.<br />
+&nbsp;&nbsp;DATA:L_INT2(02)&nbsp;&nbsp;&nbsp;TYPE&nbsp;N.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;&nbsp;GT_FIELDCAT.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;FILL_FIELD_CATEGORY_DETAIL&nbsp;USING&nbsp;:<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'MATNR',<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I02,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;&nbsp;&nbsp;'MATNR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;&nbsp;&nbsp;'MARA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'F4AVAILABL'&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KEY'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'CONVEXIT'&nbsp;&nbsp;&nbsp;&nbsp;'MATN1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'10',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'MAKTX',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I03,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KEY'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'30',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'MTART',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I07,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;&nbsp;&nbsp;'MTART',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;&nbsp;&nbsp;'MARA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'F4AVAILABL'&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KEY'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'9',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'LGORT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I14,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;&nbsp;&nbsp;'LGORT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;&nbsp;&nbsp;'MSEG',<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'F4AVAILABL'&nbsp;&nbsp;'X',<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KEY'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'9',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I04,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KEY'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'10',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'BUDAT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I18,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;&nbsp;&nbsp;'BUDAT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;&nbsp;&nbsp;'MKPF',<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'F4AVAILABL'&nbsp;&nbsp;'X',<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KEY'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'10'.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;FILL_FIELD_CATEGORY_DETAIL&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'BRMNG',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I15,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'DECIMALS'&nbsp;&nbsp;&nbsp;&nbsp;'3',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'DO_SUM'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'NO_ZERO'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'13'.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;FILL_FIELD_CATEGORY_DETAIL&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'PRMNG',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I16,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'DECIMALS'&nbsp;&nbsp;&nbsp;&nbsp;'3',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'DO_SUM'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'NO_ZERO'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'13'.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;FILL_FIELD_CATEGORY_DETAIL&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;&nbsp;&nbsp;'CLMNG',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT-I17,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'DECIMALS'&nbsp;&nbsp;&nbsp;&nbsp;'3',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'DO_SUM'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'NO_ZERO'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'E'&nbsp;'OUTPUTLEN'&nbsp;&nbsp;&nbsp;'13'.<br />
+<br />
+ENDFORM. " 2200_fill_field_category<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_KATR7<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM GET_VERID USING P_FLD.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;섹터&nbsp;필드&nbsp;값을&nbsp;참조&nbsp;,이동매장&nbsp;리스트를&nbsp;제한함.&nbsp;2009-1-8<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;LT_VERID&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VERID&nbsp;&nbsp;LIKE&nbsp;&nbsp;MKAL-VERID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT1&nbsp;&nbsp;LIKE&nbsp;&nbsp;MKAL-TEXT1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LT_VERID.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;DISTINCT&nbsp;VERID&nbsp;TEXT1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_VERID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MKAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VERID&nbsp;LIKE&nbsp;'PL%'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;VERID&nbsp;LIKE&nbsp;'PK%'.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION: 'F4IF_INT_TABLE_VALUE_REQUEST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;&nbsp;&nbsp;RETFIELD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'VERID'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPPROG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-REPID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DYNNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPROFIELD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;P_FLD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE_ORG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_VERID<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIELD_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FIELD_TAB<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN_TAB.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;RETURN_TAB&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;CHECK&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_TAB&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;DYNPREAD&nbsp;WITH&nbsp;HEADER&nbsp;LINE&nbsp;.<br />
+&nbsp;&nbsp;CLEAR:LT_TAB,&nbsp;LT_TAB[].<br />
+<br />
+&nbsp;&nbsp;LT_TAB-FIELDNAME&nbsp;=&nbsp;P_FLD.<br />
+&nbsp;&nbsp;LT_TAB-FIELDVALUE&nbsp;=&nbsp;RETURN_TAB-FIELDVAL.<br />
+&nbsp;&nbsp;APPEND&nbsp;LT_TAB.<br />
+<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION: 'DYNP_VALUES_UPDATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;DYNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-REPID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNUMB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DYNNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES&nbsp;&nbsp;&nbsp;&nbsp;DYNPFIELDS&nbsp;=&nbsp;LT_TAB.<br />
+<br />
+ENDFORM. " GET_KATR7<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;AUTHORITY_CHECK<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM AUTHORITY_CHECK .<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_WERKS&nbsp;TYPE&nbsp;WERKS_D.<br />
+*&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_RESULT&nbsp;TYPE&nbsp;C.<br />
+*<br />
+*<br />
+**&nbsp;플랜트&nbsp;권한체크&nbsp;펑션&nbsp;호출<br />
+*<br />
+*&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'ZPP_AUTHORITY_CHECK'<br />
+*&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_WERKS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_WERKS<br />
+*&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_WERKS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_WERKS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RESULT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RESULT<br />
+*<br />
+**&nbsp;TABLES<br />
+**&nbsp;&nbsp;&nbsp;IT_WERKS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;S_WERKS<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*&nbsp;&nbsp;IF&nbsp;L_RESULT&nbsp;IS&nbsp;NOT&nbsp;INITIAL.&nbsp;"1<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S020.&nbsp;"플랜트&nbsp;권한체크&nbsp;못함<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;LIST-PROCESSING.<br />
+*&nbsp;&nbsp;ELSE.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_WERKS&nbsp;IS&nbsp;NOT&nbsp;INITIAL.&nbsp;"권한없는&nbsp;플랜트<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S014&nbsp;WITH&nbsp;L_WERKS&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;LIST-PROCESSING.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. " AUTHORITY_CHECK<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INITIAL_RANGE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM INITIAL_RANGE .<br />
+<br />
+<br />
+ENDFORM. " INITIAL_RANGE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SELECT_BLPK_BLPP_MSEG<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM SELECT_BLPK_BLPP_MSEG .<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;IT_BLPK[].<br />
+&nbsp;&nbsp;SELECT&nbsp;A~WERKS&nbsp;A~MATNR&nbsp;A~VERID&nbsp;A~MENGE&nbsp;A~MEINH&nbsp;B~BELNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A~STORN&nbsp;A~BUDAT<br />
+&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_BLPK<br />
+&nbsp;&nbsp;FROM&nbsp;BLPK&nbsp;AS&nbsp;A&nbsp;JOIN&nbsp;BLPP&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~PRTNR&nbsp;=&nbsp;B~PRTNR<br />
+&nbsp;&nbsp;WHERE&nbsp;A~WERKS&nbsp;=&nbsp;P_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~BUDAT&nbsp;IN&nbsp;S_BUDAT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;AND&nbsp;A~MENGE&nbsp;&lt&gt&nbsp;0<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~BELNR&nbsp;NE&nbsp;''.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;실적&nbsp;정보상의&nbsp;내용으로&nbsp;자재문서정보를&nbsp;추가로&nbsp;읽어서&nbsp;it_mseg상에&nbsp;넣어준다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;IT_BLPK[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;A~MBLNR&nbsp;A~MJAHR&nbsp;B~ZEILE&nbsp;B~WERKS&nbsp;B~MATNR&nbsp;B~LGORT&nbsp;B~MENGE&nbsp;B~BWART<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C~MTART&nbsp;D~BESKZ&nbsp;B~CHARG&nbsp;B~MEINS&nbsp;A~BUDAT&nbsp;D~DISPO&nbsp;C~MATKL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_MSEG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MKPF&nbsp;AS&nbsp;A&nbsp;JOIN&nbsp;MSEG&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~MBLNR&nbsp;=&nbsp;B~MBLNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MARA&nbsp;AS&nbsp;C<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;B~MATNR&nbsp;=&nbsp;C~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MARC&nbsp;AS&nbsp;D<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;&nbsp;B~WERKS&nbsp;=&nbsp;D~WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~MATNR&nbsp;=&nbsp;D~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;IT_BLPK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~BUDAT&nbsp;IN&nbsp;S_BUDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~MBLNR&nbsp;=&nbsp;IT_BLPK-BELNR<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~MATNR&nbsp;=&nbsp;IT_BLPK-MATNR<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~WERKS&nbsp;=&nbsp;IT_BLPK-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~BWART&nbsp;IN&nbsp;('131',&nbsp;'132',&nbsp;'531',&nbsp;'532').<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~MATKL&nbsp;IN&nbsp;S_MATKL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~BISMT&nbsp;IN&nbsp;S_BISMT<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~ZMAKTX&nbsp;IN&nbsp;S_ZMAKTX<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~GROES&nbsp;IN&nbsp;S_GROES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;D~DISPO&nbsp;IN&nbsp;S_DISPO.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;IT_MSEG&nbsp;BY&nbsp;WERKS&nbsp;MBLNR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM. " SELECT_BLPK_BLPP_MSEG<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MAKE_DISPLAY<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM MAKE_DISPLAY .<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;LT_MAKT&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;TYPE&nbsp;MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKTX&nbsp;TYPE&nbsp;MAKTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MTART&nbsp;TYPE&nbsp;MTART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATKL&nbsp;TYPE&nbsp;MATKL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BISMT&nbsp;TYPE&nbsp;MARA-BISMT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZMAKTX&nbsp;TYPE&nbsp;MARA-ZMAKTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GROES&nbsp;TYPE&nbsp;MARA-GROES,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LT_MAKT.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LS_COLOR&nbsp;TYPE&nbsp;LVC_S_SCOL.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;&nbsp;GT_DISPLAY.<br />
+&nbsp;&nbsp;REFRESH&nbsp;GT_DISPLAY.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;A~MATNR&nbsp;B~MAKTX&nbsp;A~MTART&nbsp;A~MATKL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A~BISMT&nbsp;A~ZMAKTX&nbsp;A~GROES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_MAKT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MARA&nbsp;AS&nbsp;A&nbsp;INNER&nbsp;JOIN&nbsp;MAKT&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~MATNR&nbsp;=&nbsp;B~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;IT_LIST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~MATNR&nbsp;=&nbsp;IT_LIST-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_LIST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;IT_LIST&nbsp;TO&nbsp;GT_DISPLAY.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;자재명을&nbsp;읽어온다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LT_MAKT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_MAKT&nbsp;WITH&nbsp;KEY&nbsp;MATNR&nbsp;=&nbsp;IT_LIST-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;LT_MAKT-MAKTX&nbsp;TO&nbsp;GT_DISPLAY-MAKTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_MAKT-MTART&nbsp;TO&nbsp;GT_DISPLAY-MTART.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_MAKT-MATKL&nbsp;TO&nbsp;GT_DISPLAY-MATKL,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_MAKT-BISMT&nbsp;TO&nbsp;GT_DISPLAY-BISMT,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_MAKT-ZMAKTX&nbsp;TO&nbsp;GT_DISPLAY-ZMAKTX,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_MAKT-GROES&nbsp;TO&nbsp;GT_DISPLAY-GROES.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;GT_DISPLAY-CLMNG&nbsp;=&nbsp;GT_DISPLAY-BRMNG&nbsp;-&nbsp;GT_DISPLAY-PRMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_DISPLAY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&nbsp;GT_DISPLAY.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;SORT&nbsp;GT_DISPLAY&nbsp;BY&nbsp;MATNR&nbsp;LGORT&nbsp;MEINS&nbsp;BUDAT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DELETE&nbsp;GT_DISPLAY&nbsp;WHERE&nbsp;GSMNG&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM. " MAKE_DISPLAY<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SELECT_BLPK_BLPP_MSEG_E<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM SELECT_BLPK_BLPP_MSEG_E .<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_MSEG2&nbsp;LIKE&nbsp;IT_MSEG&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;IT_BLPK[].<br />
+&nbsp;&nbsp;SELECT&nbsp;A~WERKS&nbsp;A~MATNR&nbsp;A~VERID&nbsp;A~MENGE&nbsp;A~MEINH&nbsp;B~BELNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A~STORN&nbsp;A~BUDAT<br />
+&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_BLPK<br />
+&nbsp;&nbsp;FROM&nbsp;BLPK&nbsp;AS&nbsp;A&nbsp;JOIN&nbsp;BLPP&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~PRTNR&nbsp;=&nbsp;B~PRTNR<br />
+&nbsp;&nbsp;WHERE&nbsp;A~WERKS&nbsp;=&nbsp;P_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~BUDAT&nbsp;IN&nbsp;S_DATE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;AND&nbsp;A~MENGE&nbsp;&lt&gt&nbsp;0<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~BELNR&nbsp;NE&nbsp;''.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;실적&nbsp;정보상의&nbsp;내용으로&nbsp;자재문서정보를&nbsp;추가로&nbsp;읽어서&nbsp;it_mseg상에&nbsp;넣어준다.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CHECK&nbsp;IT_BLPK[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;제외자재문서&nbsp;체크<br />
+*<br />
+*&nbsp;PERFORM&nbsp;CHECK_ZPPT0013.<br />
+<br />
+<br />
+*&nbsp;이동유형구성<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;S_BWART[].<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'131'.&nbsp;"REM&nbsp;입고<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'132'.<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'261'.<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'262'.<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'531'.<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'532'.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;A~MBLNR&nbsp;A~MJAHR&nbsp;B~ZEILE&nbsp;B~WERKS&nbsp;B~MATNR&nbsp;B~LGORT&nbsp;B~MENGE&nbsp;B~BWART<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C~MTART&nbsp;D~BESKZ&nbsp;B~CHARG&nbsp;B~MEINS&nbsp;A~BUDAT&nbsp;D~DISPO&nbsp;C~MATKL<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;IT_MSEG<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_MSEG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MKPF&nbsp;AS&nbsp;A&nbsp;JOIN&nbsp;MSEG&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~MBLNR&nbsp;=&nbsp;B~MBLNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MARA&nbsp;AS&nbsp;C<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;B~MATNR&nbsp;=&nbsp;C~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MARC&nbsp;AS&nbsp;D<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;&nbsp;B~WERKS&nbsp;=&nbsp;D~WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~MATNR&nbsp;=&nbsp;D~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;IT_BLPK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~BUDAT&nbsp;IN&nbsp;S_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~MBLNR&nbsp;=&nbsp;IT_BLPK-BELNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~WERKS&nbsp;=&nbsp;IT_BLPK-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~BWART&nbsp;IN&nbsp;S_BWART.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~MATKL&nbsp;IN&nbsp;S_MATKL<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~BISMT&nbsp;IN&nbsp;S_BISMT<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~ZMAKTX&nbsp;IN&nbsp;S_ZMAKTX<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~GROES&nbsp;IN&nbsp;S_GROES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;D~DISPO&nbsp;IN&nbsp;S_DISPO.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SORT&nbsp;IT_MSEG&nbsp;BY&nbsp;MATNR&nbsp;WERKS&nbsp;MBLNR.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;투입내역만&nbsp;별도로&nbsp;모은다.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;S_BWART[].<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'261'.<br />
+&nbsp;&nbsp;M_APPEND_BWART&nbsp;'262'.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_MSEG&nbsp;INTO&nbsp;LT_MSEG2&nbsp;WHERE&nbsp;BWART&nbsp;IN&nbsp;S_BWART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LT_MSEG2.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;IT_BLPK&nbsp;BY&nbsp;BELNR&nbsp;MATNR.<br />
+&nbsp;&nbsp;SORT&nbsp;IT_MSEG&nbsp;BY&nbsp;MBLNR&nbsp;MJAHR.<br />
+&nbsp;&nbsp;SORT&nbsp;LT_MSEG2&nbsp;BY&nbsp;MBLNR&nbsp;MJAHR&nbsp;MATNR.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;LT_MSEG의&nbsp;DATA중&nbsp;자재유형&nbsp;FERT,&nbsp;이동유형&nbsp;261,262&nbsp;조달유형&nbsp;'E'&nbsp;이고&nbsp;MRP관리자&nbsp;'502'가<br />
+*&nbsp;아닌&nbsp;DATA가&nbsp;있으면&nbsp;이전표에&nbsp;해당하는&nbsp;DATA를&nbsp;모두&nbsp;삭제한다.<br />
+*&nbsp;261,262로&nbsp;투입된&nbsp;자재중&nbsp;BLPK&nbsp;생산품으로&nbsp;정의된&nbsp;DATA가&nbsp;있으면&nbsp;해당&nbsp;전표&nbsp;DATA&nbsp;삭제<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_MSEG2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LT_MSEG2-MTART&nbsp;=&nbsp;'FERT'&nbsp;AND&nbsp;LT_MSEG2-BESKZ&nbsp;=&nbsp;'E'&nbsp;AND&nbsp;LT_MSEG2-DISPO&nbsp;&lt&gt&nbsp;'502'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;IT_MSEG&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;LT_MSEG2-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MBLNR&nbsp;=&nbsp;LT_MSEG2-MBLNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;IT_BLPK&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;LT_MSEG2-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BELNR&nbsp;=&nbsp;LT_MSEG2-MBLNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;LT_MSEG2&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;LT_MSEG2-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MBLNR&nbsp;=&nbsp;LT_MSEG2-MBLNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;IT_BLPK&nbsp;WITH&nbsp;KEY&nbsp;BELNR&nbsp;=&nbsp;LT_MSEG2-MBLNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;=&nbsp;LT_MSEG2-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;IT_MSEG&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;LT_MSEG2-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MBLNR&nbsp;=&nbsp;LT_MSEG2-MBLNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;IT_BLPK&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;LT_MSEG2-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BELNR&nbsp;=&nbsp;LT_MSEG2-MBLNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;LT_MSEG2&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;LT_MSEG2-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MBLNR&nbsp;=&nbsp;LT_MSEG2-MBLNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;IT_MSEG&nbsp;BY&nbsp;WERKS&nbsp;MBLNR.<br />
+<br />
+ENDFORM. " SELECT_BLPK_BLPP_MSEG_E<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DETAIL_INFO<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM DETAIL_INFO .<br />
+&nbsp;&nbsp;DATA:&nbsp;LO_DIALOGBOX_CONTAINER&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_GUI_DIALOGBOX_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;,&nbsp;LO_TEXTEDIT&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_GUI_TEXTEDIT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;,&nbsp;LO_EVENT_REC&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_DIALOGBOX_CONTAINER_HANDLER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LO_DIALOGBOX_CONTAINER&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;LO_DIALOGBOX_CONTAINER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TOP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;40<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEFT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;200<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIFETIME&nbsp;=&nbsp;CL_GUI_CONTROL=&gtLIFETIME_IMODE<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;caption&nbsp;&nbsp;=&nbsp;i_caption<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WIDTH&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;550<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEIGHT&nbsp;&nbsp;&nbsp;=&nbsp;200.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;go_event<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_OBJECT_TEXT&nbsp;=&nbsp;'OBJ2'.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;G_GRID2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_PARENT&nbsp;=&nbsp;LO_DIALOGBOX_CONTAINER.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;SET&nbsp;HANDLER&nbsp;go_event-&gthandle_double_click&nbsp;&nbsp;FOR&nbsp;g_grid2.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;FIELDCAT_MERGE&nbsp;TABLES&nbsp;GT_FIELDCAT2&nbsp;USING&nbsp;'ZPPS0032'&nbsp;''.<br />
+&nbsp;&nbsp;PERFORM&nbsp;MAKE_FIELDCAT_SUB2.<br />
+&nbsp;&nbsp;PERFORM&nbsp;MAKE_SORT2.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;GS_FCATLAYO2-CWIDTH_OPT&nbsp;=&nbsp;'X'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;GS_FCATLAYO2-INFO_FNAME&nbsp;=&nbsp;'INFO'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_GRID2-&gtSET_TABLE_FOR_FIRST_DISPLAY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS_LAYOUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_FCATLAYO2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_OUTTAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_DETL[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_SORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_SORT2[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_FIELDCATALOG&nbsp;=&nbsp;GT_FIELDCAT2[].<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;LO_EVENT_REC.<br />
+&nbsp;&nbsp;SET&nbsp;HANDLER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LO_EVENT_REC-&gtON_CLOSE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;LO_DIALOGBOX_CONTAINER.<br />
+<br />
+ENDFORM. " DETAIL_INFO<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;FIELDCAT_MERGE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_GT_FIELDCAT2&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_2064&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_2065&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM FIELDCAT_MERGE TABLES PT_FIELDCAT TYPE LVC_T_FCAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&nbsp;P_TABLE&nbsp;P_INTABLE.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Merge&nbsp;field&nbsp;catalog<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;PT_FIELDCAT[],&nbsp;PT_FIELDCAT.<br />
+&nbsp;&nbsp;CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BUFFER_ACTIVE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BYPASSING_BUFFER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_STRUCTURE_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_TABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_INTERNAL_TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_INTABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CT_FIELDCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PT_FIELDCAT[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCONSISTENT_INTERFACE&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROGRAM_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+ENDFORM. " FIELDCAT_MERGE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MAKE_SORT2<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM MAKE_SORT2 .<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;GT_SORT2,&nbsp;GS_SORT.<br />
+&nbsp;&nbsp;GS_SORT-SPOS&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;GS_SORT-UP&nbsp;=&nbsp;'X'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;GS_SORT-SUBTOT&nbsp;=&nbsp;'X'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT2.<br />
+<br />
+&nbsp;&nbsp;GS_SORT-SPOS&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;GS_SORT-FIELDNAME&nbsp;=&nbsp;'BUDAT'.<br />
+&nbsp;&nbsp;GS_SORT-UP&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;GS_SORT-SUBTOT&nbsp;=&nbsp;''.<br />
+&nbsp;&nbsp;APPEND&nbsp;GS_SORT&nbsp;TO&nbsp;GT_SORT2.<br />
+<br />
+ENDFORM. " MAKE_SORT2<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;MAKE_FIELDCAT_SUB2<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM MAKE_FIELDCAT_SUB2 .<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_FIELDCAT2&nbsp;INTO&nbsp;GS_FCAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;GS_FCAT-FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BUDAT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_FCAT-EMPHASIZE&nbsp;=&nbsp;'C300'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MENGE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_FCAT-DO_SUM&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_FIELDCAT2&nbsp;FROM&nbsp;GS_FCAT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM. " MAKE_FIELDCAT_SUB2<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SELECT_ZPPT0170<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SELECT_ZPPT0170 .<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;IT_T170[].<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_T170<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZPPT0170<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;P_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;CREATED_DATE&nbsp;IN&nbsp;S_BUDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MATNR&nbsp;IN&nbsp;S_MATNR.<br />
+<br />
+ENDFORM.                    " SELECT_ZPPT0170<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

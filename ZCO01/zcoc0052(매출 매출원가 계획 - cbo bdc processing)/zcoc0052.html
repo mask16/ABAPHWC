@@ -1,0 +1,1188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZCOC0052</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZCOC0052</h2>
+<h3> Description: 매출 매출원가 계획 - CBO BDC Processing</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;PROGRAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ZCOC0040.<br />
+*&&nbsp;DESCRIPTION&nbsp;:&nbsp;CBO&nbsp;Data&nbsp;BDC(KE11)&nbsp;Processing&nbsp;Program.<br />
+*&&nbsp;DEVELOPER&nbsp;&nbsp;&nbsp;:&nbsp;Kim&nbsp;Hyun&nbsp;Pyo<br />
+*&&nbsp;CREATED&nbsp;DATE:&nbsp;2012.11.06.<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;HISTORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  ZCOC0052 MESSAGE-ID ZCOM.<br />
+<br />
+include <a href ="zcoi_common_01.html">ZCOI_COMMON_01</a>.<br />
+<br />
+TABLES: ZCOT0010.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--&nbsp;Grid&nbsp;Varialbe&nbsp;Setting&nbsp;----<br />
+   </div>
+   <div class="code">
+DATA: G_DOCKING_CONTAINER TYPE REF TO CL_GUI_DOCKING_CONTAINER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_GRID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;CL_GUI_ALV_GRID.<br />
+<br />
+DATA: GT_FCAT       TYPE LVC_T_FCAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_FCAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_S_FCAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_LAYOUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_S_LAYO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_SORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_T_SORT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_SORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_S_SORT,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TOOLBAR&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;UI_FUNCTIONS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_BUTTON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STB_BUTTON,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_SCROLL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;LVC_S_STBL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_VARIANT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;DISVARIANT.<br />
+<br />
+DATA: OK_CODE TYPE SYUCOMM.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;---------------------------------------------------------<br />
+<br />
+*----<br />
+   </div>
+   <div class="code">
+DATA: GT_DATA TYPE TABLE OF ZCOT0010,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA&nbsp;TYPE&nbsp;ZCOT0010.<br />
+<br />
+DATA: GT_RESULT TYPE TABLE OF BAPI_MSG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RESULT&nbsp;TYPE&nbsp;BAPI_MSG.<br />
+<br />
+DATA: G_TOT(10) VALUE '0',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_SUS(10)&nbsp;VALUE&nbsp;'0',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_ERR(10)&nbsp;VALUE&nbsp;'0',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_QID(20).&nbsp;&nbsp;&nbsp;&nbsp;"Queue&nbsp;ID...<br />
+<br />
+   </div>
+   <div class="codeComment">
+*DATA:&nbsp;BEGIN&nbsp;OF&nbsp;gs_data.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;TYPE&nbsp;zcot0010.<br />
+*DATA:&nbsp;&nbsp;&nbsp;icon(4),<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg&nbsp;TYPE&nbsp;bapi_msg,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_data,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_data&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_data.<br />
+<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;SELECTION-SCREEN<br />
+*&---------------------------------------------------------------------*<br />
+*SELECTION-SCREEN&nbsp;FUNCTION&nbsp;KEY&nbsp;1.<br />
+<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK BLK1 WITH FRAME TITLE TEXT-T01.<br />
+PARAMETERS: P_ZMOD  TYPE ZMOD DEFAULT 'CO' OBLIGATORY.<br />
+PARAMETERS: P_VERSI LIKE TKVST-VERSI OBLIGATORY DEFAULT '090',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_GJAHR&nbsp;TYPE&nbsp;GJAHR&nbsp;DEFAULT&nbsp;SY-DATUM(4)&nbsp;OBLIGATORY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_KOKRS&nbsp;TYPE&nbsp;KOKRS&nbsp;MEMORY&nbsp;ID&nbsp;CAC&nbsp;OBLIGATORY.<br />
+SELECT-OPTIONS : SO_WERKS FOR ZCOT0010-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SO_ARTNR&nbsp;FOR&nbsp;ZCOT0010-ARTNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SO_WWBKL&nbsp;FOR&nbsp;ZCOT0010-WWBKL.<br />
+<br />
+SELECTION-SCREEN SKIP.<br />
+PARAMETERS: P_RAD1  RADIOBUTTON GROUP RAD1 USER-COMMAND U1 DEFAULT 'X'.<br />
+<br />
+SELECTION-SCREEN BEGIN OF LINE.<br />
+PARAMETERS: P_RAD2 RADIOBUTTON GROUP RAD1.<br />
+SELECTION-SCREEN COMMENT 5(15) TEXT-T02 FOR FIELD P_RAD2.<br />
+   </div>
+   <div class="codeComment">
+*SELECTION-SCREEN&nbsp;POSITION&nbsp;25.<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN COMMENT 26(6) TEXT-T03 FOR FIELD P_MONTH.<br />
+PARAMETERS: P_MONTH TYPE ZMONTH DEFAULT SY-DATUM+4(2).<br />
+SELECTION-SCREEN END OF LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*SELECTION-SCREEN&nbsp;SKIP&nbsp;1.<br />
+   </div>
+   <div class="code">
+PARAMETERS: P_MODE  TYPE CTU_MODE DEFAULT 'N'. "NO-DISPLAY.<br />
+SELECTION-SCREEN END OF BLOCK BLK1.<br />
+<br />
+PARAMETERS: P_BATCH TYPE CHAR1 AS CHECKBOX. "Background Processing..<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+INITIALIZATION.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;PERFORM&nbsp;set_parameters.<br />
+<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN OUTPUT.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;ADJUST_SCREEN.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;CHECK_PARAMETER.<br />
+&nbsp;&nbsp;PERFORM&nbsp;GET_DATA.<br />
+&nbsp;&nbsp;CASE&nbsp;P_VERSI(2).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'09'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PROCESS_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'01'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;PROCESS_DATA_MONTHLY.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;PERFORM&nbsp;WRITE_LOG.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;100.<br />
+<br />
+<br />
+**&---------------------------------------------------------------------*<br />
+**&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_PGNAME<br />
+**&---------------------------------------------------------------------*<br />
+*FORM&nbsp;set_gname&nbsp;.<br />
+*&nbsp;&nbsp;IF&nbsp;p_group&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;DATA:&nbsp;ls_data&nbsp;TYPE&nbsp;ihttpnvp,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_dynpfields&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;dynpread,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_dynpfields&nbsp;TYPE&nbsp;dynpread.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_group&nbsp;INTO&nbsp;ls_data&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;p_group.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;ls_data-value&nbsp;TO&nbsp;ls_dynpfields-fieldvalue,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P_GNAME'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_dynpfields-fieldname.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_dynpfields&nbsp;TO&nbsp;lt_dynpfields.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'DYNP_VALUES_UPDATE'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dyname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-repid<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dynumb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-dynnr<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dynpfields&nbsp;=&nbsp;lt_dynpfields.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SET_PGNAME<br />
+<br />
+**&---------------------------------------------------------------------*<br />
+**&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;F4_GROUP<br />
+**&---------------------------------------------------------------------*<br />
+*FORM&nbsp;f4_group&nbsp;.<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_field&nbsp;TYPE&nbsp;tabname,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_kokrs&nbsp;TYPE&nbsp;kokrs,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_data&nbsp;TYPE&nbsp;tihttpnvp,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_data&nbsp;TYPE&nbsp;ihttpnvp.<br />
+*<br />
+*&nbsp;&nbsp;DATA:&nbsp;ret_tab&nbsp;LIKE&nbsp;ddshretval&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+*<br />
+*&nbsp;&nbsp;CLEAR:&nbsp;gt_group[].<br />
+*&nbsp;&nbsp;SELECT&nbsp;&nbsp;a~setname&nbsp;&nbsp;&nbsp;AS&nbsp;name<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~descript&nbsp;&nbsp;AS&nbsp;value<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_group<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;setheader&nbsp;AS&nbsp;a&nbsp;INNER&nbsp;JOIN&nbsp;setheadert&nbsp;AS&nbsp;b<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;&nbsp;a~setclass&nbsp;=&nbsp;b~setclass<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~subclass&nbsp;=&nbsp;b~subclass<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~setname&nbsp;&nbsp;=&nbsp;b~setname<br />
+*&nbsp;&nbsp;&nbsp;WHERE&nbsp;a~setclass&nbsp;=&nbsp;'0102'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~subclass&nbsp;=&nbsp;p_kokrs<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;a~xuniq&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+*<br />
+*&nbsp;&nbsp;CHECK&nbsp;gt_group[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+*<br />
+*&nbsp;&nbsp;CALL&nbsp;FUNCTION&nbsp;'F4IF_INT_TABLE_VALUE_REQUEST'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;retfield&nbsp;&nbsp;&nbsp;=&nbsp;'NAME'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value_org&nbsp;&nbsp;=&nbsp;'S'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value_tab&nbsp;&nbsp;=&nbsp;gt_group<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return_tab&nbsp;=&nbsp;ret_tab.<br />
+*<br />
+*&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;ret_tab&nbsp;INDEX&nbsp;1.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_group&nbsp;INTO&nbsp;ls_data&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;ret_tab-fieldval.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;ls_data-name&nbsp;TO&nbsp;p_group.<br />
+*&nbsp;&nbsp;ENDIF.<br />
+*ENDFORM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;F4_GROUP<br />
+<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_PARAMETERS<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_PARAMETERS .<br />
+&nbsp;&nbsp;IF&nbsp;P_GJAHR&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;P_GJAHR&nbsp;=&nbsp;SY-DATUM(4).<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_MONTH&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;P_MONTH&nbsp;=&nbsp;SY-DATUM+4(2).<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " SET_PARAMETERS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM GET_DATA.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;DATA:&nbsp;l_zmod&nbsp;&nbsp;TYPE&nbsp;zmod&nbsp;VALUE&nbsp;'CO'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR:&nbsp;GT_DATA[],&nbsp;GT_RESULT[].<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZCOT0010<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZMOD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_ZMOD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;VERSI&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_VERSI<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;GJAHR&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_GJAHR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;KOKRS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_KOKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;WERKS&nbsp;IN&nbsp;SO_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ARTNR&nbsp;IN&nbsp;SO_ARTNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;WWBKL&nbsp;IN&nbsp;SO_WWBKL.<br />
+<br />
+ENDFORM.                    " GET_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;PROCESS_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PROCESS_DATA .<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;CHECK_DATA.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;GT_DATA[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'CBO&nbsp;Data&nbsp;not&nbsp;exist.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;L_PERIO_F&nbsp;TYPE&nbsp;JAHRPER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_PERIO_T&nbsp;TYPE&nbsp;JAHRPER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZSOUP(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZPUUP(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG001&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG002&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG003&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG004&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG005&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG006&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG007&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG008&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG009&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG010&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG011&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG012&nbsp;&nbsp;TYPE&nbsp;STRING.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;L_FNAME1&nbsp;TYPE&nbsp;TABNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FNAME2&nbsp;TYPE&nbsp;TABNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NUM(3)&nbsp;TYPE&nbsp;N,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_INDEX&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MSG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BAPI_MSG.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltFS1&gt,&nbsp;&ltFS2&gt.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;L_GROUP(12)&nbsp;VALUE&nbsp;'PA_PLAN_CRE',&nbsp;"Session&nbsp;Name..<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_qid(20),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Queue&nbsp;ID...<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MODE(1)&nbsp;VALUE&nbsp;'N',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_TCODE_KE11&nbsp;TYPE&nbsp;TCODE&nbsp;VALUE&nbsp;'KE11'.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_OPT&nbsp;&nbsp;TYPE&nbsp;CTU_PARAMS.<br />
+&nbsp;&nbsp;LS_OPT-DISMODE&nbsp;&nbsp;=&nbsp;P_MODE.&nbsp;"l_mode.<br />
+&nbsp;&nbsp;LS_OPT-DEFSIZE&nbsp;&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;G_QID,&nbsp;G_SUS,&nbsp;G_ERR,&nbsp;G_TOT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--&nbsp;Pre&nbsp;Setting&nbsp;KEBC.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;PRE_SETTING_KEBC_FOR_BDC&nbsp;USING&nbsp;C_KOKRS_1000.&nbsp;"&lt&lt----KOKRS.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;OPEN_GROUP&nbsp;USING&nbsp;L_GROUP&nbsp;SY-UNAME&nbsp;G_QID.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DATA:&nbsp;L_TCODE_KEBC&nbsp;TYPE&nbsp;TCODE&nbsp;VALUE&nbsp;'KEBC'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;BDCDATA[],&nbsp;BDCDATA,&nbsp;MSGDATA[],&nbsp;MSGDATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEA3'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0200',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=ENTE',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RKEA2-ERKRS'	&nbsp;&nbsp;&nbsp;&nbsp;C_KOKRS_1000,&nbsp;"&lt&lt----KOKRS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RKEA2-PA_TYPE_1'	'X'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_INSERT&nbsp;USING&nbsp;L_TCODE_KEBC.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;BDC&nbsp;Processing&nbsp;--<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_DATA&nbsp;INTO&nbsp;GS_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L_INDEX&nbsp;=&nbsp;SY-TABIX.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-WWBKL&nbsp;EQ&nbsp;'3100'&nbsp;AND&nbsp;GS_DATA-WAERS&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;NE&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD:&nbsp;1&nbsp;TO&nbsp;G_TOT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;TO&nbsp;G_ERR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;GS_DATA-ZSEQ&nbsp;L_INDEX&nbsp;`&nbsp;Line&nbsp;:&nbsp;3100&nbsp;-&gt&nbsp;Currency&nbsp;Not&nbsp;Exists.`&nbsp;INTO&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;L_MSG&nbsp;TO&nbsp;GT_RESULT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;BDCDATA[],&nbsp;BDCDATA,&nbsp;MSGDATA[],&nbsp;MSGDATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;L_PERIO_F,&nbsp;L_PERIO_T,&nbsp;L_ZSOUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;L_MEG001,&nbsp;L_MEG002,&nbsp;L_MEG003,&nbsp;L_MEG004,&nbsp;L_MEG005,&nbsp;L_MEG006,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG007,&nbsp;L_MEG008,&nbsp;L_MEG009,&nbsp;L_MEG010,&nbsp;L_MEG011,&nbsp;L_MEG012.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE:&nbsp;&nbsp;GS_DATA-GJAHR&nbsp;'001'&nbsp;INTO&nbsp;L_PERIO_F,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-GJAHR&nbsp;'012'&nbsp;INTO&nbsp;L_PERIO_T.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CURRENCY_SAP_TO_DISPLAY&nbsp;USING&nbsp;GS_DATA-FRWAE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_DATA-ZSOUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-WWBKL&nbsp;NE&nbsp;'3100'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CURRENCY_SAP_TO_DISPLAY&nbsp;USING&nbsp;GS_DATA-FRWAE<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_DATA-ZPUUP.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CURRENCY_SAP_TO_DISPLAY&nbsp;USING&nbsp;GS_DATA-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_DATA-ZPUUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CURRENCY_SAP_TO_DISPLAY&nbsp;USING&nbsp;GS_DATA-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_DATA-ZPUUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_MONEY_CHAR&nbsp;USING:&nbsp;GS_DATA-ZSOUP&nbsp;L_ZSOUP&nbsp;GS_DATA-FRWAE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-ZPUUP&nbsp;L_ZPUUP&nbsp;GS_DATA-WAERS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DO&nbsp;12&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NUM&nbsp;=&nbsp;SY-INDEX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE:&nbsp;&nbsp;'L_MEG'&nbsp;L_NUM&nbsp;INTO&nbsp;L_FNAME1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'GS_DATA-MEG'&nbsp;L_NUM&nbsp;INTO&nbsp;L_FNAME2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN:&nbsp;(L_FNAME1)&nbsp;TO&nbsp;&ltFS1&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(L_FNAME2)&nbsp;TO&nbsp;&ltFS2&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;&ltFS2&gt&nbsp;TO&nbsp;L_NO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NO&nbsp;&nbsp;TO&nbsp;&ltFS1&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;&ltFS1&gt&nbsp;NO-GAPS.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs1&gt&nbsp;=&nbsp;&ltfs2&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDDO.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEPA'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'/00'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-KOKRS&nbsp;=&nbsp;'1000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KPP0S-FORM'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Z-GEN01'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;GS_DATA-KOKRS&nbsp;=&nbsp;'2000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KPP0S-FORM'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Z-GEN02'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;GS_DATA-KOKRS&nbsp;=&nbsp;'3000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KPP0S-FORM'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Z-GEN03'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP0'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=CP+',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KPP0B-VALUE(01)'&nbsp;GS_DATA-VERSI,&nbsp;"버전.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(02)'	L_PERIO_F,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"기간&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(03)'	L_PERIO_T,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"기간&nbsp;To.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&gt&nbsp;플랜트..들어가라..<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(04)'	GS_DATA-WERKS,&nbsp;"플랜트&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(05)'	GS_DATA-WERKS,&nbsp;"플랜트&nbsp;To.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(06)'	GS_DATA-SPART,&nbsp;"제품군&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(07)'	GS_DATA-SPART,&nbsp;"제품군&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(08)'	GS_DATA-VTWEG,&nbsp;"유통경로&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(09)'	GS_DATA-VTWEG,&nbsp;"유통경로&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(10)'	GS_DATA-VKGRP,&nbsp;"영업그룹&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(11)'	GS_DATA-VKGRP,&nbsp;"영업그룹&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(12)'	GS_DATA-VKBUR,&nbsp;"사업장&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(13)'	GS_DATA-VKBUR,&nbsp;"사업장&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(14)'	GS_DATA-BZIRK,&nbsp;&nbsp;"012000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"판매구역&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'CEPL1-FRWAE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-FRWAE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP0'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=CSUB',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(01)'	GS_DATA-BZIRK,&nbsp;"판매구역&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(02)'	GS_DATA-KNDNR,&nbsp;"고객&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(03)'	GS_DATA-KNDNR,&nbsp;"고객&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(04)'&nbsp;GS_DATA-PRCTR,&nbsp;"손익센터&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(05)'	GS_DATA-PRCTR,&nbsp;"손익센터&nbsp;To.<br />
+   </div>
+   <div class="codeComment">
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(04)'&nbsp;gs_data-labor,&nbsp;"생산공장&nbsp;Fr.&nbsp;실험실.<br />
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(05)'	gs_data-labor,&nbsp;"생산공장&nbsp;To.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(06)'&nbsp;GS_DATA-WWBKL,&nbsp;"평가클래스&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(07)'	GS_DATA-WWBKL,&nbsp;"평가클래스&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(08)'&nbsp;GS_DATA-WWKU2,&nbsp;"영업사원(국내)&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(09)'	GS_DATA-WWKU2,&nbsp;&nbsp;"a9999999&nbsp;&nbsp;&nbsp;&nbsp;"영업사원(국내)&nbsp;To.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'kpp0b-value(10)'&nbsp;GS_DATA-INCO1,&nbsp;"인도조건1&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'kpp0b-value(11)'	GS_DATA-INCO1,&nbsp;"인도조건1&nbsp;To.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(12)'&nbsp;GS_DATA-ARTNR,&nbsp;"제/상품&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(13)'	GS_DATA-ARTNR,&nbsp;"제/상품&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'CEPL1-FRWAE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-FRWAE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"--&nbsp;추가&nbsp;:&nbsp;2013.01.31.----<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-WWBKL&nbsp;=&nbsp;'7900'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-WWBKL&nbsp;=&nbsp;'7920'.&nbsp;&nbsp;"'3100'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=CSPB',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'MARK_ROW_CONTROL(03)'&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC02(01)'	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZSOUP,&nbsp;&nbsp;"판매단가.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'Z-BDC02(02)'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZPUUP.&nbsp;&nbsp;"매입단가.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=EAEH',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'MARK_ROW_CONTROL(01)'&nbsp;&nbsp;'X',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEPA'&nbsp;&nbsp;&nbsp;&nbsp;'0220',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CSPA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'CEPL1-FRWAE'	GS_DATA-FRWAE,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=EAEH',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'MARK_ROW_CONTROL(02)'&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'Z-BDC02(01)'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZSOUP,&nbsp;&nbsp;"판매단가.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEPA'&nbsp;&nbsp;&nbsp;&nbsp;'0220',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CSPA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'CEPL1-FRWAE'	GS_DATA-WAERS,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'/00',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC02(02)'	L_ZPUUP,&nbsp;&nbsp;"매입단가.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CSPB',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'MARK_ROW_CONTROL(03)'&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;'0121',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CP+',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(01)'	L_MEG001,&nbsp;&nbsp;&nbsp;"01월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(02)'	L_MEG002,&nbsp;&nbsp;&nbsp;"02월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(03)'	L_MEG003,&nbsp;&nbsp;&nbsp;"03월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(04)'	L_MEG004,&nbsp;&nbsp;&nbsp;"04월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(05)'	L_MEG005,&nbsp;&nbsp;&nbsp;"05월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(06)'	L_MEG006,&nbsp;&nbsp;&nbsp;"06월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(07)'	L_MEG007,&nbsp;&nbsp;&nbsp;"07월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(08)'	L_MEG008,&nbsp;&nbsp;&nbsp;"08월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(09)'	L_MEG009,&nbsp;&nbsp;&nbsp;"09월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(10)'	L_MEG010,&nbsp;&nbsp;&nbsp;"10월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(11)'	L_MEG011,&nbsp;&nbsp;&nbsp;"11월&nbsp;수량.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;'0121',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'/00',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC03(01)'	L_MEG012,&nbsp;&nbsp;"12월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;'0121',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CSUB',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CBUC'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_INSERT&nbsp;USING&nbsp;L_TCODE_KE11.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;G_TOT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;L_TCODE_KE11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;BDCDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPTIONS&nbsp;FROM&nbsp;LS_OPT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE&nbsp;l_mode<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;MSGDATA.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;G_ERR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_MESSAGE_BUILD&nbsp;USING&nbsp;SY-MSGID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;GS_DATA-ZSEQ&nbsp;L_INDEX&nbsp;`&nbsp;Line&nbsp;:&nbsp;`&nbsp;L_MSG&nbsp;INTO&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;L_MSG&nbsp;TO&nbsp;GT_RESULT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;G_SUS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;GS_DATA,&nbsp;L_MSG,&nbsp;L_INDEX.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CLOSE_GROUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CALL_BATCH_PRCESS&nbsp;USING&nbsp;L_GROUP&nbsp;G_QID.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'SM35'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s000&nbsp;WITH&nbsp;'Batch&nbsp;Input&nbsp;Registered&nbsp;&&nbsp;Processing,&nbsp;QID='&nbsp;g_qid.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " PROCESS_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CALL_BATCH_PRCESS<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CALL_BATCH_PRCESS  USING    P_GROUP P_QID.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_VALID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PARAMS&nbsp;&nbsp;&nbsp;TYPE&nbsp;PRI_PARAMS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_JOBCOUNT&nbsp;&nbsp;LIKE&nbsp;TBTCJOB-JOBCOUNT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_JOBNAME&nbsp;&nbsp;&nbsp;LIKE&nbsp;TBTCJOB-JOBNAME.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Print&nbsp;--------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'GET_PRINT_PARAMETERS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_DIALOG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUT_PARAMETERS&nbsp;=&nbsp;LS_PARAMS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_VALID.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;SY-MSGID&nbsp;TYPE&nbsp;SY-MSGTY&nbsp;NUMBER&nbsp;SY-MSGNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;SY-MSGV1&nbsp;SY-MSGV2&nbsp;SY-MSGV3&nbsp;SY-MSGV4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Job&nbsp;Setting&nbsp;--------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;L_JOBNAME&nbsp;=&nbsp;'Z_KE11_BDC_BACKJOB'.<br />
+&nbsp;&nbsp;CALL FUNCTION 'JOB_OPEN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOBNAME&nbsp;&nbsp;=&nbsp;L_JOBNAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOBCOUNT&nbsp;=&nbsp;L_JOBCOUNT.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Report&nbsp;Execute&nbsp;---------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;SUBMIT&nbsp;RSBDCSUB&nbsp;WITH&nbsp;MAPPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_GROUP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;VON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;BIS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;Z_VERARB&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;FEHLER&nbsp;&nbsp;&nbsp;=&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;BATCHSYS&nbsp;=&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;JOBCLASS&nbsp;=&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;LOGALL&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;QUEUE_ID&nbsp;=&nbsp;P_QID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VIA&nbsp;JOB&nbsp;L_JOBNAME&nbsp;NUMBER&nbsp;L_JOBCOUNT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;SAP-SPOOL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITHOUT&nbsp;SPOOL&nbsp;DYNPRO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPOOL&nbsp;PARAMETERS&nbsp;LS_PARAMS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'JOB_CLOSE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOBCOUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_JOBCOUNT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOBNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_JOBNAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STRTIMMED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CANT_START_IMMEDIATE&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_STARTDATE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOBNAME_MISSING&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOB_CLOSE_FAILED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOB_NOSTEPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JOB_NOTEX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOCK_FAILED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_TARGET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'Job_Close&nbsp;Error&nbsp;Raised!&nbsp;Number&nbsp;'&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'Batch&nbsp;Input&nbsp;Session&nbsp;Executing&nbsp;Error&nbsp;Raised!'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " CALL_BATCH_PRCESS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;WRITE_LOG<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM WRITE_LOG .<br />
+&nbsp;&nbsp;DATA:&nbsp;L_MESSAGE&nbsp;TYPE&nbsp;BAPI_MSG.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Total&nbsp;&nbsp;&nbsp;=&nbsp;',&nbsp;G_TOT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;'Success&nbsp;=&nbsp;',&nbsp;G_SUS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;'Error&nbsp;&nbsp;&nbsp;=&nbsp;',&nbsp;G_ERR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;GT_RESULT[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ULINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_RESULT&nbsp;INTO&nbsp;GS_RESULT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;GS_RESULT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Batch&nbsp;Input&nbsp;Registered&nbsp;&&nbsp;Processing,&nbsp;QID&nbsp;=',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_QID.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+ENDFORM.                    " WRITE_LOG<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CHECK_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHECK_DATA .<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;-&nbsp;BDC&nbsp;대상&nbsp;Data&nbsp;Validation을&nbsp;걸어&nbsp;미리&nbsp;삭제할&nbsp;넘&nbsp;삭제한다.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE:&nbsp;GT_DATA&nbsp;WHERE&nbsp;VERSI&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;GJAHR&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;SPART&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;VTWEG&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;VKGRP&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;VKBUR&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;BZIRK&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;KNDNR&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;PRCTR&nbsp;IS&nbsp;INITIAL,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_data&nbsp;WHERE&nbsp;labor&nbsp;IS&nbsp;INITIAL,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;WWBKL&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;WWKU2&nbsp;IS&nbsp;INITIAL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_DATA&nbsp;WHERE&nbsp;ARTNR&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_data&nbsp;WHERE&nbsp;vtweg&nbsp;EQ&nbsp;'20'&nbsp;AND&nbsp;inco1&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " CHECK_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;PROCESS_DATA_MONTHLY<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM PROCESS_DATA_MONTHLY .<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;CHECK_DATA.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;GT_DATA[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'CBO&nbsp;Data&nbsp;not&nbsp;exist.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;L_PERIO_F&nbsp;TYPE&nbsp;JAHRPER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_PERIO_T&nbsp;TYPE&nbsp;JAHRPER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZSOUP(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZPUUP(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_INDEX&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MSG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;BAPI_MSG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STRING.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg001&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg002&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg003&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg004&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg005&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg006&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg007&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg008&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg009&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg010&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg011&nbsp;&nbsp;TYPE&nbsp;string,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meg012&nbsp;&nbsp;TYPE&nbsp;string.<br />
+<br />
+*&nbsp;&nbsp;DATA:&nbsp;l_fname1&nbsp;TYPE&nbsp;tabname,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname2&nbsp;TYPE&nbsp;tabname,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;L_FNAME&nbsp;TYPE&nbsp;TABNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NUM(3)&nbsp;TYPE&nbsp;N.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltFS&gt.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;L_GROUP(12)&nbsp;VALUE&nbsp;'PA_PLAN_CRE',&nbsp;"Session&nbsp;Name..<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_qid(20),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Queue&nbsp;ID...<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MODE(1)&nbsp;VALUE&nbsp;'N',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_TCODE_KE11&nbsp;TYPE&nbsp;TCODE&nbsp;VALUE&nbsp;'KE11'.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_OPT&nbsp;&nbsp;TYPE&nbsp;CTU_PARAMS.<br />
+&nbsp;&nbsp;LS_OPT-DISMODE&nbsp;&nbsp;=&nbsp;P_MODE.&nbsp;"l_mode.<br />
+&nbsp;&nbsp;LS_OPT-DEFSIZE&nbsp;&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;G_QID,&nbsp;G_SUS,&nbsp;G_ERR,&nbsp;G_TOT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--&nbsp;Pre&nbsp;Setting&nbsp;KEBC.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;PRE_SETTING_KEBC_FOR_BDC&nbsp;USING&nbsp;C_KOKRS_1000.&nbsp;"&lt&lt----KOKRS.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;OPEN_GROUP&nbsp;USING&nbsp;L_GROUP&nbsp;SY-UNAME&nbsp;G_QID.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DATA:&nbsp;L_TCODE_KEBC&nbsp;TYPE&nbsp;TCODE&nbsp;VALUE&nbsp;'KEBC'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;BDCDATA[],&nbsp;BDCDATA,&nbsp;MSGDATA[],&nbsp;MSGDATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEA3'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0200',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=ENTE',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RKEA2-ERKRS'	&nbsp;&nbsp;&nbsp;&nbsp;C_KOKRS_1000,&nbsp;"&lt&lt----KOKRS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RKEA2-PA_TYPE_1'	'X'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_INSERT&nbsp;USING&nbsp;L_TCODE_KEBC.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;BDC&nbsp;Processing&nbsp;--<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_DATA&nbsp;INTO&nbsp;GS_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L_INDEX&nbsp;=&nbsp;SY-TABIX.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-WWBKL&nbsp;EQ&nbsp;'3100'&nbsp;AND&nbsp;GS_DATA-WAERS&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;NE&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD:&nbsp;1&nbsp;TO&nbsp;G_TOT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;TO&nbsp;G_ERR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;BDCDATA[],&nbsp;BDCDATA,&nbsp;MSGDATA[],&nbsp;MSGDATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;L_PERIO_F,&nbsp;L_PERIO_T,&nbsp;L_ZSOUP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;currency_sap_to_display&nbsp;USING&nbsp;gs_data-frwae<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING:&nbsp;gs_data-zsoup,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_data-zpuup.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CURRENCY_SAP_TO_DISPLAY&nbsp;USING&nbsp;GS_DATA-FRWAE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_DATA-ZSOUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-WWBKL&nbsp;NE&nbsp;'3100'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CURRENCY_SAP_TO_DISPLAY&nbsp;USING&nbsp;GS_DATA-FRWAE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_DATA-ZPUUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CURRENCY_SAP_TO_DISPLAY&nbsp;USING&nbsp;GS_DATA-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;GS_DATA-ZPUUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_MONEY_CHAR&nbsp;USING:&nbsp;GS_DATA-ZSOUP&nbsp;L_ZSOUP&nbsp;GS_DATA-WAERS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-ZPUUP&nbsp;L_ZPUUP&nbsp;GS_DATA-WAERS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DO&nbsp;12&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_RAD2&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;SY-INDEX&nbsp;EQ&nbsp;P_MONTH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NUM&nbsp;=&nbsp;SY-INDEX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;L_MEG,&nbsp;L_PERIO_F,&nbsp;L_PERIO_T.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE:&nbsp;&nbsp;GS_DATA-GJAHR&nbsp;L_NUM&nbsp;INTO&nbsp;L_PERIO_F,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-GJAHR&nbsp;L_NUM&nbsp;INTO&nbsp;L_PERIO_T,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'MEG'&nbsp;L_NUM&nbsp;INTO&nbsp;L_FNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;L_FNAME&nbsp;OF&nbsp;STRUCTURE&nbsp;GS_DATA&nbsp;TO&nbsp;&ltFS&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;&ltFS&gt&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;&ltFS&gt&nbsp;TO&nbsp;L_NO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_NO&nbsp;TO&nbsp;L_MEG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;L_MEG&nbsp;NO-GAPS.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE:&nbsp;&nbsp;'L_MEG'&nbsp;l_num&nbsp;INTO&nbsp;l_fname1,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'GS_DATA-MEG'&nbsp;l_num&nbsp;INTO&nbsp;l_fname2.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN:&nbsp;(l_fname1)&nbsp;TO&nbsp;&ltfs1&gt,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(l_fname2)&nbsp;TO&nbsp;&ltfs2&gt.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs1&gt&nbsp;=&nbsp;&ltfs2&gt.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEPA'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'/00',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KPP0S-FORM'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Z-GEN01',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP0'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=CP+',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'KPP0B-VALUE(01)'&nbsp;GS_DATA-VERSI,&nbsp;"버전.&nbsp;'010'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(02)'	L_PERIO_F,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"기간&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(03)'	L_PERIO_T,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"기간&nbsp;To.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&gt&nbsp;플랜트..들어가라..<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(04)'	GS_DATA-WERKS,&nbsp;"플랜트&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(05)'	GS_DATA-WERKS,&nbsp;"플랜트&nbsp;To.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(06)'	GS_DATA-SPART,&nbsp;"제품군&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(07)'	GS_DATA-SPART,&nbsp;"제품군&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(08)'	GS_DATA-VTWEG,&nbsp;"유통경로&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(09)'	GS_DATA-VTWEG,&nbsp;"유통경로&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(10)'	GS_DATA-VKGRP,&nbsp;"영업그룹&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(11)'	GS_DATA-VKGRP,&nbsp;"영업그룹&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(12)'	GS_DATA-VKBUR,&nbsp;"사업장&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(13)'	GS_DATA-VKBUR,&nbsp;"사업장&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(14)'	GS_DATA-BZIRK,&nbsp;&nbsp;"012000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"판매구역&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'CEPL1-FRWAE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-FRWAE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP0'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=CSUB',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(01)'	GS_DATA-BZIRK,&nbsp;"판매구역&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(02)'	GS_DATA-KNDNR,&nbsp;"고객&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(03)'	GS_DATA-KNDNR,&nbsp;"고객&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(04)'&nbsp;GS_DATA-PRCTR,&nbsp;"손익센터&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(05)'	GS_DATA-PRCTR,&nbsp;"손익센터&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(06)'&nbsp;GS_DATA-WWBKL,&nbsp;"평가클래스&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(07)'	GS_DATA-WWBKL,&nbsp;"평가클래스&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(08)'&nbsp;GS_DATA-WWKU2,&nbsp;"영업사원(국내)&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(09)'	GS_DATA-WWKU2,&nbsp;&nbsp;"a9999999&nbsp;&nbsp;&nbsp;&nbsp;"영업사원(국내)&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'kpp0b-value(10)'&nbsp;GS_DATA-INCO1,&nbsp;"인도조건1&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'kpp0b-value(11)'	GS_DATA-INCO1,&nbsp;"인도조건1&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(12)'&nbsp;GS_DATA-ARTNR,&nbsp;"제/상품&nbsp;Fr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'KPP0B-VALUE(13)'	GS_DATA-ARTNR,&nbsp;"제/상품&nbsp;To.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'CEPL1-FRWAE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-FRWAE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-WWBKL&nbsp;NE&nbsp;'3100'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'/00',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'MARK_ROW_CONTROL(03)'&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC02(01)'	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZSOUP,&nbsp;&nbsp;"판매단가.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'Z-BDC02(02)'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZPUUP,&nbsp;&nbsp;"매입단가.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'Z-BDC02(03)'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MEG.&nbsp;&nbsp;"&ltfs1&gt.&nbsp;&nbsp;&nbsp;&nbsp;"해당월&nbsp;수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=EAEH',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'MARK_ROW_CONTROL(01)'&nbsp;&nbsp;'X',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEPA'&nbsp;&nbsp;&nbsp;&nbsp;'0220',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CSPA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'CEPL1-FRWAE'	GS_DATA-FRWAE,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=EAEH',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'MARK_ROW_CONTROL(02)'&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'Z-BDC02(01)'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_ZSOUP,&nbsp;&nbsp;"판매단가.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKEPA'&nbsp;&nbsp;&nbsp;&nbsp;'0220',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=CSPA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'CEPL1-FRWAE'	GS_DATA-WAERS,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'/00',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'	'	'Z-BDC02(02)'	L_ZPUUP,&nbsp;&nbsp;"매입단가.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'Z-BDC02(03)'&nbsp;L_MEG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_DYNPRO&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPLKPP2'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0115',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=CBUC'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDC_INSERT&nbsp;USING&nbsp;L_TCODE_KE11.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;G_TOT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;L_TCODE_KE11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;BDCDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPTIONS&nbsp;FROM&nbsp;LS_OPT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE&nbsp;l_mode<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;MSGDATA.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;G_ERR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_MESSAGE_BUILD&nbsp;USING&nbsp;SY-MSGID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-MSGV4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;GS_DATA-ZSEQ&nbsp;L_INDEX&nbsp;`&nbsp;Line&nbsp;:&nbsp;`&nbsp;L_MSG&nbsp;INTO&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;L_MSG&nbsp;TO&nbsp;GT_RESULT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;G_SUS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;L_INDEX,&nbsp;L_MSG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDDO.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;GS_DATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_BATCH&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CLOSE_GROUP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CALL_BATCH_PRCESS&nbsp;USING&nbsp;L_GROUP&nbsp;G_QID.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'SM35'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s000&nbsp;WITH&nbsp;'Batch&nbsp;Input&nbsp;Registered&nbsp;&&nbsp;Processing,&nbsp;QID='&nbsp;g_qid.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " PROCESS_DATA_MONTHLY<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ADJUST_SCREEN<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM ADJUST_SCREEN .<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SCREEN-NAME&nbsp;EQ&nbsp;'P_MONTH'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_RAD1&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SCREEN-INPUT&nbsp;=&nbsp;'0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SCREEN-INPUT&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    " ADJUST_SCREEN<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CHECK_PARAMETER<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHECK_PARAMETER .<br />
+&nbsp;&nbsp;DATA:&nbsp;L_FLAG(1).<br />
+&nbsp;&nbsp;CLEAR&nbsp;L_FLAG.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;P_ZMOD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CO'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_VERSI(2)&nbsp;NE&nbsp;'09'.L_FLAG&nbsp;=&nbsp;'X'.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_RAD1&nbsp;NE&nbsp;'X'.&nbsp;L_FLAG&nbsp;=&nbsp;'X'.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_VERSI(2)&nbsp;NE&nbsp;'01'.&nbsp;L_FLAG&nbsp;=&nbsp;'X'.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_RAD2&nbsp;NE&nbsp;'X'.&nbsp;L_FLAG&nbsp;=&nbsp;'X'.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;TEXT-M02.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;LIST-PROCESSING.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;L_FLAG&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;TEXT-M02.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;LIST-PROCESSING.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_RAD2&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;P_MONTH&nbsp;EQ&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;TEXT-M01.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;LIST-PROCESSING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;P_MONTH&nbsp;BETWEEN&nbsp;1&nbsp;AND&nbsp;12.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;TEXT-M01.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;LIST-PROCESSING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " CHECK_PARAMETER<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;MAIN100&nbsp;--&gt&nbsp;매출/매출원가&nbsp;계획&nbsp;-&nbsp;CBO&nbsp;수량변경<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;F01&nbsp;양식다운로드<br />
+*&nbsp;H01&nbsp;원가요소그룹<br />
+*&nbsp;H02&nbsp;원가요소그룹명<br />
+*&nbsp;H03&nbsp;원가요소(From)<br />
+*&nbsp;H04&nbsp;원가요소(To)<br />
+*&nbsp;M01&nbsp;해당월을&nbsp;입력하세요.<br />
+*&nbsp;M02&nbsp;입력값을&nbsp;확인하세요.<br />
+*&nbsp;T01&nbsp;추출조건<br />
+*&nbsp;T02&nbsp;월간계획<br />
+*&nbsp;T03&nbsp;해당월<br />
+<br />
+<br />
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_BATCH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Background&nbsp;Processing<br />
+*&nbsp;P_GJAHR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연도<br />
+*&nbsp;P_KOKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;관리회계영역<br />
+*&nbsp;P_MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BDC&nbsp;처리모드<br />
+*&nbsp;P_MONTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;해당월<br />
+*&nbsp;P_RAD1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;연간계획<br />
+*&nbsp;P_RAD2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;월간계획<br />
+*&nbsp;P_VERSI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;버전<br />
+*&nbsp;P_ZMOD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;모듈<br />
+*&nbsp;SO_ARTNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;제품<br />
+*&nbsp;SO_WERKS&nbsp;D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*&nbsp;SO_WWBKL&nbsp;D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;Hard&nbsp;coded<br />
+*&nbsp;&nbsp;&nbsp;Check&nbsp;File&nbsp;Path&nbsp;&&nbsp;File&nbsp;Name.<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;ZCOM<br />
+*000&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

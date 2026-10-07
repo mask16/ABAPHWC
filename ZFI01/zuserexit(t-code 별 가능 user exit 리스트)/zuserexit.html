@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZUSEREXIT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZUSEREXIT</h2>
+<h3> Description: T-code 별 가능 USER EXIT 리스트</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;&nbsp;ZUSEREXIT<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zuserexit NO STANDARD PAGE HEADING.<br />
+<br />
+TABLES : tstc, tadir, modsapt, modact, trdir, tfdir, enlfdir.<br />
+TABLES : tstct.<br />
+DATA : jtab LIKE tadir OCCURS 0 WITH HEADER LINE.<br />
+DATA : field1(30).<br />
+DATA : v_devclass LIKE tadir-devclass.<br />
+<br />
+PARAMETERS : p_tcode LIKE tstc-tcode OBLIGATORY.<br />
+<br />
+SELECT SINGLE * FROM tstc WHERE tcode EQ p_tcode.<br />
+IF sy-subrc EQ 0.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tadir&nbsp;WHERE&nbsp;pgmid&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;object&nbsp;=&nbsp;'PROG'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;obj_name&nbsp;=&nbsp;tstc-pgmna.<br />
+&nbsp;&nbsp;MOVE&nbsp;:&nbsp;tadir-devclass&nbsp;TO&nbsp;v_devclass.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;trdir&nbsp;WHERE&nbsp;name&nbsp;=&nbsp;tstc-pgmna.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;trdir-subc&nbsp;EQ&nbsp;'F'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tfdir&nbsp;WHERE&nbsp;pname&nbsp;=&nbsp;tstc-pgmna.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;enlfdir&nbsp;WHERE&nbsp;funcname&nbsp;=<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tfdir-funcname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tadir&nbsp;WHERE&nbsp;pgmid&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;object&nbsp;=&nbsp;'FUGR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;obj_name&nbsp;EQ&nbsp;enlfdir-area.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;tadir-devclass&nbsp;TO&nbsp;v_devclass.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;tadir&nbsp;INTO&nbsp;TABLE&nbsp;jtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;pgmid&nbsp;=&nbsp;'R3TR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;object&nbsp;=&nbsp;'SMOD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;devclass&nbsp;=&nbsp;v_devclass.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;tstct&nbsp;WHERE&nbsp;sprsl&nbsp;EQ&nbsp;sy-langu&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tcode&nbsp;EQ&nbsp;p_tcode.<br />
+&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_POSITIVE&nbsp;INTENSIFIED&nbsp;OFF.<br />
+&nbsp;&nbsp;WRITE:/(19)&nbsp;'Transaction&nbsp;Code&nbsp;-&nbsp;',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20(20)&nbsp;p_tcode,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;45(50)&nbsp;tstct-ttext.<br />
+&nbsp;&nbsp;SKIP.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;jtab[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(95)&nbsp;sy-uline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_HEADING&nbsp;INTENSIFIED&nbsp;ON.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/1&nbsp;sy-vline,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;'Exit&nbsp;Name',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;21&nbsp;sy-vline&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;'Description',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95&nbsp;sy-vline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(95)&nbsp;sy-uline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;jtab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;modsapt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;sprsl&nbsp;=&nbsp;sy-langu&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;=&nbsp;jtab-obj_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_NORMAL&nbsp;INTENSIFIED&nbsp;OFF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/1&nbsp;sy-vline,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;jtab-obj_name&nbsp;HOTSPOT&nbsp;ON,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;21&nbsp;sy-vline&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22&nbsp;modsapt-modtext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;95&nbsp;sy-vline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(95)&nbsp;sy-uline.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;jtab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SKIP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_TOTAL&nbsp;INTENSIFIED&nbsp;ON.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/&nbsp;'No&nbsp;of&nbsp;Exits:'&nbsp;,&nbsp;sy-tfill.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_NEGATIVE&nbsp;INTENSIFIED&nbsp;ON.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:/(95)&nbsp;'No&nbsp;User&nbsp;Exit&nbsp;exists'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ELSE.<br />
+&nbsp;&nbsp;FORMAT&nbsp;COLOR&nbsp;COL_NEGATIVE&nbsp;INTENSIFIED&nbsp;ON.<br />
+&nbsp;&nbsp;WRITE:/(95)&nbsp;'Transaction&nbsp;Code&nbsp;Does&nbsp;Not&nbsp;Exist'.<br />
+ENDIF.<br />
+<br />
+AT LINE-SELECTION.<br />
+&nbsp;&nbsp;GET&nbsp;CURSOR&nbsp;FIELD&nbsp;field1.<br />
+&nbsp;&nbsp;CHECK&nbsp;field1(4)&nbsp;EQ&nbsp;'JTAB'.<br />
+&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'MON'&nbsp;FIELD&nbsp;sy-lisel+1(10).<br />
+&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'SMOD'&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;&nbsp;&nbsp;SCREEN.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_TCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;트랜잭션<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

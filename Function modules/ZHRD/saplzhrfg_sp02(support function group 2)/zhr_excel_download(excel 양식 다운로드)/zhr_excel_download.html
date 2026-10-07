@@ -1,0 +1,594 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHR_EXCEL_DOWNLOAD</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZHR_EXCEL_DOWNLOAD</h2>
+<h3> Description: Excel 양식 다운로드</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZHR_EXCEL_DOWNLOAD.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(FILE_NAME) TYPE  RLGRAP-FILENAME<br />
+*"     VALUE(DATA_SHEET_NAME) TYPE  RLGRAP-FILENAME DEFAULT SPACE<br />
+*"     VALUE(PASSWORD) DEFAULT SPACE<br />
+*"     VALUE(PASSWORD_OPTION) DEFAULT 0<br />
+*"     VALUE(VISIBLE) DEFAULT '0'<br />
+*"  TABLES<br />
+*"      PIVOT_FIELD_TAB STRUCTURE  EXCELPIVOT OPTIONAL<br />
+*"      DATA_TAB<br />
+*"      FIELDNAMES<br />
+*"  EXCEPTIONS<br />
+*"      FILE_NOT_EXIST<br />
+*"      FILENAME_EXPECTED<br />
+*"      COMMUNICATION_ERROR<br />
+*"      OLE_OBJECT_METHOD_ERROR<br />
+*"      OLE_OBJECT_PROPERTY_ERROR<br />
+*"      INVALID_PIVOT_FIELDS<br />
+*"      DOWNLOAD_PROBLEM<br />
+*"----------------------------------------------------------------------<br />
+<br />
+* ZHR_EXCEL_OLE_STANDARD_DAT 의 REBUILD 펑션<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zhr_excel_download.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;SPALTE&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NROWS&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NCOLS&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_COLS&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MY_SUBRC&nbsp;LIKE&nbsp;SY-SUBRC,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COL_SELECT&nbsp;TYPE&nbsp;CHAR01,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COL_SELECT_MASK&nbsp;TYPE&nbsp;CHAR255.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;I&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HILF(4),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HIDE_DATA_SHEET&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PIVOT_DATAFIELD_FLAG&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_OPERATION&nbsp;LIKE&nbsp;EXCELPIVOT-OPERATION,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PASSWORT(15).<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;CNT&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;TYPE&nbsp;STRING.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_FILE_NAME&nbsp;TYPE&nbsp;&nbsp;RLGRAP-FILENAME.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltF&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFIELD&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltDATA_TAB_WA&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFIELDNAME&gt&nbsp;TYPE&nbsp;ANY.<br />
+<br />
+&nbsp;&nbsp;SET&nbsp;LOCALE&nbsp;LANGUAGE&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;TRANSLATE&nbsp;FILE_NAME&nbsp;TO&nbsp;UPPER&nbsp;CASE.<br />
+&nbsp;&nbsp;IF&nbsp;FILE_NAME&nbsp;EQ&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;FILENAME_EXPECTED.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;I&nbsp;=&nbsp;STRLEN(&nbsp;FILE_NAME&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;I&nbsp;=&nbsp;I&nbsp;-&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I&nbsp;&lt&nbsp;0.&nbsp;I&nbsp;=&nbsp;0.&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"B20K081175<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;FILE_NAME+I(4)&nbsp;TO&nbsp;HILF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;HILF&nbsp;&lt&gt&nbsp;'.DAT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;L_FILE_NAME.<br />
+   </div>
+   <div class="codeComment">
+* CONCATENATE file_name '.DAT' INTO L_FILE_NAME.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FILE_NAME&nbsp;=&nbsp;FILE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*=====================================================================<br />
+* Sind die Tabellen DATA_TAB und Fieldnames gef#llt -&gt Daten auf den<br />
+* PC transferieren.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;DATA_TAB&nbsp;LINES&nbsp;NROWS.<br />
+&nbsp;&nbsp;IF&nbsp;NROWS&nbsp;&gt&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Tabelle&nbsp;ist&nbsp;gef#llt<br />
+   </div>
+   <div class="codeComment">
+* Feststellen wieviele Spalten die DATA_TAB enth#lt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;MY_SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SPALTE&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHILE&nbsp;MY_SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;SPALTE&nbsp;OF&nbsp;STRUCTURE&nbsp;DATA_TAB&nbsp;TO&nbsp;&ltF&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_COLS&nbsp;=&nbsp;DATA_COLS&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPALTE&nbsp;=&nbsp;SPALTE&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MY_SUBRC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SPALTE&nbsp;=&nbsp;SPALTE&nbsp;-&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+*add the header to the data table<br />
+* 데이타의 Fieldname을 넣기위해 initial line 추가<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;INITIAL&nbsp;LINE&nbsp;INTO&nbsp;DATA_TAB&nbsp;INDEX&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+** #berschriften m#ssen vorhanden sein<br />
+* DESCRIBE TABLE FIELDNAMES LINES NCOLS.<br />
+* IF NCOLS &gt 0.<br />
+* READ TABLE DATA_TAB INDEX 1 ASSIGNING &ltDATA_TAB_WA&gt.<br />
+* CHECK SY-SUBRC EQ 0.<br />
+* CNT = 0.<br />
+* WHILE SY-SUBRC EQ 0.<br />
+* CNT = CNT + 1.<br />
+* ASSIGN COMPONENT CNT OF STRUCTURE &ltDATA_TAB_WA&gt TO &ltFIELD&gt.<br />
+* CHECK SY-SUBRC EQ 0.<br />
+* READ TABLE FIELDNAMES INDEX CNT ASSIGNING &ltFIELDNAME&gt.<br />
+* IF SY-SUBRC EQ 0.<br />
+* &ltFIELD&gt = &ltFIELDNAME&gt.<br />
+* ELSE.<br />
+* SY-SUBRC = 0.<br />
+* WRITE CNT TO &ltFIELD&gt LEFT-JUSTIFIED.<br />
+* ENDIF.<br />
+* ENDWHILE.<br />
+** Es werden nur die Spalten an MS Excel #bertragen, f#r<br />
+** welche #berschriften vorhanden sind<br />
+* DO NCOLS TIMES.<br />
+* CONCATENATE COL_SELECT_MASK 'X' INTO COL_SELECT_MASK.<br />
+* ENDDO.<br />
+* COL_SELECT = 'X'.<br />
+* ENDIF.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;TRANSLATE_DATA&nbsp;TABLES&nbsp;DATA_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;=&nbsp;L_FILE_NAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FILENAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE_FIELD_SEPARATOR&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUNC_TRAILING_BLANKS&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COL_SELECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;COL_SELECT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COL_SELECT_MASK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;COL_SELECT_MASK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;DATA_TAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_WRITE_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_BATCH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GUI_REFUSE_FILETRANSFER&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVALID_TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_AUTHORITY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNKNOWN_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEADER_NOT_ALLOWED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEPARATOR_NOT_ALLOWED&nbsp;&nbsp;&nbsp;=&nbsp;8<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILESIZE_NOT_ALLOWED&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;9<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEADER_TOO_LONG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;10<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DP_ERROR_CREATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;11<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DP_ERROR_SEND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;12<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DP_ERROR_WRITE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;13<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNKNOWN_DP_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;14<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACCESS_DENIED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;15<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DP_OUT_OF_MEMORY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;16<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISK_FULL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;17<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DP_TIMEOUT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;18<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_NOT_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;19<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATAPROVIDER_EXCEPTION&nbsp;&nbsp;=&nbsp;20<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTROL_FLUSH_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;21<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;22.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;DOWNLOAD_PROBLEM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*=====================================================================<br />
+* Statusinformation<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'                 "XJFK000448<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TEXT-003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;PERFORM&nbsp;CHECK_DAT_FILE&nbsp;USING&nbsp;L_FILE_NAME.<br />
+   </div>
+   <div class="codeComment">
+*IF CREATE_PIVOT &gt 0. "#EC PORTABLE<br />
+* CLEAR PIVOT_FIELD_TAB.<br />
+* DESCRIBE TABLE PIVOT_FIELD_TAB LINES SY-TFILL.<br />
+* IF SY-TFILL = 0.<br />
+* RAISE INVALID_PIVOT_FIELDS.<br />
+* ENDIF.<br />
+* ENDIF.<br />
+* IF CREATE_PIVOT = 2.<br />
+* HIDE_DATA_SHEET = 1.<br />
+* CREATE_PIVOT = 1.<br />
+* ENDIF.<br />
+*----------------------------------------------------------------<br />
+* corrected version:<br />
+* - excel keeps running after the end of the R/3 mode<br />
+* - corrected releasing of the OLE objects<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;OLE_BOOKS&nbsp;TYPE&nbsp;OLE2_OBJECT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLE_SHEETS&nbsp;TYPE&nbsp;OLE2_OBJECT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERRCODE&nbsp;LIKE&nbsp;SY-SUBRC.<br />
+   </div>
+   <div class="codeComment">
+*start excel<br />
+*===&gt 단일 EXCEL 실행으로 변경함.<br />
+* CREATE OBJECT OBJ_EX_SHEET 'EXCEL.SHEET'.<br />
+* IF SY-SUBRC NE 0.<br />
+* ERRCODE = SY-SUBRC.<br />
+* FREE OBJECT OBJ_EX_SHEET.<br />
+* PERFORM ERROR_HANDLING_MS_EXCEL USING FILE_NAME ERRCODE.<br />
+* ENDIF.<br />
+*<br />
+* CALL METHOD OF<br />
+* OBJ_EX_SHEET<br />
+* 'Application' = OBJ_EX_APP.<br />
+* IF SY-SUBRC NE 0.<br />
+* ERRCODE = SY-SUBRC.<br />
+* FREE OBJECT OBJ_EX_APP.<br />
+* FREE OBJECT OBJ_EX_SHEET.<br />
+* PERFORM ERROR_HANDLING_MS_EXCEL USING FILE_NAME ERRCODE.<br />
+* ENDIF.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;OBJ_EX_APP&nbsp;'Excel.Application'.<br />
+   </div>
+   <div class="codeComment">
+*================================================&lt<br />
+*SET PROPERTY OF obj_ex_app 'Visible' = 1.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SET&nbsp;PROPERTY&nbsp;OF&nbsp;OBJ_EX_APP&nbsp;'Visible'&nbsp;=&nbsp;VISIBLE.&nbsp;&nbsp;&nbsp;"1.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_APP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Workbooks'&nbsp;=&nbsp;OLE_BOOKS.<br />
+   </div>
+   <div class="codeComment">
+*open data file<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLE_BOOKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Open'&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;OBJ_EX_WBOOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_FILE_NAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ERRCODE&nbsp;=&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_WBOOK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_APP.<br />
+   </div>
+   <div class="codeComment">
+*    FREE OBJECT OBJ_EX_SHEET.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;ERROR_HANDLING_MS_EXCEL&nbsp;USING&nbsp;L_FILE_NAME&nbsp;ERRCODE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 제목 쓰기 추가<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;WRITE_FIELDNAMES&nbsp;TABLES&nbsp;FIELDNAMES.<br />
+&nbsp;&nbsp;DELETE&nbsp;DATA_TAB&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OLE_BOOKS.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_WBOOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Worksheets'&nbsp;=&nbsp;OLE_SHEETS.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLE_SHEETS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Item'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;OBJ_EX_WSHEET1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OLE_SHEETS.<br />
+   </div>
+   <div class="codeComment">
+*copy sheet and the delete the original<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_WSHEET1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Copy'.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_WSHEET1.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_WBOOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Close'<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_WBOOK.<br />
+&nbsp;&nbsp;GET&nbsp;PROPERTY&nbsp;OF&nbsp;OBJ_EX_APP&nbsp;'ActiveWorkbook'&nbsp;=&nbsp;OBJ_EX_WBOOK.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_WBOOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Worksheets'&nbsp;=&nbsp;OLE_SHEETS.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OLE_SHEETS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Item'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;OBJ_EX_WSHEET1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OLE_SHEETS.<br />
+&nbsp;&nbsp;GET&nbsp;PROPERTY&nbsp;OF&nbsp;OBJ_EX_WSHEET1&nbsp;'UsedRange'&nbsp;=&nbsp;OBJ_EX_USEDRANGE1.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_USEDRANGE1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'AutoFormat'<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;18.<br />
+&nbsp;&nbsp;IF&nbsp;DATA_SHEET_NAME&nbsp;NE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PROPERTY&nbsp;OF&nbsp;OBJ_EX_WSHEET1&nbsp;'Name'&nbsp;=&nbsp;DATA_SHEET_NAME.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*check if old excelfile exists<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REPLACE&nbsp;'.DAT'&nbsp;WITH&nbsp;'.XLS'&nbsp;INTO&nbsp;L_FILE_NAME.<br />
+&nbsp;&nbsp;PERFORM&nbsp;DELETE_DATA_FILE&nbsp;USING&nbsp;L_FILE_NAME.<br />
+   </div>
+   <div class="codeComment">
+* IF CREATE_PIVOT = 1.<br />
+** create pivottable<br />
+* GET PROPERTY OF OBJ_EX_USEDRANGE1 'Count' = N.<br />
+* CALL METHOD OF<br />
+* OBJ_EX_APP<br />
+* 'Worksheets' = OBJ_EX_WSHEETS.<br />
+* CALL METHOD OF<br />
+* OBJ_EX_WSHEETS<br />
+* 'Add'.<br />
+* GET PROPERTY OF OBJ_EX_APP 'ActiveSheet' = OBJ_EX_WSHEET2.<br />
+* CALL METHOD OF<br />
+* OBJ_EX_WSHEET2<br />
+* 'Cells' = OBJ_EX_STARTCELL<br />
+* EXPORTING<br />
+* #1 = 1<br />
+* #2 = 1.<br />
+* IF HIDE_DATA_SHEET = 1 .<br />
+* SET PROPERTY OF OBJ_EX_WSHEET1 'Visible' = 0.<br />
+* ENDIF.<br />
+* CALL METHOD OF<br />
+* OBJ_EX_WSHEET2<br />
+* 'PivotTableWizard'<br />
+* EXPORTING<br />
+* #1 = 1<br />
+* #2 = OBJ_EX_USEDRANGE1<br />
+* #3 = OBJ_EX_STARTCELL<br />
+* #4 = 'XXX'<br />
+* #5 = 1<br />
+* #6 = 1<br />
+* #7 = 0.<br />
+* CALL METHOD OF<br />
+* OBJ_EX_WSHEET2<br />
+* 'PivotTables' = OBJ_EX_PIVOT<br />
+* EXPORTING<br />
+* #1 = 1.<br />
+*<br />
+* LOOP AT PIVOT_FIELD_TAB.<br />
+* CALL METHOD OF<br />
+* OBJ_EX_PIVOT<br />
+* 'PivotFields' = OBJ_EX_PIVOT_FIELD<br />
+* EXPORTING<br />
+* #1 = PIVOT_FIELD_TAB-FIELD.<br />
+* IF PIVOT_FIELD_TAB-PAGEFLD = 'X'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Orientation' = 3.<br />
+* ENDIF.<br />
+* IF PIVOT_FIELD_TAB-ROWFLD = 'X'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Orientation' = 1.<br />
+* ENDIF.<br />
+* IF PIVOT_FIELD_TAB-COLUMNFLD = 'X'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Orientation' = 2.<br />
+* ENDIF.<br />
+* IF PIVOT_FIELD_TAB-DATAFLD = 'X'.<br />
+* PIVOT_DATAFIELD_FLAG = 1.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Orientation' = 4.<br />
+* DATA_OPERATION = PIVOT_FIELD_TAB-OPERATION.<br />
+* SET LOCALE LANGUAGE SY-LANGU.<br />
+* TRANSLATE DATA_OPERATION TO UPPER CASE.<br />
+* CASE DATA_OPERATION. " Count = Exceldefault<br />
+* WHEN 'SUM'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Function' = 0.<br />
+* WHEN 'COUNT'. "XJFK101933<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Function' = 1. "!<br />
+* WHEN 'AVERAGE'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Function' = 2.<br />
+* WHEN 'MAX'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Function' = 3.<br />
+* WHEN 'MIN'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Function' = 4.<br />
+* WHEN 'PRODUCT'.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Function' = 5.<br />
+* ENDCASE.<br />
+* ENDIF.<br />
+* FREE OBJECT OBJ_EX_PIVOT_FIELD. "FRANK<br />
+* ENDLOOP.<br />
+*<br />
+* IF PIVOT_DATAFIELD_FLAG = 0. "Pivottabelle braucht ein Datafield!<br />
+* CALL METHOD OF<br />
+* OBJ_EX_PIVOT<br />
+* 'PivotFields' = OBJ_EX_PIVOT_FIELD<br />
+* EXPORTING<br />
+* #1 = 1.<br />
+* SET PROPERTY OF OBJ_EX_PIVOT_FIELD 'Orientation' = 4.<br />
+* FREE OBJECT OBJ_EX_PIVOT_FIELD. "FRANK<br />
+* ENDIF.<br />
+* IF PIVOT_SHEET_NAME NE SPACE.<br />
+* SET PROPERTY OF OBJ_EX_WSHEET2 'Name' = PIVOT_SHEET_NAME.<br />
+* ELSE.<br />
+* SET PROPERTY OF OBJ_EX_WSHEET2 'Name' = 'PIVOT'.<br />
+* ENDIF.<br />
+*<br />
+** release OLE objects of the pivot table<br />
+* FREE OBJECT OBJ_EX_PIVOT.<br />
+* FREE OBJECT OBJ_EX_STARTCELL.<br />
+* FREE OBJECT OBJ_EX_WSHEET2.<br />
+* FREE OBJECT OBJ_EX_WSHEETS.<br />
+* ENDIF. "pivot_create<br />
+*===========================&gt 수정부분 BY HRA01<br />
+* SET PROPERTY OF obj_ex_app 'Visible' = 1. "XJFK001174<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SET&nbsp;PROPERTY&nbsp;OF&nbsp;OBJ_EX_APP&nbsp;'Visible'&nbsp;=&nbsp;VISIBLE.<br />
+   </div>
+   <div class="codeComment">
+*====================================================&lt<br />
+*set password option and set password<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CASE&nbsp;PASSWORD_OPTION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"No&nbsp;Password<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;PASSWORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_WBOOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SaveAs'<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_FILE_NAME&nbsp;&nbsp;&nbsp;"filename<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"fileFormat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Use&nbsp;PASSWORD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PASSWORT&nbsp;=&nbsp;PASSWORD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_WBOOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SaveAs'<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_FILE_NAME&nbsp;&nbsp;&nbsp;&nbsp;"filename<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"fileFormat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PASSWORT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"password<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Create&nbsp;Password<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CREATE_PASSWORD&nbsp;USING&nbsp;PASSWORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_WBOOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SaveAs'<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_FILE_NAME&nbsp;&nbsp;&nbsp;&nbsp;"filename<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"fileFormat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PASSWORT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"password<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+   </div>
+   <div class="codeComment">
+*CALL METHOD OF obj_ex_wbook 'Close' EXPORTING #1 = 0.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJ_EX_APP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Quit'.<br />
+   </div>
+   <div class="codeComment">
+*force flush<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'FLUSH'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*delete datafile<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REPLACE&nbsp;'.XLS'&nbsp;WITH&nbsp;'.DAT'&nbsp;INTO&nbsp;L_FILE_NAME.<br />
+&nbsp;&nbsp;PERFORM&nbsp;DELETE_DATA_FILE&nbsp;USING&nbsp;L_FILE_NAME.<br />
+   </div>
+   <div class="codeComment">
+*release OLE objects of the data table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_WSHEET1.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_WBOOK.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_USEDRANGE1.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;OBJ_EX_APP.<br />
+   </div>
+   <div class="codeComment">
+* FREE OBJECT OBJ_EX_SHEET. "꼭 막기<br />
+*force flush<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'FLUSH'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;=&nbsp;0.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ALSMEX<br />
+*037   클립보드내용의 Import중에 오류가 발생했습니다<br />
+*<br />
+* Message class: KX<br />
+*001   & & & &<br />
+*<br />
+* Message class: PBAS_SERVICE<br />
+*001   개인이 사용자 &3 &4에 의해 이미 처리되었습니다.<br />
+*<br />
+* Message class: V1<br />
+*899   &1 &2 &3 &4<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

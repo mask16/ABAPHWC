@@ -1,0 +1,1242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZQM_REVERSE_UD_STOCK_POSTING</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZQM_REVERSE_UD_STOCK_POSTING</h2>
+<h3> Description: 사용결정 재고전기 취소</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zqm_reverse_ud_stock_posting.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_PRUEFLOS) TYPE  QALS-PRUEFLOS<br />
+*"     REFERENCE(I_DATLO) TYPE  SY-DATLO<br />
+*"  EXPORTING<br />
+*"     REFERENCE(O_MSG) TYPE  STRING<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zqm_reverse_ud_stock_posting.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CHECK&nbsp;i_prueflos&nbsp;IS&nbsp;NOT&nbsp;INITIAL&nbsp;AND&nbsp;i_datlo&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;o_msg.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;enqueue_qals&nbsp;USING&nbsp;i_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;sy-msgid&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid) VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;read_qals&nbsp;USING&nbsp;i_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_qals_leiste<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'QA'&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;'102'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;i_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;check_lot&nbsp;USING&nbsp;g_qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;g_subrc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;256.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Lot&nbsp;&&nbsp;does&nbsp;not&nbsp;refer&nbsp;to&nbsp;a&nbsp;material&nbsp;doc'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;128.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Material&nbsp;&&nbsp;is&nbsp;serialized'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&'&nbsp;WITH&nbsp;g_qals-matnr&nbsp;INTO&nbsp;g_msgv1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;64.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Lot&nbsp;&&nbsp;is&nbsp;not&nbsp;stock&nbsp;relevant'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;32.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Lot&nbsp;&:&nbsp;No&nbsp;stock&nbsp;transferred'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;16.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Lot&nbsp;&&nbsp;is&nbsp;cancelled'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Lot&nbsp;&&nbsp;is&nbsp;archived'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Lot&nbsp;&&nbsp;is&nbsp;blocked'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'Lot&nbsp;&&nbsp;is&nbsp;HU&nbsp;managed'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&'&nbsp;WITH&nbsp;i_prueflos&nbsp;INTO&nbsp;g_msgv1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'00'&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;'208'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;g_msgv1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;read_qamb&nbsp;USING&nbsp;g_qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_qamb_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'QA'&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;'068'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;i_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;read_mkpf&nbsp;USING&nbsp;g_qamb_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;sy-msgid&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;check_mkpf&nbsp;USING&nbsp;g_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'QA'&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;'068'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;i_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;read_mseg&nbsp;USING&nbsp;g_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;sy-msgid&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid). "VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;check_mseg&nbsp;USING&nbsp;g_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_qamb_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'QA'&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;'068'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;i_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;create_goods_movement&nbsp;USING&nbsp;g_qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_datlo.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'QA'&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;'068'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;i_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;post_goods_movement.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;post_data&nbsp;USING&nbsp;g_qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_qals_leiste<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_qamb_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_qamb_vb_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_subrc.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;g_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;sy-msgid&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK&nbsp;AND&nbsp;WAIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;g_msgv1&nbsp;=&nbsp;'inspection&nbsp;lot&nbsp;&'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;'&'&nbsp;WITH&nbsp;i_prueflos&nbsp;INTO&nbsp;g_msgv1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;'00'&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;'368'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;'Stock&nbsp;posting&nbsp;reversed&nbsp;for&nbsp;'&nbsp;g_msgv1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;o_msg.<br />
+   </div>
+   <div class="codeComment">
+*    SUBMIT (sy-repid)." VIA SELECTION-SCREEN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  ENQUEUE_QALS                                             *<br />
+*----------------------------------------------------------------------*<br />
+*       Los sperren                                                    *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM enqueue_qals USING p_prueflos LIKE qals-prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;p_subrc.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EQQALS1'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prueflos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreign_lock&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;sy-subrc.<br />
+<br />
+ENDFORM.                               " ENQUEUE_QALS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  READ_QALS                                                *<br />
+*----------------------------------------------------------------------*<br />
+*       Pruflos lesen                                                  *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM read_qals USING p_prueflos    LIKE qals-prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals_leiste&nbsp;LIKE&nbsp;qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;p_subrc.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'QPSE_LOT_READ'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_prueflos&nbsp;&nbsp;=&nbsp;p_prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_reset_lot&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e_qals&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_lot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;IF&nbsp;p_subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_qals_leiste&nbsp;=&nbsp;p_qals.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;p_qals,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals_leiste.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                               " READ_QALS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  CHECK_LOT                                                *<br />
+*----------------------------------------------------------------------*<br />
+*       Pruflos prufen                                                 *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM check_lot USING p_qals  LIKE qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_stat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;jstat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_stat_tab&nbsp;&nbsp;LIKE&nbsp;jstat&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;256.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/No reference to material document<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;p_qals-zeile&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;128.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Serialized Material<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_qals-sernp&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;64.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/BERF<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_CHECK'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'I0203'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status_not_active&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;32.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/BTEI & BEND<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;l_stat.&nbsp;CLEAR&nbsp;l_stat_tab.&nbsp;REFRESH&nbsp;l_stat_tab.<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0219'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"BTEI<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0220'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"BEND<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_OBJECT_CHECK_MULTI'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status_check&nbsp;=&nbsp;l_stat_tab.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;l_stat_tab[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;16.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/LSTO & LSTV<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;l_stat.&nbsp;CLEAR&nbsp;l_stat_tab.&nbsp;REFRESH&nbsp;l_stat_tab.<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0224'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"LSTO<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0232'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"LSTV<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_OBJECT_CHECK_MULTI'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status_check&nbsp;=&nbsp;l_stat_tab.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;l_stat_tab[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;8.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/ARSP & ARCH & REO1 & REO2 & REO3<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;l_stat.&nbsp;CLEAR&nbsp;l_stat_tab.&nbsp;REFRESH&nbsp;l_stat_tab.<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0225'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"ARSP<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0226'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"ARCH<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0227'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"REO3<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0228'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"REO2<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0229'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"REO1<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_OBJECT_CHECK_MULTI'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status_check&nbsp;=&nbsp;l_stat_tab.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;l_stat_tab[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/SPER<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_CHECK'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'I0043'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status_not_active&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/HUM<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_CHECK'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'I0443'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status_not_active&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+ENDFORM.                               " CHECK_LOT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  READ_QAMB                                                *<br />
+*----------------------------------------------------------------------*<br />
+*       QAMBs lesen                                                    *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM read_qamb USING p_qals     LIKE qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qamb_tab&nbsp;TYPE&nbsp;qambtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;p_subrc.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;qamb&nbsp;INTO&nbsp;TABLE&nbsp;p_qamb_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;prueflos&nbsp;=&nbsp;&nbsp;p_qals-prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;typ&nbsp;&nbsp;&nbsp;=&nbsp;'3'.<br />
+<br />
+&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;sy-subrc.<br />
+<br />
+ENDFORM.                               " READ_QAMB<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  READ_MKPF                                                *<br />
+*----------------------------------------------------------------------*<br />
+*       Read material document header                                  *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM read_mkpf USING p_qamb_tab TYPE qambtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_mkpf_tab&nbsp;TYPE&nbsp;t_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;l_mkpf_key_tab&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mblnr&nbsp;LIKE&nbsp;mkpf-mblnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mjahr&nbsp;LIKE&nbsp;mkpf-mjahr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;l_mkpf_key_tab.<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_qamb&nbsp;&nbsp;&nbsp;LIKE&nbsp;qamb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mkpf&nbsp;&nbsp;&nbsp;LIKE&nbsp;mkpf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_trtyp&nbsp;&nbsp;LIKE&nbsp;t158-trtyp&nbsp;VALUE&nbsp;'A',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_vgart&nbsp;&nbsp;LIKE&nbsp;t158-vgart&nbsp;VALUE&nbsp;'WQ',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_xexit&nbsp;&nbsp;LIKE&nbsp;qm00-qkz.<br />
+<br />
+&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;4.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;p_qamb_tab&nbsp;INTO&nbsp;l_qamb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mkpf_key_tab-mblnr&nbsp;=&nbsp;l_qamb-mblnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mkpf_key_tab-mjahr&nbsp;=&nbsp;l_qamb-mjahr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;l_mkpf_key_tab.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;l_mkpf_key_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMMKPF'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mblnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mkpf_key_tab-mblnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mjahr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mkpf_key_tab-mjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreign_lock&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_failure&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_xexit&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;l_mkpf.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'MB_READ_MATERIAL_HEADER'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mblnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mkpf_key_tab-mblnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mjahr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mkpf_key_tab-mjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trtyp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_trtyp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vgart&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_vgart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kopf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mkpf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_xexit&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;l_mkpf&nbsp;TO&nbsp;p_mkpf_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;l_xexit&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                               " READ_MKPF<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  READ_MSEG                                                *<br />
+*----------------------------------------------------------------------*<br />
+*       MSEGs lesen                                                    *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM read_mseg USING p_mkpf_tab TYPE t_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_mseg_tab&nbsp;TYPE&nbsp;t_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mkpf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;mkpf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mseg_tab&nbsp;LIKE&nbsp;mseg&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_trtyp&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;t158-trtyp&nbsp;VALUE&nbsp;'A',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_xexit&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;qm00-qkz.<br />
+<br />
+&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;4.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;p_mkpf_tab&nbsp;INTO&nbsp;l_mkpf.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;l_mseg_tab.&nbsp;REFRESH:&nbsp;l_mseg_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'MB_READ_MATERIAL_POSITION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mblnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mkpf-mblnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mjahr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mkpf-mjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trtyp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_trtyp<br />
+   </div>
+   <div class="codeComment">
+*/            ZEILB  = P_ZEILE<br />
+*/            ZEILE  = P_ZEILE<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seqtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_xexit&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LINES&nbsp;OF&nbsp;l_mseg_tab&nbsp;TO&nbsp;p_mseg_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;l_xexit&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*/  XAuto-Zeilen und Chargenzustandsanderung werden geloscht<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;p_mseg_tab&nbsp;WHERE&nbsp;xauto&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;bwart&nbsp;EQ&nbsp;'341'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;bwart&nbsp;EQ&nbsp;'342'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                               " READ_MSEG<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  CREATE_GOODS_MOVEMENT                                    *<br />
+*----------------------------------------------------------------------*<br />
+*       Warenbewegung anlegen                                          *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM create_goods_movement USING p_qals     LIKE qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_mseg_tab&nbsp;TYPE&nbsp;t_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_datlo&nbsp;&nbsp;&nbsp;TYPE&nbsp;sy-datum.<br />
+<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_lmengezub&nbsp;LIKE&nbsp;qals-lmengezub,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_lmengegeb&nbsp;LIKE&nbsp;qals-lmengezub,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mbqss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;mbqss,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_imkpf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;imkpf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_imseg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;imseg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_imseg_tab&nbsp;LIKE&nbsp;imseg&nbsp;OCCURS&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_emkpf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;emkpf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_emseg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;emseg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_emseg_tab&nbsp;LIKE&nbsp;emseg&nbsp;OCCURS&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mseg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;mseg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mseg_tab&nbsp;&nbsp;LIKE&nbsp;mseg&nbsp;&nbsp;OCCURS&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_tcode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-tcode&nbsp;VALUE&nbsp;'QA11',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_tabix&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-tabix&nbsp;VALUE&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_xstbw&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;t156-xstbw,<br />
+&nbsp;&nbsp;&nbsp;l_vmenge03_bwart&nbsp;LIKE&nbsp;mseg-bwart.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;p_subrc.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/QAMB initialisieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'QAMB_REFRESH_DATA'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Kopf fullen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;l_imkpf-bldat&nbsp;=&nbsp;p_datlo.<br />
+&nbsp;&nbsp;l_imkpf-budat&nbsp;=&nbsp;p_datlo.<br />
+&nbsp;&nbsp;l_imkpf-bktxt&nbsp;=&nbsp;'Cancellation&nbsp;of&nbsp;QM&nbsp;UD&nbsp;postings'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Ursprungliche zu buchende Menge merken + inkrementieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;l_lmengezub&nbsp;=&nbsp;p_qals-lmengezub.<br />
+&nbsp;&nbsp;l_lmengegeb&nbsp;=&nbsp;&nbsp;&nbsp;p_qals-lmenge01<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge02<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge03<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge04<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge05<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge06<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge07<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge08<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;p_qals-lmenge09.<br />
+&nbsp;&nbsp;IF&nbsp;p_qals-stat11&nbsp;IS&nbsp;NOT&nbsp;INITIAL&nbsp;AND&nbsp;p_qals-lmenge03&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;ls_tq07m&nbsp;LIKE&nbsp;tq07m.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DATA:&nbsp;s_tq07m_buf&nbsp;LIKE&nbsp;tq07m&nbsp;OCCURS&nbsp;9.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;tq07m&nbsp;INTO&nbsp;TABLE&nbsp;s_tq07m_buf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;feldname&nbsp;LIKE&nbsp;'VMENGE%'&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;s_tq07m_buf&nbsp;BY&nbsp;feldname&nbsp;ASCENDING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;herkunft&nbsp;ASCENDING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;s_tq07m_buf&nbsp;INTO&nbsp;ls_tq07m<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;feldname&nbsp;=&nbsp;'VMENGE03'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;herkunft&nbsp;=&nbsp;'&nbsp;'&nbsp;BINARY&nbsp;SEARCH.<br />
+   </div>
+   <div class="codeComment">
+*   Binare Suche mit Feld und Herkunft<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;ls_tq07m-bwartwesp&nbsp;TO&nbsp;l_vmenge03_bwart.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Zeilen aufbauen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;l_mseg_tab[]&nbsp;=&nbsp;p_mseg_tab[].<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;l_mseg_tab&nbsp;INTO&nbsp;l_mseg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;l_mseg&nbsp;&nbsp;TO&nbsp;l_mbqss.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;l_mbqss&nbsp;TO&nbsp;l_imseg.<br />
+   </div>
+   <div class="codeComment">
+*/  Referenzbeleg ubergeben, falls Bestellnummer gefullt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;l_mseg-ebeln&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;l_mseg-lfbnr&nbsp;TO&nbsp;l_imseg-lfbnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-lfbja&nbsp;TO&nbsp;l_imseg-lfbja,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-lfpos&nbsp;TO&nbsp;l_imseg-lfpos.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;l_mseg-kdauf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;l_imseg-kdauf.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;l_mseg-kdpos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;l_imseg-kdpos.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;l_mseg-ps_psp_pnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;l_imseg-ps_psp_pnr.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/  Umlagerungsfelder setzen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-ummat&nbsp;&nbsp;TO&nbsp;l_imseg-ummat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-umwrk&nbsp;&nbsp;TO&nbsp;l_imseg-umwrk,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-umlgo&nbsp;&nbsp;TO&nbsp;l_imseg-umlgo,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-umcha&nbsp;&nbsp;TO&nbsp;l_imseg-umcha.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/  Storno-Beleg setzen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;l_mseg-mjahr&nbsp;&nbsp;TO&nbsp;l_imseg-sjahr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-mblnr&nbsp;&nbsp;TO&nbsp;l_imseg-smbln,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_mseg-zeile&nbsp;&nbsp;TO&nbsp;l_imseg-smblp.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/  Falsch gefullte Felder initialisieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;l_imseg-mblnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_imseg-menge,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_imseg-meins.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/  Bewegungsart lesen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;xstbw&nbsp;FROM&nbsp;t156&nbsp;INTO&nbsp;l_xstbw<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bwart&nbsp;=&nbsp;l_imseg-bwart.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/  Werk/Lagerort fullen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_qals-stat11&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_xstbw&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;p_qals-lagortvorg&nbsp;TO&nbsp;l_imseg-lgort.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;p_qals-lagortvorg&nbsp;TO&nbsp;l_imseg-umlgo.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_xstbw&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;p_qals-werkvorg&nbsp;TO&nbsp;l_imseg-werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;p_qals-werkvorg&nbsp;TO&nbsp;l_imseg-umwrk.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/  Zusatzliche Felder<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;p_qals-mengeneinh&nbsp;TO&nbsp;l_imseg-erfme.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"MOVE&nbsp;P_GRUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;L_IMSEG-GRUND.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"MOVE&nbsp;P_ELIKZ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;L_IMSEG-ELIKZ.<br />
+   </div>
+   <div class="codeComment">
+*/  Kennzeichen Storno-Buchung setzen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;l_imseg-xstob.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;p_qals-prueflos&nbsp;&nbsp;&nbsp;TO&nbsp;l_imseg-qplos.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;l_imseg&nbsp;TO&nbsp;l_imseg_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_qals-stat11&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_imseg-erfmg&nbsp;TO&nbsp;&nbsp;&nbsp;l_lmengezub.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;l_imseg-erfmg&nbsp;FROM&nbsp;l_lmengegeb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;(&nbsp;&nbsp;l_imseg-kzbew&nbsp;EQ&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-werks&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-lgort&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umwrk&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-werks&nbsp;EQ&nbsp;l_imseg-umwrk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;EQ&nbsp;l_imseg-umlgo&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;&nbsp;l_imseg-kzbew&nbsp;EQ&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-bwart&nbsp;EQ&nbsp;l_vmenge03_bwart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-werks&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-lgort&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;EQ&nbsp;l_imseg-umlgo&nbsp;).<br />
+   </div>
+   <div class="codeComment">
+*/      Dummy Buchung bei WE-Sperrbestand & Stichprobe<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_imseg-erfmg&nbsp;TO&nbsp;&nbsp;&nbsp;l_lmengezub.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;l_imseg-erfmg&nbsp;FROM&nbsp;l_lmengegeb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_qals-stat11&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*/  Bei WE-Sperrbestand und Stichprobenbuchung Zeilen tauschen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;DO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;l_imseg_tab&nbsp;INDEX&nbsp;sy-index&nbsp;INTO&nbsp;l_imseg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;(&nbsp;sy-subrc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS&nbsp;INITIAL&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_imseg-kzbew&nbsp;EQ&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-werks&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-lgort&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umwrk&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-werks&nbsp;EQ&nbsp;l_imseg-umwrk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;EQ&nbsp;l_imseg-umlgo&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;sy-subrc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS&nbsp;INITIAL&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_imseg-kzbew&nbsp;EQ&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-bwart&nbsp;EQ&nbsp;l_vmenge03_bwart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-werks&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-lgort&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;NE&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;l_imseg-umlgo&nbsp;EQ&nbsp;l_imseg-umlgo&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-tabix&nbsp;NE&nbsp;l_tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;l_imseg_tab&nbsp;INDEX&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;l_imseg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;&nbsp;l_imseg_tab&nbsp;INDEX&nbsp;l_tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tabix&nbsp;=&nbsp;l_tabix&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_tabix&nbsp;=&nbsp;l_tabix&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"from&nbsp;do<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDDO.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/QM deaktivieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'QAAT_QM_ACTIVE_INACTIVE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aktiv&nbsp;=&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*/Buchen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'MB_CREATE_GOODS_MOVEMENT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imkpf&nbsp;=&nbsp;l_imkpf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xallp&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xallr&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ctcod&nbsp;=&nbsp;l_tcode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xqmcl&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;emkpf&nbsp;=&nbsp;l_emkpf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imseg&nbsp;=&nbsp;l_imseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;emseg&nbsp;=&nbsp;l_emseg_tab.<br />
+   </div>
+   <div class="codeComment">
+*/QM wieder aktivieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'QAAT_QM_ACTIVE_INACTIVE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aktiv&nbsp;=&nbsp;'X'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Buchung auswerten<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;l_emkpf-subrc&nbsp;GT&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_emkpf-msgid&nbsp;NE&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*/    Fehler auf Kopfebene<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;l_emkpf-msgid&nbsp;TYPE&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;l_emkpf-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;l_emkpf-msgv1&nbsp;l_emkpf-msgv2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_emkpf-msgv3&nbsp;l_emkpf-msgv4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBMIT&nbsp;(sy-repid)&nbsp;VIA&nbsp;SELECTION-SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*/    Fehler auf Zeilenebene (Ausgabe des ersten Fehlers)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;l_emseg_tab&nbsp;INTO&nbsp;l_emseg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_emseg-msgid&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;l_emseg-msgid&nbsp;TYPE&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;l_emseg-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;l_emseg-msgv1&nbsp;l_emseg-msgv2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_emseg-msgv3&nbsp;l_emseg-msgv4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBMIT&nbsp;(sy-repid)&nbsp;VIA&nbsp;SELECTION-SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;l_emseg_tab&nbsp;INTO&nbsp;l_emseg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'QAMB_COLLECT_RECORD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lotnumber&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-prueflos<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;docyear&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_emkpf-mjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;docnumber&nbsp;&nbsp;&nbsp;=&nbsp;l_emkpf-mblnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;docposition&nbsp;=&nbsp;l_emseg-mblpo<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'7'.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Sonderkorrektur fur Frei-An-Frei & WE-Sperr-An-We-Sperr<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;p_qals-stat11&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_qals-lmenge04&nbsp;EQ&nbsp;l_lmengegeb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge04&nbsp;TO&nbsp;&nbsp;&nbsp;l_lmengezub.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;p_qals-lmenge04&nbsp;FROM&nbsp;l_lmengegeb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;p_qals-insmk&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge01&nbsp;GE&nbsp;l_lmengegeb<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NOT&nbsp;p_qals-lmenge01&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_lmengegeb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;l_lmengezub.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;l_lmengegeb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;l_lmengegeb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;p_qals-stat34,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-matnrneu,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-chargneu,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge01,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge02,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge03,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge04,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge05,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge06,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge07,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge08,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals-lmenge09.<br />
+<br />
+&nbsp;&nbsp;p_qals-lmengezub&nbsp;=&nbsp;l_lmengezub.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;l_lmengegeb&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                               " CREATE_GOODS_MOVEMENT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  POST_GOODS_MOVEMENT                                      *<br />
+*----------------------------------------------------------------------*<br />
+*       Warenbewegung buchen                                           *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM post_goods_movement.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'MB_POST_GOODS_MOVEMENT'.<br />
+<br />
+ENDFORM.                               " POST_GOODS_MOVEMENT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  POST_DATA                                                *<br />
+*----------------------------------------------------------------------*<br />
+*       QM-Daten verbuchen                                             *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM post_data USING p_qals        LIKE qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qals_leiste&nbsp;LIKE&nbsp;qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qamb_tab&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;qambtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qamb_vb_tab&nbsp;TYPE&nbsp;qambtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_stat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;jstat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_stat_tab&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;jstat&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_qamb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;qamb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_updkz&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;qalsvb-upsl&nbsp;VALUE&nbsp;'U'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/QAMBs umsetzen (7 = VE-Buchung storniert)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;p_qamb_tab&nbsp;INTO&nbsp;l_qamb.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_qamb-typ&nbsp;=&nbsp;'7'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;l_qamb&nbsp;TO&nbsp;p_qamb_vb_tab.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/BERF & BTEI zurucknehmen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;l_stat.&nbsp;CLEAR&nbsp;l_stat_tab.<br />
+&nbsp;&nbsp;l_stat-inact&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0219'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"BTEI<br />
+&nbsp;&nbsp;l_stat-stat&nbsp;=&nbsp;'I0220'.&nbsp;APPEND&nbsp;l_stat&nbsp;TO&nbsp;l_stat_tab.&nbsp;"BEND<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_CHANGE_INTERN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_qals-objnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;l_stat_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;sy-msgid&nbsp;TYPE&nbsp;'S'&nbsp;NUMBER&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SUBMIT&nbsp;(sy-repid)&nbsp;VIA&nbsp;SELECTION-SCREEN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Pruflos aktualisieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'QPL1_UPDATE_MEMORY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_qals&nbsp;&nbsp;=&nbsp;p_qals<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_updkz&nbsp;=&nbsp;l_updkz.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'QPL1_INSPECTION_LOTS_POSTING'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_mode&nbsp;=&nbsp;'1'.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'STATUS_UPDATE_ON_COMMIT'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/QAMB initialisieren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'QAMB_REFRESH_DATA'.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;update_qamb&nbsp;ON&nbsp;COMMIT.<br />
+<br />
+&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;0.<br />
+<br />
+ENDFORM.                               " POST_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  UPDATE_QAMB                                              *<br />
+*----------------------------------------------------------------------*<br />
+*       Update auf QAMB                                                *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM update_qamb.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'QEVA_QAMB_CANCEL' IN UPDATE TASK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t_qamb_tab&nbsp;=&nbsp;g_qamb_vb_tab.<br />
+<br />
+ENDFORM.                               " UPDATE_QAMB<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  CHECK_MSEG                                               *<br />
+*----------------------------------------------------------------------*<br />
+*       MSEGs prufen                                                   *<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM check_mseg USING p_mseg_tab TYPE t_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_qamb_tab&nbsp;TYPE&nbsp;qambtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mseg_stor_tab&nbsp;LIKE&nbsp;mseg&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;p_subrc.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*/Zeilen bereits storniert?<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;mblnr&nbsp;mjahr&nbsp;zeile&nbsp;smbln&nbsp;sjahr&nbsp;smblp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;mseg&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;l_mseg_stor_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;p_mseg_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;smbln&nbsp;EQ&nbsp;p_mseg_tab-mblnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;sjahr&nbsp;EQ&nbsp;p_mseg_tab-mjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;smblp&nbsp;EQ&nbsp;p_mseg_tab-zeile.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;l_mseg_stor_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;p_mseg_tab&nbsp;WHERE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mblnr&nbsp;=&nbsp;l_mseg_stor_tab-smbln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;mjahr&nbsp;=&nbsp;l_mseg_stor_tab-sjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;zeile&nbsp;=&nbsp;l_mseg_stor_tab-smblp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;p_qamb_tab&nbsp;WHERE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mblnr&nbsp;=&nbsp;l_mseg_stor_tab-smbln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;mjahr&nbsp;=&nbsp;l_mseg_stor_tab-sjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;zeile&nbsp;=&nbsp;l_mseg_stor_tab-smblp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_mseg_tab[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                               " CHECK_MSEG<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*       Form  CHECK_MKPF                                               *<br />
+*----------------------------------------------------------------------*<br />
+*       Materialbelege prufen (Wurde durch VE-Buchung Prufllos erzeugt?*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM check_mkpf USING p_mkpf_tab TYPE t_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;sy-subrc.<br />
+<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_mkpf_tab&nbsp;TYPE&nbsp;t_mkpf_tab.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;p_subrc.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;mblnr&nbsp;FROM&nbsp;qamb&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;l_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;p_mkpf_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;mblnr&nbsp;EQ&nbsp;p_mkpf_tab-mblnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;mjahr&nbsp;EQ&nbsp;p_mkpf_tab-mjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;typ&nbsp;&nbsp;&nbsp;=&nbsp;'1'.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_subrc&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                               " CHECK_MKPF<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: 00<br />
+*208   &<br />
+*368   &1 &2<br />
+*<br />
+* Message class: QA<br />
+*068   검사로트 &1에 대한 수량전송을 전기할 수 없습니다<br />
+*102   검사로트 &가(이) 아직 생성되지 않았습니다<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

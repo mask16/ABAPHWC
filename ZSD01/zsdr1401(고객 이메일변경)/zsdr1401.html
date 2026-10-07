@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSDR1401</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZSDR1401</h2>
+<h3> Description: 고객 이메일변경</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;ZCHANGE_CUSTOMER_EMAIL<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;이메일&nbsp;변경을&nbsp;위한&nbsp;ABAP&nbsp;프로그램<br />
+*팝업나옴<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+REPORT ZCHANGE_CUSTOMER_EMAIL.<br />
+<br />
+TABLES: KNA1, ADR6.<br />
+<br />
+PARAMETERS: P_KUNNR TYPE KUNNR OBLIGATORY. " 고객코드<br />
+PARAMETERS: P_EMAIL TYPE AD_SMTPADR. " 변경할 이메일<br />
+<br />
+DATA: LV_ADDRNUM TYPE ADRC-ADDRNUMBER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_NAME1&nbsp;TYPE&nbsp;KNA1-NAME1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SMTP&nbsp;TYPE&nbsp;AD_SMTPADR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_RESPONSE.&nbsp;"&nbsp;팝업&nbsp;응답&nbsp;저장&nbsp;변수<br />
+<br />
+DATA: LT_TEXT TYPE TABLE OF STEXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TEXT&nbsp;TYPE&nbsp;STEXT.<br />
+<br />
+START-OF-SELECTION.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;1.&nbsp;고객&nbsp;주소번호(Address&nbsp;Number)&nbsp;및&nbsp;이름&nbsp;확인<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;ADRNR&nbsp;NAME1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(LV_ADDRNUM,&nbsp;LV_NAME1)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;KNA1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;KUNNR&nbsp;=&nbsp;P_KUNNR.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'해당&nbsp;고객번호를&nbsp;찾을&nbsp;수&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;2.&nbsp;현재&nbsp;이메일&nbsp;주소&nbsp;조회<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;SMTP_ADDR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;LV_SMTP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ADR6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ADDRNUMBER&nbsp;=&nbsp;LV_ADDRNUM.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;3.&nbsp;새로운&nbsp;이메일&nbsp;주소&nbsp;입력&nbsp;시&nbsp;팝업&nbsp;호출<br />
+&nbsp;&nbsp;IF&nbsp;P_EMAIL&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;팝업창에&nbsp;표시될&nbsp;텍스트를&nbsp;테이블에&nbsp;담기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_TEXT&nbsp;=&nbsp;'고객코드:&nbsp;'&nbsp;&&&nbsp;P_KUNNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TEXT&nbsp;TO&nbsp;LT_TEXT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_TEXT&nbsp;=&nbsp;'고객이름:&nbsp;'&nbsp;&&&nbsp;LV_NAME1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TEXT&nbsp;TO&nbsp;LT_TEXT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_TEXT&nbsp;=&nbsp;'현재&nbsp;이메일:&nbsp;'&nbsp;&&&nbsp;LV_SMTP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TEXT&nbsp;TO&nbsp;LT_TEXT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_TEXT&nbsp;=&nbsp;'변경할&nbsp;이메일:&nbsp;'&nbsp;&&&nbsp;P_EMAIL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_TEXT&nbsp;TO&nbsp;LT_TEXT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;여러&nbsp;줄&nbsp;메시지를&nbsp;지원하는&nbsp;POPUP_WITH_TABLE_DISPLAY&nbsp;함수&nbsp;호출<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'POPUP_WITH_TABLE_DISPLAY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDPOS_COL&nbsp;=&nbsp;50<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDPOS_ROW&nbsp;=&nbsp;10<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STARTPOS_COL&nbsp;=&nbsp;10<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STARTPOS_ROW&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLETEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'이메일&nbsp;변경&nbsp;확인'<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHOISE&nbsp;=&nbsp;LV_RESPONSE<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUETAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_TEXT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;4.&nbsp;이메일&nbsp;주소&nbsp;업데이트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;ADR6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;SMTP_ADDR&nbsp;=&nbsp;P_EMAIL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ADDRNUMBER&nbsp;=&nbsp;LV_ADDRNUM.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'고객님의&nbsp;요청에&nbsp;따라&nbsp;이메일이&nbsp;성공적으로&nbsp;업데이트되었습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SKIP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'고객코드&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:',&nbsp;P_KUNNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'고객이름&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:',&nbsp;LV_NAME1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'변경&nbsp;전&nbsp;이메일:',&nbsp;LV_SMTP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'변경&nbsp;후&nbsp;이메일:',&nbsp;P_EMAIL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'이메일&nbsp;변경&nbsp;중&nbsp;오류가&nbsp;발생했습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'SAP&nbsp;SYSTEM-SUBRC:',&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_EMAIL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;변경할이메일<br />
+*&nbsp;P_KUNNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;고객번호<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

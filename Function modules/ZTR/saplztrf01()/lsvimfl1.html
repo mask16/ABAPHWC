@@ -1,0 +1,703 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LSVIMFL1</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LSVIMFL1</h2>
+<h3> Description: Subprograms for Creating Texts in Several Languages</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;LSVIMFL1<br />
+**----------------------------------------------------------------------<br />
+*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;VIM_GET_TEXTTAB_DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;Texteintr#ge&nbsp;von&nbsp;der&nbsp;DB&nbsp;nachlesen&nbsp;f#r&nbsp;angeg.&nbsp;Sprachen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;UFProbl251070/1998:&nbsp;Falls&nbsp;X_NAMTAB-Reihenfolge&nbsp;nicht&nbsp;mit<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DBA-SELLIST-Reihenfolge&nbsp;#bereinstimmt,&nbsp;werden<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANDs&nbsp;oder&nbsp;ORs&nbsp;verschluckt.<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;LANGUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ausgew#hlte&nbsp;Sprachen<br />
+*&nbsp;&lt--&gt&nbsp;TEXTTAB<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_get_texttab_data TABLES langus STRUCTURE h_t002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;texttab&nbsp;TYPE&nbsp;table.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type&nbsp;VIM_LINE_US/../VIM_LINE_UL<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;tgd_sellist&nbsp;LIKE&nbsp;vimsellist&nbsp;OCCURS&nbsp;10,&nbsp;tgd_sel&nbsp;LIKE&nbsp;vimsellist,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wheretab_line&nbsp;LIKE&nbsp;vimwheretb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spras_value(3)&nbsp;TYPE&nbsp;c,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;curr_spras(1)&nbsp;TYPE&nbsp;c,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l&nbsp;TYPE&nbsp;i,&nbsp;sellist_l&nbsp;TYPE&nbsp;i,&nbsp;tbx&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and_or_str(6)&nbsp;TYPE&nbsp;c,&nbsp;left_par(1)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab_wa&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab&nbsp;TYPE&nbsp;vim_tab_ul&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_tabix&nbsp;LIKE&nbsp;sy-tabix,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;align1&nbsp;type&nbsp;f,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_wa&nbsp;TYPE&nbsp;vim_line_ul,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;align2&nbsp;type&nbsp;f,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;view_wa&nbsp;TYPE&nbsp;tabl8000,&nbsp;map_error&nbsp;TYPE&nbsp;xfeld.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&lttmp_texttab&gt&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttmp_texttab_wa&gt&nbsp;TYPE&nbsp;ANY,&nbsp;&lttmp_texttab_wax&gt&nbsp;TYPE&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltview_key&gt&nbsp;TYPE&nbsp;x,&nbsp;&ltnext_spras&gt&nbsp;TYPE&nbsp;spras,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltcurr_spras&gt&nbsp;TYPE&nbsp;spras,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab&gt&nbsp;TYPE&nbsp;x,&nbsp;&lth_texttab_wa&gt&nbsp;TYPE&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltviewkey_in_texttab&gt&nbsp;TYPE&nbsp;x,&nbsp;&lttexttab_struc&gt&nbsp;TYPE&nbsp;ANY.<br />
+<br />
+&nbsp;&nbsp;CREATE&nbsp;DATA:&nbsp;tmp_texttab&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;(x_header-texttab),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab_wa&nbsp;TYPE&nbsp;(x_header-texttab).<br />
+&nbsp;&nbsp;ASSIGN:&nbsp;tmp_texttab-&gt*&nbsp;TO&nbsp;&lttmp_texttab&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab_wa-&gt*&nbsp;TO&nbsp;&lttmp_texttab_wa&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttmp_texttab_wa&gt&nbsp;TO&nbsp;&lttmp_texttab_wax&gt&nbsp;CASTING.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;x_header-selection&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;dba_sellist&nbsp;INTO&nbsp;tgd_sel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UFProbl251070/1998<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;value&nbsp;&lt&gt&nbsp;space&nbsp;OR&nbsp;initial&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;x_namtab&nbsp;WHERE&nbsp;viewfield&nbsp;EQ&nbsp;tgd_sel-viewfield<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;keyflag&nbsp;NE&nbsp;space&nbsp;AND&nbsp;txttabfldn&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tgd_sel-viewfield&nbsp;=&nbsp;x_namtab-txttabfldn.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tgd_sel-tabix&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;tgd_sel&nbsp;TO&nbsp;tgd_sellist.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UFProbl251070/1998<br />
+&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"X_HEADER-SELECTION<br />
+<br />
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;tgd_sellist&nbsp;LINES&nbsp;sellist_l.<br />
+&nbsp;&nbsp;IF&nbsp;sellist_l&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;tgd_sellist&nbsp;INDEX&nbsp;sellist_l&nbsp;INTO&nbsp;tgd_sel.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;tgd_sel-and_or&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;tgd_sel-and_or.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;tgd_sellist&nbsp;INDEX&nbsp;sellist_l&nbsp;FROM&nbsp;tgd_sel.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'VIEW_FILL_WHERETAB'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tablename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;x_header-texttab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;only_cnds_for_keyflds&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_texttable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sellist&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;tgd_sellist<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wheretab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;vim_wheretab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_namtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;x_namtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_conditions_for_table&nbsp;=&nbsp;01.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;1.&nbsp;sellist_l&nbsp;=&nbsp;0.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;vim_wheretab.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;VIM_WHERETAB&nbsp;um&nbsp;Bedingungen&nbsp;f#r&nbsp;ausgew.&nbsp;Sprachen&nbsp;erg#nzen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;langus&nbsp;LINES&nbsp;l.<br />
+&nbsp;&nbsp;IF&nbsp;l&nbsp;&gt&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;and_or_str&nbsp;=&nbsp;'OR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sellist_l&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;left_par&nbsp;=&nbsp;'('.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;tbx&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;spras_value&nbsp;=&nbsp;'''&nbsp;'''.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;langus.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;spras_value+1(1)&nbsp;=&nbsp;langus-spras.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;tbx&nbsp;=&nbsp;l.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;letzte&nbsp;Zeile&nbsp;f#r&nbsp;Sprachselektion<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l&nbsp;&gt&nbsp;1&nbsp;AND&nbsp;sellist_l&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and_or_str&nbsp;=&nbsp;'&nbsp;)&nbsp;AND'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;l&nbsp;=&nbsp;1&nbsp;AND&nbsp;sellist_l&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and_or_str&nbsp;=&nbsp;'&nbsp;AND'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;and_or_str.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Start&nbsp;of&nbsp;note&nbsp;1449599<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-sprasfield&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;fieldname&nbsp;FROM&nbsp;dd03l&nbsp;INTO&nbsp;x_header-sprasfield&nbsp;&nbsp;"IM&nbsp;3506611/2010<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;tabname&nbsp;&nbsp;EQ&nbsp;x_header-texttab&nbsp;&nbsp;&nbsp;"PATIDARP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;keyflag&nbsp;&nbsp;EQ&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;datatype&nbsp;EQ&nbsp;'LANG'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-sprasfield&nbsp;=&nbsp;'SPRAS'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;End&nbsp;of&nbsp;note&nbsp;1449599<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;left_par&nbsp;x_header-sprasfield&nbsp;'EQ'&nbsp;spras_value&nbsp;and_or_str<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;wheretab_line&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;wheretab_line&nbsp;INTO&nbsp;vim_wheretab&nbsp;INDEX&nbsp;tbx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;left_par.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tbx&nbsp;=&nbsp;tbx&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;(x_header-texttab)&nbsp;INTO&nbsp;TABLE&nbsp;&lttmp_texttab&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;(vim_wheretab).<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Texttabellen-Eintr#ge&nbsp;sortiert&nbsp;in&nbsp;Texttabelle&nbsp;einf#gen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;x_header-delmdtflag&nbsp;&lt&gt&nbsp;space&nbsp;AND&nbsp;&nbsp;"zeitabh.&nbsp;&&nbsp;part.&nbsp;Fremdschl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-ptfrkyexst&nbsp;&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt&nbsp;zeitunabh.&nbsp;Texttab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;=&nbsp;x_header-after_keyc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;vim_datum_length&nbsp;*&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;=&nbsp;x_header-after_keyc.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ASSIGN:&nbsp;view_wa(keylen)&nbsp;TO&nbsp;&ltview_key&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_wa&nbsp;TO&nbsp;&lth_texttab_wa&gt&nbsp;CASTING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab_wa&gt(keylen)&nbsp;TO&nbsp;&ltviewkey_in_texttab&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab_wa&gt+keylen(x_header-texttablen)&nbsp;TO&nbsp;&lth_texttab&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab&gt&nbsp;TO&nbsp;&lttexttab_struc&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASTING&nbsp;TYPE&nbsp;(x_header-texttab),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPONENT&nbsp;x_header-sprasfield&nbsp;OF&nbsp;STRUCTURE&nbsp;&lttexttab_struc&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&ltnext_spras&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPONENT&nbsp;x_header-sprasfield&nbsp;OF&nbsp;STRUCTURE&nbsp;&lttmp_texttab_wa&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&ltcurr_spras&gt.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&lttmp_texttab&gt&nbsp;INTO&nbsp;&lttmp_texttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;map_texttabkey_to_viewkey&nbsp;TABLES&nbsp;x_namtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;x_header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttmp_texttab_wax&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-textkeylen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-genertxtrp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;&ltview_key&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map_error.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;map_error&nbsp;=&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_fill_view_key&nbsp;USING&nbsp;tmp_texttab<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;&ltview_key&gt&nbsp;curr_spras.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;texttab&nbsp;WITH&nbsp;KEY&nbsp;&ltview_key&gt&nbsp;INTO&nbsp;texttab_wa&nbsp;&nbsp;"#EC&nbsp;WARNOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;texttab_tabix&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltviewkey_in_texttab&gt&nbsp;=&nbsp;&ltview_key&gt&nbsp;AND&nbsp;&nbsp;"Text&nbsp;ex.&nbsp;in&nbsp;weiteren&nbsp;Spr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltnext_spras&gt&nbsp;&lt&nbsp;&ltcurr_spras&gt.&nbsp;"#EC&nbsp;PORTABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;texttab&nbsp;FROM&nbsp;texttab_tabix&nbsp;INTO&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltviewkey_in_texttab&gt&nbsp;&lt&gt&nbsp;&ltview_key&gt&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltnext_spras&gt&nbsp;&gt=&nbsp;&ltcurr_spras&gt.&nbsp;"#EC&nbsp;PORTABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_tabix&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Condition&nbsp;Redundant&nbsp;-&nbsp;Internal&nbsp;Message&nbsp;0001699060&nbsp;-&nbsp;ACHACHADI<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;&ltnext_spras&gt&nbsp;&lt&nbsp;&ltcurr_spras&gt.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;BOOL_OK<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_tabix&nbsp;=&nbsp;sy-tabix&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;"&nbsp;&ltnext_spras&gt&nbsp;&gt=&nbsp;&ltcurr_spras&gt&nbsp;oder&nbsp;ex.&nbsp;nicht<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltnext_spras&gt&nbsp;&lt&gt&nbsp;&ltcurr_spras&gt&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltviewkey_in_texttab&gt&nbsp;&lt&gt&nbsp;&ltview_key&gt.&nbsp;&nbsp;"Text&nbsp;ex.&nbsp;nicht&nbsp;in&nbsp;Sprache<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltviewkey_in_texttab&gt&nbsp;=&nbsp;&ltview_key&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_struc&gt&nbsp;=&nbsp;&lttmp_texttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;texttab_wa&nbsp;INTO&nbsp;texttab&nbsp;INDEX&nbsp;texttab_tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_struc&gt&nbsp;=&nbsp;&lttmp_texttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;texttab&nbsp;FROM&nbsp;texttab_wa&nbsp;INDEX&nbsp;texttab_tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;tmp_texttab<br />
+ENDFORM.                               "VIM_GET_TEXTTAB_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;VIM_READ_TEXTTAB_ENTRY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;einzelnen&nbsp;Texttabellen-Eintrag&nbsp;f#r&nbsp;alle&nbsp;bisher&nbsp;bearbeiteten&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;Sprachen&nbsp;nachlesen<br />
+*&nbsp;Aktueller&nbsp;Eintrag&nbsp;steht&nbsp;in&nbsp;Kopfzeile&nbsp;von&nbsp;EXTRACT<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_read_texttab_entry.<br />
+&nbsp;&nbsp;DATA:&nbsp;texttab_wa&nbsp;TYPE&nbsp;vim_line_ul,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_tabix&nbsp;LIKE&nbsp;sy-tabix,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;offset&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modify_texttab(1)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab&nbsp;TYPE&nbsp;ref&nbsp;to&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tmp_texttab&nbsp;type&nbsp;ref&nbsp;to&nbsp;data.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&lth_texttab_wa&gt&nbsp;type&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltviewkey_in_texttab&gt&nbsp;type&nbsp;x,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;FD_ASSGN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_key&gt&nbsp;type&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_fields&gt,&nbsp;&lttexttab_action&gt&nbsp;type&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltextract_key&gt&nbsp;type&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttmp_texttab&gt&nbsp;type&nbsp;standard&nbsp;table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltw_tmp_texttab&gt&nbsp;type&nbsp;any,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltw_tmp_texttab_x&gt&nbsp;type&nbsp;x.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;x_header-delmdtflag&nbsp;&lt&gt&nbsp;space&nbsp;AND&nbsp;&nbsp;"zeitabh.&nbsp;&&nbsp;part.&nbsp;Fremdschl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-ptfrkyexst&nbsp;&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt&nbsp;zeitunabh.&nbsp;Texttab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&ltvim_ext_mkey_beforex&gt&nbsp;TO&nbsp;&ltextract_key&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&ltvim_ext_mkey_before&gt&nbsp;TO&nbsp;&ltextract_key&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;=&nbsp;x_header-keylen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;vim_datum_length&nbsp;*&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&ltvim_xextract_key&gt&nbsp;TO&nbsp;&ltextract_key&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;=&nbsp;x_header-after_keyc.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;=&nbsp;x_header-keylen.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;&ltvim_texttab&gt&nbsp;WITH&nbsp;KEY&nbsp;&ltextract_key&gt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;WARNOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;texttab_tabix&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"keine&nbsp;Texte&nbsp;zum&nbsp;Key&nbsp;in&nbsp;anderen&nbsp;Sprachen&nbsp;erfaßt<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ASSIGN:&nbsp;texttab_wa&nbsp;TO&nbsp;&lth_texttab_wa&gt&nbsp;casting,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab_wa&gt+keylen(x_header-textkeylen)&nbsp;TO&nbsp;&lttexttab_key&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab_wa&gt+keylen(x_header-texttablen)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&lttexttab_fields&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;ASSIGN&nbsp;texttab_wa(keylen)&nbsp;TO&nbsp;&ltviewkey_in_texttab&gt.<br />
+*&nbsp;&nbsp;ASSIGN&nbsp;texttab_wa+keylen(x_header-textkeylen)&nbsp;TO&nbsp;&lttexttab_key&gt.<br />
+*&nbsp;&nbsp;ASSIGN&nbsp;texttab_wa+keylen(x_header-texttablen)&nbsp;TO&nbsp;&lttexttab_fields&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;offset&nbsp;=&nbsp;(&nbsp;keylen&nbsp;+&nbsp;x_header-texttablen&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;offset&nbsp;=&nbsp;keylen&nbsp;+&nbsp;x_header-texttablen.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ASSIGN&nbsp;texttab_wa+offset(1)&nbsp;TO&nbsp;&lttexttab_action&gt.<br />
+<br />
+&nbsp;&nbsp;create&nbsp;data&nbsp;tmp_texttab&nbsp;type&nbsp;standard&nbsp;table&nbsp;of&nbsp;(x_header-texttab).<br />
+&nbsp;&nbsp;create&nbsp;data&nbsp;w_tmp_texttab&nbsp;type&nbsp;(x_header-texttab).<br />
+&nbsp;&nbsp;assign:&nbsp;tmp_texttab-&gt*&nbsp;to&nbsp;&lttmp_texttab&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tmp_texttab-&gt*&nbsp;to&nbsp;&ltw_tmp_texttab&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltw_tmp_texttab&gt&nbsp;to&nbsp;&ltw_tmp_texttab_x&gt&nbsp;casting.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltvim_texttab&gt&nbsp;FROM&nbsp;texttab_tabix&nbsp;INTO&nbsp;texttab_wa.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltviewkey_in_texttab&gt&nbsp;&lt&gt&nbsp;&ltextract_key&gt.&nbsp;EXIT.&nbsp;ENDIF.&nbsp;"Commented&nbsp;ACHACHADI&nbsp;1352850<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&lttexttab_action&gt&nbsp;=&nbsp;neuer_eintrag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;&ltvim_texttab&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modify_texttab&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;&lttexttab_action&gt&nbsp;&lt&gt&nbsp;original.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refresh&nbsp;&lttmp_texttab&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;tmp_texttab.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DB_SELECT_GENERIC_TABLE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;genkey&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&lttexttab_key&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;genkey_ln&nbsp;&nbsp;&nbsp;=&nbsp;x_header-textkeylen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tablename&nbsp;&nbsp;&nbsp;=&nbsp;x_header-texttab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inttab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&lttmp_texttab&gt<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inttab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;tmp_texttab<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db_error&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;12<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_found&nbsp;&nbsp;&nbsp;=&nbsp;04<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wrong_param&nbsp;=&nbsp;08.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&gt&nbsp;4.&nbsp;RAISE&nbsp;get_table_error.&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;FB_RAIS_EX<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;&lttmp_texttab&gt&nbsp;into&nbsp;&ltw_tmp_texttab&gt&nbsp;INDEX&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;tmp_texttab&nbsp;INDEX&nbsp;1.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_fields&gt&nbsp;=&nbsp;&ltw_tmp_texttab_x&gt(x_header-texttablen).<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_fields&gt&nbsp;=&nbsp;tmp_texttab(x_header-texttablen).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_action&gt&nbsp;=&nbsp;original.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;&ltvim_texttab&gt&nbsp;FROM&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modify_texttab&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"NOT_FOUND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;&ltvim_texttab&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modify_texttab&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;IF&nbsp;modify_texttab&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;vim_texttab_container&nbsp;INDEX&nbsp;vim_texttab_container_index.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sy-subrc&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                               "VIM_READ_TEXTTAB_ENTRY<br />
+<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;VIM_TEXTTAB_DB_UPD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;Datenbank-#nderungen&nbsp;f#r&nbsp;Texttabelle&nbsp;(f#r&nbsp;spras&nbsp;&lt&gt&nbsp;SY-LANGU)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;Action_Flag&nbsp;in&nbsp;&ltVIM_TEXTTAB&gt&nbsp;f#r&nbsp;modif.&nbsp;Eintr#ge&nbsp;zur#cksetzen<br />
+*&nbsp;gel#schte&nbsp;Eintr#ge&nbsp;aus&nbsp;interner&nbsp;Text-Tabelle&nbsp;l#schen<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_texttab_db_update.<br />
+&nbsp;&nbsp;DATA:&nbsp;modified_entries&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_modified(1)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;offset&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;align&nbsp;type&nbsp;f,&nbsp;texttab_wa&nbsp;TYPE&nbsp;vim_line_ul,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED&nbsp;"HCG&nbsp;never&nbsp;separate<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tmp_texttab&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab&nbsp;TYPE&nbsp;vim_tab_ul&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&lttmp_texttab&gt&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltw_tmp_texttab&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab_wa&gt&nbsp;TYPE&nbsp;x,&nbsp;&lth_texttab_fields&gt&nbsp;TYPE&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_fields&gt&nbsp;TYPE&nbsp;ANY,&nbsp;&lttexttab_action&gt.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;texttab_modified.<br />
+&nbsp;&nbsp;CHECK&nbsp;x_header-texttbexst&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-delmdtflag&nbsp;&lt&gt&nbsp;space&nbsp;AND&nbsp;&nbsp;"zeitabh.&nbsp;&&nbsp;part.&nbsp;Fremdschl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-ptfrkyexst&nbsp;&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt&nbsp;zeitunabh.&nbsp;Texttab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;=&nbsp;x_header-after_keyc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;vim_datum_length&nbsp;*&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;=&nbsp;x_header-after_keyc.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CREATE&nbsp;DATA:&nbsp;tmp_texttab&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;(x_header-texttab),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tmp_texttab&nbsp;TYPE&nbsp;(x_header-texttab).<br />
+&nbsp;&nbsp;ASSIGN:&nbsp;tmp_texttab-&gt*&nbsp;TO&nbsp;&lttmp_texttab&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tmp_texttab-&gt*&nbsp;TO&nbsp;&ltw_tmp_texttab&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttab_wa&nbsp;TO&nbsp;&lth_texttab_wa&gt&nbsp;CASTING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab_wa&gt+keylen(x_header-texttablen)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&lth_texttab_fields&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lth_texttab_fields&gt&nbsp;TO&nbsp;&lttexttab_fields&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASTING&nbsp;TYPE&nbsp;(x_header-texttab).<br />
+&nbsp;&nbsp;offset&nbsp;=&nbsp;(&nbsp;keylen&nbsp;+&nbsp;x_header-aft_txttbc&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;texttab_wa+offset(1)&nbsp;TO&nbsp;&lttexttab_action&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;DELETE:&nbsp;nur&nbsp;in&nbsp;interner&nbsp;Texttabelle,&nbsp;in&nbsp;DB&nbsp;schon&nbsp;bisher&nbsp;f#r&nbsp;alle&nbsp;Spr.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltvim_texttab&gt&nbsp;INTO&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;&lttexttab_action&gt&nbsp;EQ&nbsp;geloescht&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_action&gt&nbsp;EQ&nbsp;neuer_geloescht&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_action&gt&nbsp;EQ&nbsp;update_geloescht.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;&ltvim_texttab&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;texttab_modified&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&ltVIM_TEXTTAB&gt<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;UPDATE<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;modified_entries.&nbsp;REFRESH&nbsp;&lttmp_texttab&gt.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltvim_texttab&gt&nbsp;INTO&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;&lttexttab_action&gt&nbsp;EQ&nbsp;aendern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&lttexttab_fields&gt&nbsp;TO&nbsp;&lttmp_texttab&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab&nbsp;&nbsp;=&nbsp;&lttexttab_fields&gt.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;tmp_texttab.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;modified_entries&nbsp;=&nbsp;modified_entries&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_action&gt&nbsp;=&nbsp;original.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;&ltvim_texttab&gt&nbsp;FROM&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&ltVIM_TEXTTAB&gt<br />
+&nbsp;&nbsp;IF&nbsp;modified_entries&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;(x_header-texttab)&nbsp;FROM&nbsp;TABLE&nbsp;&lttmp_texttab&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;texttab_modified&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;INSERT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;modified_entries.&nbsp;REFRESH&nbsp;&lttmp_texttab&gt.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltvim_texttab&gt&nbsp;INTO&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;&lttexttab_action&gt&nbsp;EQ&nbsp;neuer_eintrag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&lttexttab_fields&gt&nbsp;TO&nbsp;&lttmp_texttab&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;tmp_texttab&nbsp;=&nbsp;&lttexttab_fields&gt.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;tmp_texttab.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;modified_entries&nbsp;=&nbsp;modified_entries&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&lttexttab_action&gt&nbsp;=&nbsp;original.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;&ltvim_texttab&gt&nbsp;FROM&nbsp;texttab_wa.<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&ltVIM_TEXTTAB&gt<br />
+&nbsp;&nbsp;IF&nbsp;modified_entries&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;(x_header-texttab)&nbsp;FROM&nbsp;TABLE&nbsp;&lttmp_texttab&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ACCEPTING&nbsp;DUPLICATE&nbsp;KEYS.&nbsp;"um&nbsp;RABAX&nbsp;bei&nbsp;unzul#ssigem<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Texttab-Aufbau&nbsp;zu&nbsp;vermeiden<br />
+&nbsp;&nbsp;&nbsp;&nbsp;texttab_modified&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;texttab_modified&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;vim_texttab_container&nbsp;INDEX&nbsp;vim_texttab_container_index.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                               "VIM_TEXTTAB_DB_UPDATE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Import&nbsp;f#r&nbsp;Texte&nbsp;in&nbsp;anderen&nbsp;Sprachen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Textimp&nbsp;...<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;VIM_READ_TEXTTAB_ALL_LANGUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;Texteintr#ge&nbsp;von&nbsp;der&nbsp;DB&nbsp;f#r&nbsp;alle&nbsp;Sprachen&nbsp;einlesen.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_read_texttab_all_langus.<br />
+&nbsp;&nbsp;DATA:&nbsp;langus_selected(1)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;curr_sptxt&nbsp;LIKE&nbsp;t002t-sptxt,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sel_langus&nbsp;LIKE&nbsp;h_t002&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'VIEW_GET_LANGUAGES'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;all_without_selection&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;languages_selected&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;langus_selected<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;curr_sptxt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;curr_sptxt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;languages&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sel_langus.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-frm_tl_get&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(x_header-frm_tl_get)&nbsp;IN&nbsp;PROGRAM&nbsp;(x_header-fpoolname)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES&nbsp;sel_langus.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_read_texttab_for_langus&nbsp;TABLES&nbsp;sel_langus&nbsp;USING&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                               "VIM_READ_TEXTTAB_ALL_LANGUS<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;SW&nbsp;Langtext<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;Absprung&nbsp;in&nbsp;Langtextpflege&nbsp;#ber&nbsp;Userexit&nbsp;vom&nbsp;#bersetzungsscreen&nbsp;aus<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;erm#glichen<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;VIM_CALL_LTEXT_EXIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;-&gt&nbsp;&nbsp;MAINT_MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'U'/'R'&nbsp;(Update/Read)<br />
+*&nbsp;-&gt&nbsp;&nbsp;EXITFORM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Name&nbsp;der&nbsp;Userexit-Routine&nbsp;f#r&nbsp;Langtextpflege<br />
+*&nbsp;&lt-&gt&nbsp;TEXTTABLE_ENTRY&nbsp;Zeile,&nbsp;f#r&nbsp;die&nbsp;Langtextpflege&nbsp;aufgerufen&nbsp;wurde<br />
+*&nbsp;&lt-&nbsp;&nbsp;MODIFIED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;-&gt&nbsp;Zeile&nbsp;wurde&nbsp;modifiziert<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;Aufruf&nbsp;des&nbsp;Userexits&nbsp;f#r&nbsp;Langtextpflege&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_call_ltext_exit<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;maint_mode&nbsp;TYPE&nbsp;c<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exitform&nbsp;TYPE&nbsp;vimfrmname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;texttable_entry&nbsp;TYPE&nbsp;vimty_textmaint_record<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modified&nbsp;TYPE&nbsp;c.<br />
+&nbsp;&nbsp;DATA:&nbsp;text_wa&nbsp;TYPE&nbsp;vim_line_ul,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;textmaint_field&nbsp;TYPE&nbsp;vimty_textfield,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pgm_name&nbsp;LIKE&nbsp;sy-repid,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;offset&nbsp;LIKE&nbsp;sy-fdpos.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&lttext_wa&gt&nbsp;TYPE&nbsp;x,&nbsp;&lttext_wa_struc&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttabkey&gt&nbsp;TYPE&nbsp;x,&nbsp;&lttxtfld&gt&nbsp;TYPE&nbsp;ANY.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;modified.<br />
+&nbsp;&nbsp;IF&nbsp;vim_internal_ltext_call&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(exitform)&nbsp;IN&nbsp;PROGRAM&nbsp;(sy-repid).<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN:&nbsp;text_wa&nbsp;TO&nbsp;&lttext_wa&gt&nbsp;CASTING,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttext_wa&gt&nbsp;TO&nbsp;&lttext_wa_struc&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASTING&nbsp;TYPE&nbsp;(x_header-texttab),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttable_entry-keys&nbsp;TO&nbsp;&lttexttabkey&gt&nbsp;CASTING.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;map_viewkey_to_texttabkey&nbsp;TABLES&nbsp;x_namtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;x_header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttable_entry-spras<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttexttabkey&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;&lttext_wa&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;VIM_FILL_TEXTTAB_KEY&nbsp;USING&nbsp;TEXTTABLE_ENTRY-KEYS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXTTABLE_ENTRY-SPRAS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_HEADER-SPRASFDPOS<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;TEXT_WA.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;texttable_entry-texttab&nbsp;INTO&nbsp;textmaint_field.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;INDEX&nbsp;textmaint_field-namtab_idx.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;offset&nbsp;=&nbsp;x_namtab-texttabpos.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_namtab-lowercase&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;textmaint_field-text&nbsp;TO&nbsp;UPPER&nbsp;CASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_namtab-txttabfldn&nbsp;=&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;tab&nbsp;+&nbsp;texttab<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-bastabfld<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&lttext_wa_struc&gt&nbsp;TO&nbsp;&lttxtfld&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;view<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-txttabfldn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&lttext_wa_struc&gt&nbsp;TO&nbsp;&lttxtfld&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttxtfld&gt&nbsp;=&nbsp;textmaint_field-text.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text_wa+offset(x_namtab-flength)&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;textmaint_field-text(x_namtab-flength).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(exitform)&nbsp;IN&nbsp;PROGRAM&nbsp;(x_header-fpoolname)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;maint_mode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;text_wa&nbsp;modified.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;modified&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;=&nbsp;'U'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;texttable_entry-texttab&nbsp;INTO&nbsp;textmaint_field.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;x_namtab&nbsp;INDEX&nbsp;textmaint_field-namtab_idx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;x_namtab-txttabfldn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&lttext_wa_struc&gt&nbsp;TO&nbsp;&lttxtfld&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;textmaint_field-text&nbsp;=&nbsp;&lttxtfld&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;offset&nbsp;=&nbsp;x_namtab-texttabpos.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;textmaint_field-text(x_namtab-flength)&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text_wa+offset(x_namtab-flength).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;texttable_entry-texttab&nbsp;FROM&nbsp;textmaint_field.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texttable_entry-action&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;modified.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                               " VIM_CALL_LTEXT_EXIT<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,1416 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LY_SP01F80</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LY_SP01F80</h2>
+<h3> Description: Include LY_SP01F80</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+***INCLUDE&nbsp;LSE16NF80&nbsp;.<br />
+*----------------------------------------------------------------------*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CREATE_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CREATE_ROLE .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;RC&nbsp;LIKE&nbsp;SY-SUBRC.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;the&nbsp;role&nbsp;has&nbsp;been&nbsp;changed&nbsp;and&nbsp;we&nbsp;need&nbsp;to&nbsp;save&nbsp;the&nbsp;former&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;SPACE&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CHECK_IF_SAVE&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;RC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SAVE_ROLE&nbsp;USING&nbsp;GD_SAVE_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;PERFORM&nbsp;REFRESH_ROLE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;the&nbsp;role&nbsp;already&nbsp;exists<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_DEF&nbsp;INTO&nbsp;GS_ROLE_DEF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I101(TSWUSL).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;new&nbsp;role&nbsp;is&nbsp;already&nbsp;locked&nbsp;by&nbsp;someone&nbsp;else&nbsp;and&nbsp;lock&nbsp;it<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;SET_ENQUEUE&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;GD_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;RC.<br />
+&nbsp;&nbsp;CHECK:&nbsp;RC&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*.if&nbsp;successful,&nbsp;release&nbsp;the&nbsp;lock&nbsp;on&nbsp;the&nbsp;old&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;SPACE&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_DEQUEUE&nbsp;USING&nbsp;GD_SAVE_ROLE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.create&nbsp;new&nbsp;role<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GD_SAVE_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;GD_SAVE_TXT&nbsp;&nbsp;=&nbsp;GD_ROLE_TXT.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;GS_ROLE_TABLE,&nbsp;GS_ROLE_VALUE,&nbsp;GS_USER_ROLE.<br />
+&nbsp;&nbsp;GS_ROLE_DEF-SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+<br />
+&nbsp;&nbsp;APPEND&nbsp;GS_ROLE_TABLE&nbsp;TO&nbsp;GT_ROLE_TABLE.<br />
+&nbsp;&nbsp;APPEND&nbsp;GS_ROLE_VALUE&nbsp;TO&nbsp;GT_ROLE_VALUE.<br />
+&nbsp;&nbsp;APPEND&nbsp;GS_USER_ROLE&nbsp;&nbsp;TO&nbsp;GT_USER_ROLE.<br />
+<br />
+ENDFORM.                    " CREATE_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CHANGE_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_TRUE&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHANGE_ROLE  USING VALUE(P_CHANGE).<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;RC&nbsp;LIKE&nbsp;SY-SUBRC.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;the&nbsp;role&nbsp;has&nbsp;been&nbsp;changed&nbsp;and&nbsp;we&nbsp;need&nbsp;to&nbsp;save&nbsp;the&nbsp;former&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;SPACE&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;CHECK_IF_SAVE&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;RC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SAVE_ROLE&nbsp;USING&nbsp;GD_SAVE_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_TXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;PERFORM&nbsp;REFRESH_ROLE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;the&nbsp;role&nbsp;already&nbsp;exists<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_DEF&nbsp;INTO&nbsp;GS_ROLE_DEF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I100(TSWUSL).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;new&nbsp;role&nbsp;is&nbsp;already&nbsp;locked&nbsp;by&nbsp;someone&nbsp;else<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;P_CHANGE&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_ENQUEUE&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;GD_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;RC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK:&nbsp;RC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*.if&nbsp;successful,&nbsp;release&nbsp;the&nbsp;lock&nbsp;on&nbsp;the&nbsp;old&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;SPACE&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_ROLE&nbsp;&lt&gt&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_DEQUEUE&nbsp;USING&nbsp;GD_SAVE_ROLE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.read&nbsp;current&nbsp;data<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_DEF_T&nbsp;INTO&nbsp;GS_ROLE_DEF_T<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SPRAS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_USER_ROLE&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;GT_USER_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_TABLE&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;GT_ROLE_TABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_VALUE&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;GT_ROLE_VALUE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_ROLE_VALUE&nbsp;INTO&nbsp;GS_ROLE_VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_ROLE_VALUE&nbsp;TO&nbsp;GT_MULTI.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_MULTI-OPTION&nbsp;=&nbsp;GS_ROLE_VALUE-SEL_OPTION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_MULTI.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;P_CHANGE&nbsp;&lt&gt&nbsp;TRUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GD_ROLE_DISPLAY&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GD_ROLE_DISPLAY&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;GD_ROLE_TXT&nbsp;&nbsp;=&nbsp;GS_ROLE_DEF_T-SE16N_ROLE_TXT.<br />
+&nbsp;&nbsp;GD_SAVE_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;GD_SAVE_TXT&nbsp;&nbsp;=&nbsp;GS_ROLE_DEF_T-SE16N_ROLE_TXT.<br />
+<br />
+<br />
+ENDFORM.                    " CHANGE_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;REFRESH_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM REFRESH_ROLE .<br />
+<br />
+&nbsp;&nbsp;REFRESH:&nbsp;GT_ROLE_TABLE,&nbsp;GT_ROLE_VALUE,&nbsp;GT_USER_ROLE,&nbsp;GT_MULTI.<br />
+<br />
+ENDFORM.                    " REFRESH_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DELETE_ROLE_TABLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM DELETE_ROLE_TABLE .<br />
+<br />
+&nbsp;&nbsp;DELETE&nbsp;GT_ROLE_TABLE&nbsp;WHERE&nbsp;MARK1&nbsp;=&nbsp;TRUE.<br />
+<br />
+ENDFORM.                    " DELETE_ROLE_TABLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INSERT_ROLE_TABLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM INSERT_ROLE_TABLE .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_TABIX&nbsp;LIKE&nbsp;SY-TABIX.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_ROLE_TABLE&nbsp;WITH&nbsp;KEY&nbsp;MARK1&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LD_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_ROLE_TABLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;GS_ROLE_TABLE&nbsp;INTO&nbsp;GT_ROLE_TABLE&nbsp;INDEX&nbsp;LD_TABIX.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " INSERT_ROLE_TABLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INSERT_ROLE_VALUE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM INSERT_ROLE_VALUE .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_TABIX&nbsp;LIKE&nbsp;SY-TABIX.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_ROLE_VALUE&nbsp;WITH&nbsp;KEY&nbsp;MARK2&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LD_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_ROLE_VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;GS_ROLE_VALUE&nbsp;INTO&nbsp;GT_ROLE_VALUE&nbsp;INDEX&nbsp;LD_TABIX.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " INSERT_ROLE_VALUE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;INSERT_USER_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM INSERT_USER_ROLE .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_TABIX&nbsp;LIKE&nbsp;SY-TABIX.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_USER_ROLE&nbsp;WITH&nbsp;KEY&nbsp;MARK3&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LD_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_USER_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;GS_USER_ROLE&nbsp;INTO&nbsp;GT_USER_ROLE&nbsp;INDEX&nbsp;LD_TABIX.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " INSERT_USER_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DELETE_ROLE_VALUE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM DELETE_ROLE_VALUE .<br />
+<br />
+&nbsp;&nbsp;DELETE&nbsp;GT_ROLE_VALUE&nbsp;WHERE&nbsp;MARK2&nbsp;=&nbsp;TRUE.<br />
+<br />
+ENDFORM.                    " DELETE_ROLE_VALUE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DELETE_USER_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM DELETE_USER_ROLE .<br />
+<br />
+&nbsp;&nbsp;DELETE&nbsp;GT_USER_ROLE&nbsp;WHERE&nbsp;MARK3&nbsp;=&nbsp;TRUE.<br />
+<br />
+ENDFORM.                    " DELETE_USER_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;VALUE_INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM VALUE_INPUT .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_LINE&nbsp;&nbsp;LIKE&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_DFIES&nbsp;LIKE&nbsp;DFIES.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_MULTI&nbsp;LIKE&nbsp;SE16N_SELFIELDS&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_FIELD&nbsp;LIKE&nbsp;DFIES-LFIELDNAME.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.get&nbsp;current&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GET&nbsp;CURSOR&nbsp;LINE&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;LD_LINE&nbsp;=&nbsp;TAB_ROLE_VALUE-CURRENT_LINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;LD_LINE&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;LD_LINE&nbsp;=&nbsp;0&nbsp;OR&nbsp;LD_LINE&nbsp;&lt&nbsp;TAB_ROLE_VALUE-CURRENT_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_ROLE_VALUE&nbsp;INTO&nbsp;GS_ROLE_VALUE&nbsp;INDEX&nbsp;LD_LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.get&nbsp;DDIC-Info&nbsp;for&nbsp;the&nbsp;current&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LD_FIELD&nbsp;=&nbsp;GS_ROLE_VALUE-FIELDNAME.<br />
+&nbsp;&nbsp;CALL FUNCTION 'DDIF_FIELDINFO_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ROLE_VALUE-TABNAME<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIELDNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LANGU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LFIELDNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_FIELD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DFIES_WA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_DFIES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTERNAL_ERROR&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_DFIES&nbsp;TO&nbsp;GS_SELFIELDS.<br />
+   </div>
+   <div class="codeComment">
+*.Search&nbsp;for&nbsp;multi&nbsp;selection&nbsp;concerning&nbsp;this&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_MULTI&nbsp;WHERE&nbsp;FIELDNAME&nbsp;=&nbsp;GS_SELFIELDS-FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_MULTI&nbsp;TO&nbsp;LT_MULTI.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.Now&nbsp;call&nbsp;popup&nbsp;to&nbsp;enter&nbsp;more&nbsp;values<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'SE16N_MULTI_FIELD_INPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_SELFIELDS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_SELFIELDS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_MULTI_SELECT&nbsp;=&nbsp;LT_MULTI.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.Now&nbsp;delete&nbsp;the&nbsp;old&nbsp;entries<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE&nbsp;GT_MULTI&nbsp;WHERE&nbsp;FIELDNAME&nbsp;=&nbsp;GS_SELFIELDS-FIELDNAME.<br />
+&nbsp;&nbsp;GS_ROLE_VALUE-PUSH&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;MODIFY&nbsp;GT_ROLE_VALUE&nbsp;FROM&nbsp;GS_ROLE_VALUE&nbsp;INDEX&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;APPEND&nbsp;LINES&nbsp;OF&nbsp;LT_MULTI&nbsp;TO&nbsp;GT_MULTI.<br />
+<br />
+<br />
+ENDFORM.                    " VALUE_INPUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;F4_ROLE_TAB<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0240&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM F4_ROLE_TAB  USING VALUE(P_CALL).<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;EUTYPE&nbsp;LIKE&nbsp;RSEDD0-DDOBJTYPE&nbsp;VALUE&nbsp;'T'.<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_TAB&nbsp;LIKE&nbsp;RSEDD0-DDOBJNAME.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;P_CALL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'T'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_TAB&nbsp;=&nbsp;GS_ROLE_TABLE-TABNAME.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;CALL FUNCTION 'RS_DD_F4_OBJECT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_TAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJTYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;EUTYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUPPRESS_SELECTION&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELOBJNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_TAB.<br />
+&nbsp;&nbsp;CASE&nbsp;P_CALL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'T'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_ROLE_TABLE-TABNAME&nbsp;=&nbsp;LD_TAB.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+ENDFORM.                    " F4_ROLE_TAB<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;F4_FIELD<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0248&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM F4_FIELD  USING VALUE(P_CALL)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE(P_MULTI).<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_TAB&nbsp;&nbsp;&nbsp;TYPE&nbsp;DDOBJNAME.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_DFIES&nbsp;LIKE&nbsp;DFIES&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;VALUE_TAB&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;LIKE&nbsp;TSPRIM-FIELD,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT&nbsp;&nbsp;LIKE&nbsp;TSAPPLT-TXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;VALUE_TAB.<br />
+&nbsp;&nbsp;DATA:&nbsp;RETFIELD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;DFIES-FIELDNAME&nbsp;VALUE&nbsp;'VALUE'.<br />
+&nbsp;&nbsp;DATA:&nbsp;RETURN_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;DDSHRETVAL&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_ROLE_TABLE&nbsp;&nbsp;&nbsp;TYPE&nbsp;SE16N_ROLE_TABLE_S.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_ROLE_VALUE&nbsp;&nbsp;&nbsp;TYPE&nbsp;SE16N_ROLE_VALUE_S.<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_MULTI_CHOICE&nbsp;TYPE&nbsp;DDBOOL_D.<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_FIELD(40).<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_VISIBLE_LINE&nbsp;LIKE&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;DYNPFIELDS&nbsp;OCCURS&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;DYNPREAD.<br />
+&nbsp;&nbsp;DATA:&nbsp;END&nbsp;OF&nbsp;DYNPFIELDS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.get&nbsp;current&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GET&nbsp;CURSOR&nbsp;LINE&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;LD_VISIBLE_LINE&nbsp;=&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;CASE&nbsp;P_CALL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'T'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GET&nbsp;CURSOR&nbsp;FIELD&nbsp;LD_FIELD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK:&nbsp;LD_FIELD&nbsp;=&nbsp;'GS_ROLE_TABLE-FIELDNAME'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_LINE&nbsp;=&nbsp;TAB_ROLE_TABLE-CURRENT_LINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;LD_LINE&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LD_LINE&nbsp;=&nbsp;0&nbsp;OR&nbsp;LD_LINE&nbsp;&lt&nbsp;TAB_ROLE_TABLE-CURRENT_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_ROLE_TABLE&nbsp;INTO&nbsp;GS_ROLE_TABLE&nbsp;INDEX&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_TAB&nbsp;=&nbsp;GS_ROLE_TABLE-TABNAME.<br />
+   </div>
+   <div class="codeComment">
+*.......if&nbsp;user&nbsp;did&nbsp;not&nbsp;press&nbsp;enter&nbsp;after&nbsp;input&nbsp;-&nbsp;read&nbsp;the&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LD_TAB&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;DYNPFIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;DYNPFIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPFIELDS-FIELDNAME&nbsp;&nbsp;=&nbsp;'GS_ROLE_TABLE-TABNAME'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPFIELDS-STEPL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_VISIBLE_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;DYNPFIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DYNP_VALUES_READ'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'SAPLSE16N'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNUMB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DYNNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE_TO_UPPER&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYNPFIELDS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;DYNPFIELDS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;DYNPFIELDS&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_TABLE-TABNAME&nbsp;=&nbsp;DYNPFIELDS-FIELDVALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_TAB&nbsp;=&nbsp;LS_ROLE_TABLE-TABNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_TABLE&nbsp;=&nbsp;GS_ROLE_TABLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'V'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GET&nbsp;CURSOR&nbsp;FIELD&nbsp;LD_FIELD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK:&nbsp;LD_FIELD&nbsp;=&nbsp;'GS_ROLE_VALUE-FIELDNAME'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_LINE&nbsp;=&nbsp;TAB_ROLE_VALUE-CURRENT_LINE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+&nbsp;LD_LINE&nbsp;-&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LD_LINE&nbsp;=&nbsp;0&nbsp;OR&nbsp;LD_LINE&nbsp;&lt&nbsp;TAB_ROLE_VALUE-CURRENT_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_ROLE_VALUE&nbsp;INTO&nbsp;GS_ROLE_VALUE&nbsp;INDEX&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_TAB&nbsp;=&nbsp;GS_ROLE_VALUE-TABNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE&nbsp;=&nbsp;GS_ROLE_VALUE.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;CASE&nbsp;P_MULTI.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_MULTI_CHOICE&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_MULTI_CHOICE&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'DDIF_FIELDINFO_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;=&nbsp;LD_TAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DFIES_TAB&nbsp;=&nbsp;LT_DFIES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT_FOUND&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;VALUE_TAB.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_DFIES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;VALUE_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;VALUE_TAB-VALUE&nbsp;=&nbsp;LT_DFIES-FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;VALUE_TAB-TEXT&nbsp;&nbsp;=&nbsp;LT_DFIES-SCRTEXT_M.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;VALUE_TAB.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;sort&nbsp;value_tab&nbsp;by&nbsp;text.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETFIELD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETFIELD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE_ORG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MULTIPLE_CHOICE&nbsp;=&nbsp;LD_MULTI_CHOICE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;VALUE_TAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN_TAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARAMETER_ERROR&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_VALUES_FOUND&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;RETURN_TAB&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;P_CALL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'T'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;RETURN_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-TABIX&nbsp;=&nbsp;1.&nbsp;&nbsp;"First&nbsp;line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_ROLE_TABLE-FIELDNAME&nbsp;=&nbsp;RETURN_TAB-FIELDVAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_ROLE_TABLE&nbsp;FROM&nbsp;GS_ROLE_TABLE&nbsp;INDEX&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_TABLE-FIELDNAME&nbsp;=&nbsp;RETURN_TAB-FIELDVAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;LS_ROLE_TABLE&nbsp;INTO&nbsp;GT_ROLE_TABLE&nbsp;INDEX&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'V'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_ROLE_VALUE-FIELDNAME&nbsp;=&nbsp;RETURN_TAB-FIELDVAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;RETURN_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-TABIX&nbsp;=&nbsp;1.&nbsp;&nbsp;"First&nbsp;line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_ROLE_VALUE-FIELDNAME&nbsp;=&nbsp;RETURN_TAB-FIELDVAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_ROLE_VALUE&nbsp;FROM&nbsp;GS_ROLE_VALUE&nbsp;INDEX&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE-FIELDNAME&nbsp;=&nbsp;RETURN_TAB-FIELDVAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;LS_ROLE_VALUE&nbsp;INTO&nbsp;GT_ROLE_VALUE&nbsp;INDEX&nbsp;LD_LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " F4_FIELD<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SAVE_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SAVE_ROLE USING P_ROLE     TYPE SE16N_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_ROLE_TXT&nbsp;TYPE&nbsp;KLTXT.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_ROLE_TABLE&nbsp;LIKE&nbsp;SE16N_ROLE_TABLE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_ROLE_TABLE&nbsp;LIKE&nbsp;SE16N_ROLE_TABLE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_ROLE_VALUE&nbsp;LIKE&nbsp;SE16N_ROLE_VALUE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_ROLE_VALUE&nbsp;LIKE&nbsp;SE16N_ROLE_VALUE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_USER_ROLE&nbsp;&nbsp;LIKE&nbsp;SE16N_USER_ROLE&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_USER_ROLE&nbsp;&nbsp;LIKE&nbsp;SE16N_USER_ROLE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_MULTI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SE16N_SELFIELDS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.delete&nbsp;old&nbsp;data&nbsp;otherwise&nbsp;dleeted&nbsp;lines&nbsp;will&nbsp;not&nbsp;be&nbsp;correct<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_ROLE_TABLE&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_ROLE_VALUE&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_USER_ROLE&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.main&nbsp;definition<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GS_ROLE_DEF-CRDATE&nbsp;=&nbsp;SY-DATLO.<br />
+&nbsp;&nbsp;GS_ROLE_DEF-CRUSER&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;MODIFY&nbsp;SE16N_ROLE_DEF&nbsp;FROM&nbsp;GS_ROLE_DEF.<br />
+   </div>
+   <div class="codeComment">
+*.text&nbsp;table&nbsp;for&nbsp;main&nbsp;definition<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GS_ROLE_DEF_T-SPRAS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;GS_ROLE_DEF_T-SE16N_ROLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;P_ROLE.<br />
+&nbsp;&nbsp;GS_ROLE_DEF_T-SE16N_ROLE_TXT&nbsp;=&nbsp;P_ROLE_TXT.<br />
+&nbsp;&nbsp;MODIFY&nbsp;SE16N_ROLE_DEF_T&nbsp;FROM&nbsp;GS_ROLE_DEF_T.<br />
+   </div>
+   <div class="codeComment">
+*.Definition&nbsp;of&nbsp;table&nbsp;and&nbsp;column&nbsp;restriction<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_ROLE_TABLE&nbsp;INTO&nbsp;GS_ROLE_TABLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_ROLE_TABLE&nbsp;TO&nbsp;LS_ROLE_TABLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_TABLE-SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_ROLE_TABLE&nbsp;TO&nbsp;LT_ROLE_TABLE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;MODIFY&nbsp;SE16N_ROLE_TABLE&nbsp;FROM&nbsp;TABLE&nbsp;LT_ROLE_TABLE.<br />
+   </div>
+   <div class="codeComment">
+*.Definition&nbsp;of&nbsp;value&nbsp;restrictions<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SORT&nbsp;GT_ROLE_VALUE&nbsp;BY&nbsp;TABNAME&nbsp;FIELDNAME.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_ROLE_VALUE&nbsp;INTO&nbsp;GS_ROLE_VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_ROLE_VALUE&nbsp;TO&nbsp;LS_ROLE_VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE-SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE-POS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+*....if&nbsp;there&nbsp;is&nbsp;no&nbsp;input&nbsp;in&nbsp;gt_multi&nbsp;the&nbsp;line&nbsp;will&nbsp;not&nbsp;be&nbsp;saved&nbsp;!<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_MULTI&nbsp;INTO&nbsp;LS_MULTI<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;TABNAME&nbsp;&nbsp;&nbsp;=&nbsp;LS_ROLE_VALUE-TABNAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;FIELDNAME&nbsp;=&nbsp;LS_ROLE_VALUE-FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE-SIGN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_MULTI-SIGN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE-SEL_OPTION&nbsp;=&nbsp;LS_MULTI-OPTION.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE-LOW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_MULTI-LOW.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROLE_VALUE-HIGH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_MULTI-HIGH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_ROLE_VALUE&nbsp;TO&nbsp;LT_ROLE_VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;LS_ROLE_VALUE-POS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;MODIFY&nbsp;SE16N_ROLE_VALUE&nbsp;FROM&nbsp;TABLE&nbsp;LT_ROLE_VALUE.<br />
+   </div>
+   <div class="codeComment">
+*Definition&nbsp;of&nbsp;user&nbsp;assignment<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_USER_ROLE&nbsp;INTO&nbsp;GS_USER_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_USER_ROLE&nbsp;TO&nbsp;LS_USER_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_USER_ROLE-SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_USER_ROLE&nbsp;TO&nbsp;LT_USER_ROLE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;MODIFY&nbsp;SE16N_USER_ROLE&nbsp;FROM&nbsp;TABLE&nbsp;LT_USER_ROLE.<br />
+<br />
+&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;MESSAGE&nbsp;I200(WUSL)&nbsp;WITH&nbsp;P_ROLE.<br />
+<br />
+ENDFORM.                    " SAVE_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DELETE_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM DELETE_ROLE .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_ANSWER&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_TEXT(60).<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;TEXT-RD2&nbsp;GD_ROLE&nbsp;INTO&nbsp;LD_TEXT.<br />
+&nbsp;&nbsp;CALL FUNCTION 'POPUP_TO_CONFIRM'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLEBAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TEXT-RD1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_QUESTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_TEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_BUTTON_1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Ja'(R03)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_BUTTON_2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Nein'(R04)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISPLAY_CANCEL_BUTTON&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANSWER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_ANSWER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_NOT_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CHECK:&nbsp;LD_ANSWER&nbsp;=&nbsp;'1'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.delete&nbsp;old&nbsp;data&nbsp;otherwise&nbsp;deleted&nbsp;lines&nbsp;will&nbsp;not&nbsp;be&nbsp;correct<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_ROLE_DEF&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_ROLE_DEF_T&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_ROLE_TABLE&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_ROLE_VALUE&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;DELETE&nbsp;FROM&nbsp;SE16N_USER_ROLE&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;MESSAGE&nbsp;I201(WUSL)&nbsp;WITH&nbsp;GD_ROLE.<br />
+<br />
+ENDFORM.                    " DELETE_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;COPY_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM COPY_ROLE .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;FIELDS&nbsp;OCCURS&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;SVAL.<br />
+&nbsp;&nbsp;DATA:&nbsp;END&nbsp;OF&nbsp;FIELDS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURNCODE(1)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POPUP_TITLE(30)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_NEW_ROLE&nbsp;TYPE&nbsp;SE16N_ROLE.<br />
+<br />
+&nbsp;&nbsp;POPUP_TITLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Name&nbsp;der&nbsp;neuen&nbsp;Rolle'(100).<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;the&nbsp;role&nbsp;already&nbsp;exists<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_DEF&nbsp;INTO&nbsp;GS_ROLE_DEF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I002(TSWUSL).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;FIELDS.<br />
+&nbsp;&nbsp;FIELDS-TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'SE16N_ROLE_DEF'.<br />
+&nbsp;&nbsp;FIELDS-FIELDNAME&nbsp;&nbsp;&nbsp;=&nbsp;'SE16N_ROLE'.<br />
+&nbsp;&nbsp;FIELDS-VALUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;FIELDS-FIELD_ATTR&nbsp;&nbsp;=&nbsp;'00'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"eingabebereit<br />
+&nbsp;&nbsp;APPEND&nbsp;FIELDS.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'POPUP_GET_VALUES'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POPUP_TITLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;POPUP_TITLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURNCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURNCODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FIELDS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;FIELDS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR_IN_FIELDS&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;RETURNCODE&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;FIELDS&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_NEW_ROLE&nbsp;=&nbsp;FIELDS-VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*.check&nbsp;if&nbsp;new&nbsp;role&nbsp;already&nbsp;exists<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_DEF&nbsp;INTO&nbsp;GS_ROLE_DEF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I202(WUSL)&nbsp;WITH&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.first&nbsp;save&nbsp;current&nbsp;role<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;SAVE_ROLE&nbsp;USING&nbsp;GD_SAVE_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_TXT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.read&nbsp;current&nbsp;data<br />
+<br />
+*.get&nbsp;all&nbsp;languages<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_DEF_T&nbsp;INTO&nbsp;TABLE&nbsp;GT_ROLE_DEF_T<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_USER_ROLE&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;GT_USER_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_TABLE&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;GT_ROLE_TABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_VALUE&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLE&nbsp;GT_ROLE_VALUE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;GD_ROLE.<br />
+<br />
+&nbsp;&nbsp;GS_ROLE_DEF-SE16N_ROLE&nbsp;&nbsp;&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_ROLE_DEF_T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_ROLE_DEF_T-SE16N_ROLE&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_ROLE_TABLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_ROLE_TABLE-SE16N_ROLE&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_ROLE_TABLE&nbsp;INDEX&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_ROLE_VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_ROLE_VALUE-SE16N_ROLE&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_ROLE_VALUE&nbsp;INDEX&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_USER_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_USER_ROLE-SE16N_ROLE&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_USER_ROLE&nbsp;INDEX&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*.now&nbsp;post<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GD_ROLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;GD_SAVE_ROLE&nbsp;=&nbsp;LD_NEW_ROLE.<br />
+&nbsp;&nbsp;GD_SAVE_TXT&nbsp;&nbsp;=&nbsp;GS_ROLE_DEF_T-SE16N_ROLE_TXT.<br />
+   </div>
+   <div class="codeComment">
+*.now&nbsp;save&nbsp;new&nbsp;role<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;SAVE_ROLE&nbsp;USING&nbsp;GD_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GD_SAVE_TXT.<br />
+<br />
+ENDFORM.                    " COPY_ROLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;TRANSPORT_ROLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM TRANSPORT_ROLE .<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_ANSWER(1).<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_APPL(1).<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_OFFSET&nbsp;LIKE&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_DFIES&nbsp;&nbsp;LIKE&nbsp;DFIES&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;IKO200&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;KO200,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IORDER&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;E070-TRKORR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ITASK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;E070-TRKORR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IE071K&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;E071K&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IE071&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;E071&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*..check&nbsp;if&nbsp;user&nbsp;is&nbsp;authorized&nbsp;to&nbsp;transport<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;AUTHORITY-CHECK&nbsp;OBJECT&nbsp;'S_TRANSPRT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID&nbsp;'TTYPE'&nbsp;FIELD&nbsp;'TASK'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID&nbsp;'ACTVT'&nbsp;FIELD&nbsp;'02'.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I617(TK)&nbsp;WITH&nbsp;'R3TR'&nbsp;'TABU'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*..ask&nbsp;customer&nbsp;if&nbsp;he&nbsp;really&nbsp;wants&nbsp;to&nbsp;transport<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'POPUP_TO_CONFIRM'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLEBAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Tabelleneintr#ge&nbsp;transportieren'(030)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_QUESTION&nbsp;&nbsp;=&nbsp;'Wollen&nbsp;Sie&nbsp;wirklich'(031)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANSWER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_ANSWER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_NOT_FOUND&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;CHECK:&nbsp;LD_ANSWER&nbsp;=&nbsp;'1'.<br />
+   </div>
+   <div class="codeComment">
+*..transport&nbsp;all&nbsp;tables&nbsp;that&nbsp;are&nbsp;necessary&nbsp;for&nbsp;this&nbsp;application<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DEFINE&nbsp;MAKRO_FILL_TRANS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;IKO200.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IKO200-PGMID&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'R3TR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IKO200-OBJECT&nbsp;&nbsp;&nbsp;=&nbsp;'TABU'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IKO200-OBJFUNC&nbsp;&nbsp;=&nbsp;'K'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IKO200-OBJ_NAME&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;IE071.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071-PGMID&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'R3TR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071-OBJECT&nbsp;&nbsp;&nbsp;=&nbsp;'TABU'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071-OBJ_NAME&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071-OBJFUNC&nbsp;&nbsp;=&nbsp;'K'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;IE071.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DDIF_NAMETAB_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DFIES_TAB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_DFIES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK:&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;IE071K.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&2&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IE071K-TABKEY&nbsp;&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LD_APPL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_DFIES&nbsp;WHERE&nbsp;KEYFLAG&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LT_DFIES-ROLLNAME&nbsp;=&nbsp;'SPRAS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IE071K-TABKEY+LT_DFIES-OFFSET(LT_DFIES-OUTPUTLEN)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;LT_DFIES-FIELDNAME&nbsp;=&nbsp;'SE16N_ROLE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IE071K-TABKEY+LT_DFIES-OFFSET(LT_DFIES-OUTPUTLEN)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GD_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_APPL&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_OFFSET&nbsp;=&nbsp;LT_DFIES-OFFSET&nbsp;+&nbsp;LT_DFIES-OUTPUTLEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*.......add&nbsp;a&nbsp;*&nbsp;at&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;next&nbsp;key-field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LD_APPL&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IE071K-TABKEY+LD_OFFSET(1)&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LD_APPL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071K-PGMID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'R3TR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071K-MASTERTYPE&nbsp;=&nbsp;'TABU'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071K-OBJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'TABU'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071K-MASTERNAME&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IE071K-OBJNAME&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;IE071K.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IE071.<br />
+&nbsp;&nbsp;MAKRO_FILL_TRANS&nbsp;'SE16N_ROLE_DEF'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'-'.<br />
+&nbsp;&nbsp;MAKRO_FILL_TRANS&nbsp;'SE16N_ROLE_DEF_T'&nbsp;&nbsp;&nbsp;'-'.<br />
+&nbsp;&nbsp;MAKRO_FILL_TRANS&nbsp;'SE16N_ROLE_TABLE'&nbsp;&nbsp;&nbsp;'-'.<br />
+&nbsp;&nbsp;MAKRO_FILL_TRANS&nbsp;'SE16N_ROLE_VALUE'&nbsp;&nbsp;&nbsp;'-'.<br />
+&nbsp;&nbsp;MAKRO_FILL_TRANS&nbsp;'SE16N_USER_ROLE'&nbsp;&nbsp;&nbsp;&nbsp;'-'.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'TR_ORDER_CHOICE_CORRECTION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IV_CATEGORY&nbsp;=&nbsp;'SYST'<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IV_CLI_DEP&nbsp;&nbsp;=&nbsp;'X'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EV_ORDER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;IORDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EV_TASK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ITASK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CALL FUNCTION 'TR_APPEND_TO_COMM_OBJS_KEYS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WI_SIMULATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WI_SUPPRESS_KEY_CHECK&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WI_TRKORR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ITASK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WT_E071&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;IE071<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WT_E071K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;IE071K<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;68.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;SY-MSGID&nbsp;TYPE&nbsp;SY-MSGTY&nbsp;NUMBER&nbsp;SY-MSGNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;SY-MSGV1&nbsp;SY-MSGV2&nbsp;SY-MSGV3&nbsp;SY-MSGV4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.If&nbsp;everything&nbsp;o.k.,&nbsp;send&nbsp;message<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MESSAGE&nbsp;S101(WUSL).<br />
+ENDFORM.                    " TRANSPORT_ROLE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_ENQUEUE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_GD_ROLE&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_ENQUEUE  USING    P_ROLE TYPE SE16N_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;VALUE(RC).<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;LS_KEY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MANDT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MANDT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SE16N_ROLE&nbsp;TYPE&nbsp;SE16N_ROLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LS_KEY.<br />
+&nbsp;&nbsp;DATA:&nbsp;SPERRDAT&nbsp;LIKE&nbsp;RSTABLE-VARKEY.<br />
+&nbsp;&nbsp;CONSTANTS:&nbsp;C_TABNAME&nbsp;TYPE&nbsp;TABNAME&nbsp;VALUE&nbsp;'SE16N_ROLE_DEF'.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltFS1&gt,&nbsp;&ltFS2&gt.<br />
+<br />
+&nbsp;&nbsp;LS_KEY-MANDT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-MANDT.<br />
+&nbsp;&nbsp;LS_KEY-SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;LS_KEY&nbsp;&nbsp;&nbsp;TO&nbsp;&ltFS1&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;SPERRDAT&nbsp;TO&nbsp;&ltFS2&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+<br />
+&nbsp;&nbsp;&ltFS2&gt&nbsp;=&nbsp;&ltFS1&gt.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_E_TABLEE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE_RSTABLE&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;C_TABNAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SPERRDAT<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_SCOPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_WAIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_COLLECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;RC&nbsp;=&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;IF&nbsp;RC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I115(WUSL)&nbsp;WITH&nbsp;LS_KEY.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " SET_ENQUEUE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_DEQUEUE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_GD_ROLE&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_DEQUEUE  USING  P_ROLE TYPE SE16N_ROLE.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;LS_KEY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MANDT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MANDT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SE16N_ROLE&nbsp;TYPE&nbsp;SE16N_ROLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LS_KEY.<br />
+&nbsp;&nbsp;DATA:&nbsp;SPERRDAT&nbsp;LIKE&nbsp;RSTABLE-VARKEY.<br />
+&nbsp;&nbsp;CONSTANTS:&nbsp;C_TABNAME&nbsp;TYPE&nbsp;TABNAME&nbsp;VALUE&nbsp;'SE16N_ROLE_DEF'.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltFS1&gt,&nbsp;&ltFS2&gt.<br />
+<br />
+&nbsp;&nbsp;LS_KEY-MANDT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-MANDT.<br />
+&nbsp;&nbsp;LS_KEY-SE16N_ROLE&nbsp;=&nbsp;P_ROLE.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;LS_KEY&nbsp;&nbsp;&nbsp;TO&nbsp;&ltFS1&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;SPERRDAT&nbsp;TO&nbsp;&ltFS2&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+<br />
+&nbsp;&nbsp;&ltFS2&gt&nbsp;=&nbsp;&ltFS1&gt.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_E_TABLEE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE_RSTABLE&nbsp;=&nbsp;'E'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;C_TABNAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SPERRDAT.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_SCOPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_SYNCHRON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_COLLECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " SET_DEQUEUE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CHECK_IF_SAVE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_RC&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHECK_IF_SAVE  USING     VALUE(P_ROLE)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;&nbsp;VALUE(RC).<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_ANSWER&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;LD_TEXT(60).<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;TEXT-R02&nbsp;P_ROLE&nbsp;INTO&nbsp;LD_TEXT.<br />
+&nbsp;&nbsp;CALL FUNCTION 'POPUP_TO_CONFIRM'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLEBAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;TEXT-R01<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_QUESTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_TEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_BUTTON_1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Ja'(R03)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_BUTTON_2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Nein'(R04)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISPLAY_CANCEL_BUTTON&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANSWER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LD_ANSWER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_NOT_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CASE&nbsp;LD_ANSWER.<br />
+   </div>
+   <div class="codeComment">
+*.....abort<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'A'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;=&nbsp;4.<br />
+   </div>
+   <div class="codeComment">
+*.....no<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'2'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;=&nbsp;2.<br />
+   </div>
+   <div class="codeComment">
+*.....yes<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+ENDFORM.                    " CHECK_IF_SAVE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ROLE_GET_ROLES<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_LT_SE16N_USER_ROLE&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM ROLE_GET_ROLES<br />
+&nbsp;&nbsp;TABLES&nbsp;LT_SE16N_USER_ROLE&nbsp;STRUCTURE&nbsp;SE16N_USER_ROLE.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_VALUES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;USVALUES&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_VALUES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;USVALUES.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_VALUES_ROLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;USVALUES.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_SE16N_USER_ROLE&nbsp;LIKE&nbsp;SE16N_USER_ROLE.<br />
+<br />
+&nbsp;&nbsp;REFRESH:&nbsp;LT_SE16N_USER_ROLE.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'SUSR_USER_AUTH_FOR_OBJ_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NEW_BUFFERING&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MANDANT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-MANDT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USER_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SEL_OBJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'S_BRWS_CUS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_VALUES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USER_NAME_NOT_EXIST&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOT_AUTHORIZED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTERNAL_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*.&nbsp;no&nbsp;roles&nbsp;assigned<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_VALUES&nbsp;INTO&nbsp;LS_VALUES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;FIELD&nbsp;=&nbsp;'BRWS_KEY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;VON&nbsp;&nbsp;&nbsp;=&nbsp;'ROLE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_VALUES&nbsp;INTO&nbsp;LS_VALUES_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;AUTH&nbsp;&nbsp;=&nbsp;LS_VALUES-AUTH<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;FIELD&nbsp;=&nbsp;'BRWS_NAME'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_SE16N_USER_ROLE-SE16N_ROLE&nbsp;=&nbsp;LS_VALUES_ROLE-VON.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_SE16N_USER_ROLE-UNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;LS_SE16N_USER_ROLE&nbsp;INTO&nbsp;LT_SE16N_USER_ROLE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*..fill&nbsp;buffer<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;GT_SE16N_ROLE_TABLE.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;LT_SE16N_USER_ROLE[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;SE16N_ROLE_TABLE&nbsp;INTO&nbsp;TABLE&nbsp;GT_SE16N_ROLE_TABLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_SE16N_USER_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SE16N_ROLE&nbsp;=&nbsp;LT_SE16N_USER_ROLE-SE16N_ROLE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;(&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GD-TAB&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GD-TXT_TAB&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'*'&nbsp;).<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.old&nbsp;coding<br />
+**.'*'-User&nbsp;is&nbsp;the&nbsp;generic&nbsp;one&nbsp;for&nbsp;all&nbsp;users<br />
+*&nbsp;&nbsp;select&nbsp;*&nbsp;from&nbsp;se16n_user_role&nbsp;into&nbsp;table&nbsp;lt_se16n_user_role<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;(&nbsp;uname&nbsp;=&nbsp;gd-uname&nbsp;or<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uname&nbsp;=&nbsp;'*'&nbsp;).<br />
+**.get&nbsp;the&nbsp;roles&nbsp;assigned&nbsp;to&nbsp;this&nbsp;user<br />
+*&nbsp;&nbsp;if&nbsp;not&nbsp;lt_se16n_user_role[]&nbsp;is&nbsp;initial.<br />
+**....get&nbsp;the&nbsp;limitations<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;select&nbsp;*&nbsp;from&nbsp;se16n_role_table&nbsp;into&nbsp;table&nbsp;gt_se16n_role_table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;all&nbsp;entries&nbsp;in&nbsp;lt_se16n_user_role<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;se16n_role&nbsp;=&nbsp;lt_se16n_user_role-se16n_role<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;(&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab&nbsp;or<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gd-txt_tab&nbsp;or<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'*'&nbsp;).<br />
+*&nbsp;&nbsp;endif.<br />
+*&nbsp;&nbsp;if&nbsp;not&nbsp;gt_se16n_role_table[]&nbsp;is&nbsp;initial.<br />
+**...check&nbsp;against&nbsp;table&nbsp;SE16N_ROLE_TABLE&nbsp;if&nbsp;user&nbsp;is&nbsp;not&nbsp;allowed&nbsp;at&nbsp;all<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;gt_se16n_role_table&nbsp;into&nbsp;gs_se16n_role_table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;key&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'*'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'*'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_authority&nbsp;=&nbsp;true.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_no_auth&nbsp;=&nbsp;true.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+**...check&nbsp;if&nbsp;the&nbsp;user&nbsp;is&nbsp;not&nbsp;authorized&nbsp;for&nbsp;this&nbsp;table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;gt_se16n_role_table&nbsp;into&nbsp;gs_se16n_role_table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;key&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'*'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_authority&nbsp;=&nbsp;true.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_no_auth&nbsp;=&nbsp;true.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+**...check&nbsp;if&nbsp;there&nbsp;is&nbsp;authority&nbsp;for&nbsp;this&nbsp;table&nbsp;(if&nbsp;any&nbsp;specific<br />
+**...entry&nbsp;for&nbsp;this&nbsp;table&nbsp;exists)<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_se16n_role_table&nbsp;into&nbsp;gs_se16n_role_table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;tabname&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;(&nbsp;fieldname&nbsp;&lt&gt&nbsp;space&nbsp;and<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;&lt&gt&nbsp;'*'&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+**.......ok,&nbsp;process&nbsp;table<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ld_no_auth.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+*<br />
+**...user&nbsp;is&nbsp;not&nbsp;authorized<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ld_no_auth&nbsp;=&nbsp;true.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'DTB'&nbsp;field&nbsp;space.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e419(mo)&nbsp;RAISING&nbsp;NO_PERMISSION.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+*&nbsp;&nbsp;endif.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " ROLE_GET_ROLES<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

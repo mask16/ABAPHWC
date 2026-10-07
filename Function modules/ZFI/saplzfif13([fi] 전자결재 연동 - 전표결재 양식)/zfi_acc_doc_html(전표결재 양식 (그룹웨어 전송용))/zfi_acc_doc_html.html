@@ -1,0 +1,550 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZFI_ACC_DOC_HTML</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZFI_ACC_DOC_HTML</h2>
+<h3> Description: 전표결재 양식 (그룹웨어 전송용)</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZFI_ACC_DOC_HTML.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_DOWNLOAD) TYPE  XFELD OPTIONAL<br />
+*"  EXPORTING<br />
+*"     REFERENCE(E_MESSAGE) TYPE  BAPI_MSG<br />
+*"     REFERENCE(E_HTML) TYPE  STRING<br />
+*"  TABLES<br />
+*"      IT_DOC STRUCTURE  BKPF_KEY<br />
+*"      IT_GUBUN STRUCTURE  ZFIS0012<br />
+*"  EXCEPTIONS<br />
+*"      ERROR<br />
+*"      OVER_FILESIZE<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zfi_acc_doc_html.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;LT_BKPF&nbsp;&nbsp;TYPE&nbsp;BKPF&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_BSEG&nbsp;&nbsp;TYPE&nbsp;BSEG&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_BSET&nbsp;&nbsp;TYPE&nbsp;BSET&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_T001&nbsp;&nbsp;TYPE&nbsp;T001,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_GUBUN&nbsp;TYPE&nbsp;ZFIS0012.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LV_MSG&nbsp;&nbsp;&nbsp;TYPE&nbsp;BAPI_MSG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_NAME1&nbsp;TYPE&nbsp;KNA1-NAME1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SUM&nbsp;&nbsp;&nbsp;TYPE&nbsp;WERTV12,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SIZE&nbsp;&nbsp;TYPE&nbsp;COND_MAX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_KUNNR&nbsp;TYPE&nbsp;KUNNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_LIFNR&nbsp;TYPE&nbsp;LIFNR.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;GT_HTML,&nbsp;GT_HTML[],&nbsp;GV_HEAD,&nbsp;LS_T001.<br />
+   </div>
+   <div class="codeComment">
+* Get FI Doc. data<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_DOC.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;GT_HEAD,&nbsp;GT_HEAD[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEM,&nbsp;GT_ITEM[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_BKPF,&nbsp;LT_BKPF[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_BSEG,&nbsp;LT_BSEG[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_BSET,&nbsp;LT_BSET[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_MSG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 전표내역<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;call function <a href ="../zfi_acc_doc_read(전표내역 (임시전표 포함))/zfi_acc_doc_read.html">'ZFI_ACC_DOC_READ'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BUKRS&nbsp;&nbsp;&nbsp;=&nbsp;IT_DOC-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BELNR&nbsp;&nbsp;&nbsp;=&nbsp;IT_DOC-BELNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_GJAHR&nbsp;&nbsp;&nbsp;=&nbsp;IT_DOC-GJAHR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MESSAGE&nbsp;=&nbsp;E_MESSAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_BKPF&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_BKPF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_BSEG&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_BSEG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_BSET&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_BSET<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LV_SUM,&nbsp;LV_NAME1,&nbsp;LV_KUNNR,&nbsp;LV_LIFNR.<br />
+   </div>
+   <div class="codeComment">
+* Header<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_BKPF&nbsp;INDEX&nbsp;1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Set data (item)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_BSEG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GT_ITEM.<br />
+   </div>
+   <div class="codeComment">
+* 계정과목명<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;TXT20&nbsp;FROM&nbsp;SKAT&nbsp;INTO&nbsp;GT_ITEM-TXT20<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;KTOPL&nbsp;=&nbsp;'1000'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SAKNR&nbsp;=&nbsp;LT_BSEG-HKONT.<br />
+   </div>
+   <div class="codeComment">
+* 거래처명<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;LT_BSEG-KUNNR&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;NAME1&nbsp;FROM&nbsp;KNA1&nbsp;INTO&nbsp;GT_ITEM-NAME1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;KUNNR&nbsp;=&nbsp;LT_BSEG-KUNNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;=&nbsp;LT_BSEG-KUNNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUTPUT&nbsp;=&nbsp;LV_KUNNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;LV_KUNNR&nbsp;'-'&nbsp;GT_ITEM-NAME1&nbsp;INTO&nbsp;GT_ITEM-NAME1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;NOT&nbsp;LT_BSEG-LIFNR&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;NAME1&nbsp;FROM&nbsp;LFA1&nbsp;INTO&nbsp;GT_ITEM-NAME1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;LIFNR&nbsp;=&nbsp;LT_BSEG-LIFNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;=&nbsp;LT_BSEG-LIFNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUTPUT&nbsp;=&nbsp;LV_LIFNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;LV_LIFNR&nbsp;'-'&nbsp;GT_ITEM-NAME1&nbsp;INTO&nbsp;GT_ITEM-NAME1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*지급 요청일 ( 지급기산일 )<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;LT_BSEG-ZFBDT&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;IT_GUBUN&nbsp;INTO&nbsp;LS_GUBUN&nbsp;WITH&nbsp;KEY&nbsp;BUKRS&nbsp;=&nbsp;LT_BSEG-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHR&nbsp;=&nbsp;LT_BSEG-GJAHR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BELNR&nbsp;=&nbsp;LT_BSEG-BELNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;LT_BSEG-ZFBDT&nbsp;TO&nbsp;GT_ITEM-ZFBDT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;GT_ITEM-ZFBDT&nbsp;'-'&nbsp;LS_GUBUN-REQ_GUBUN&nbsp;INTO&nbsp;GT_ITEM-ZFBDT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEM-ZFBDT&nbsp;=&nbsp;LS_GUBUN-REQ_GUBUN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LV_NAME1&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_NAME1&nbsp;=&nbsp;GT_ITEM-NAME1.&nbsp;&nbsp;"&nbsp;거래처명<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 금액<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LT_BSEG-SHKZG&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;LT_BSEG-WRBTR&nbsp;TO&nbsp;GT_ITEM-WRBTRS&nbsp;CURRENCY&nbsp;LT_BKPF-WAERS.<br />
+   </div>
+   <div class="codeComment">
+* Sum<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SUM&nbsp;=&nbsp;LV_SUM&nbsp;+&nbsp;LT_BSEG-WRBTR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;LT_BSEG-SHKZG&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;LT_BSEG-WRBTR&nbsp;TO&nbsp;GT_ITEM-WRBTRH&nbsp;CURRENCY&nbsp;LT_BKPF-WAERS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;비망전표&nbsp;금액표시.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LT_BKPF-BSTAT&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SUM&nbsp;=&nbsp;LV_SUM&nbsp;+&nbsp;LT_BSEG-WRBTR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 세금코드<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEM-MWSKZ&nbsp;=&nbsp;LT_BSEG-MWSKZ.<br />
+   </div>
+   <div class="codeComment">
+* 코스트센터<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;LT_BSEG-KOSTL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;B~KTEXT&nbsp;FROM&nbsp;CSKS&nbsp;AS&nbsp;A&nbsp;JOIN&nbsp;CSKT&nbsp;AS&nbsp;B<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;A~KOKRS&nbsp;=&nbsp;B~KOKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~KOSTL&nbsp;=&nbsp;B~KOSTL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~DATBI&nbsp;=&nbsp;B~DATBI<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;GT_ITEM-KTEXT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~KOKRS&nbsp;&nbsp;=&nbsp;LT_BKPF-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~KOSTL&nbsp;&nbsp;=&nbsp;LT_BSEG-KOSTL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~DATBI&nbsp;&gt=&nbsp;LT_BKPF-BUDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~DATAB&nbsp;&lt=&nbsp;LT_BKPF-BUDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 적요<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEM-SGTXT&nbsp;=&nbsp;LT_BSEG-SGTXT.<br />
+   </div>
+   <div class="codeComment">
+* Append<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_ITEM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 세금정보<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_BSET.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GT_ITEM.<br />
+   </div>
+   <div class="codeComment">
+* 계정과목명<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;TXT20&nbsp;FROM&nbsp;SKAT&nbsp;INTO&nbsp;GT_ITEM-TXT20<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;KTOPL&nbsp;=&nbsp;'1000'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SAKNR&nbsp;=&nbsp;LT_BSET-HKONT.<br />
+   </div>
+   <div class="codeComment">
+* 금액<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LT_BSET-SHKZG&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;LT_BSET-FWSTE&nbsp;TO&nbsp;GT_ITEM-WRBTRS&nbsp;CURRENCY&nbsp;LT_BKPF-WAERS.<br />
+   </div>
+   <div class="codeComment">
+* Sum<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SUM&nbsp;=&nbsp;LV_SUM&nbsp;+&nbsp;LT_BSET-FWSTE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;LT_BSET-SHKZG&nbsp;=&nbsp;'H'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;LT_BSET-FWSTE&nbsp;TO&nbsp;GT_ITEM-WRBTRH&nbsp;CURRENCY&nbsp;LT_BKPF-WAERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 세금코드<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_ITEM-MWSKZ&nbsp;=&nbsp;LT_BSET-MWSKZ.<br />
+   </div>
+   <div class="codeComment">
+* Append<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_ITEM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Set data (header)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_BKPF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GT_HEAD.<br />
+   </div>
+   <div class="codeComment">
+* 확장버튼<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_HEAD-BUTT&nbsp;=&nbsp;'□'.<br />
+   </div>
+   <div class="codeComment">
+* 전표번호<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_HEAD-BELNR&nbsp;=&nbsp;LT_BKPF-BELNR.<br />
+   </div>
+   <div class="codeComment">
+* 전기일<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;LT_BKPF-BUDAT&nbsp;TO&nbsp;GT_HEAD-BUDAT.<br />
+   </div>
+   <div class="codeComment">
+* 통화<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_HEAD-WAERS&nbsp;=&nbsp;LT_BKPF-WAERS.<br />
+   </div>
+   <div class="codeComment">
+* 금액<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;LV_SUM&nbsp;TO&nbsp;GT_HEAD-WRBTR&nbsp;CURRENCY&nbsp;LT_BKPF-WAERS.<br />
+   </div>
+   <div class="codeComment">
+* 전표 적요<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_HEAD-BKTXT&nbsp;=&nbsp;LT_BKPF-BKTXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GT_HEAD-BKTXT&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_HEAD-BKTXT&nbsp;=&nbsp;LV_NAME1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* Append<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GT_HEAD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* HTML<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_HTML&nbsp;CHANGING&nbsp;E_HTML.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;E_HTML.<br />
+   </div>
+   <div class="codeComment">
+* Error<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Set &ltScript&gt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&ltscript&nbsp;type="text/javascript"&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`src="http://code.jquery.com/jquery-1.11.3.min.js"&gt`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`&lt/script&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&ltstyle&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;2.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_fi{&nbsp;width:100%;font-family:'맑은고딕',`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`Malgun&nbsp;Gothic;&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`font-size:13px;&nbsp;border-top:1px&nbsp;solid&nbsp;#d1d1d1;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;3.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_fi&nbsp;thead&nbsp;th{&nbsp;background-color:#f1f1f1;&nbsp;border:0;&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`height:38px;&nbsp;border-bottom:1px&nbsp;solid&nbsp;#d1d1d1;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;4.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_fi&nbsp;tbody&nbsp;td{&nbsp;height:22px;&nbsp;padding:6px&nbsp;0&nbsp;6px&nbsp;0}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;5.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_fi&nbsp;tbody&nbsp;tr:hover&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`{background-color:#f2f3fe&nbsp;!important;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;6.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_fi&nbsp;tbody&nbsp;tr{border-bottom:1px&nbsp;solid&nbsp;#d1d1d1;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;7.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_fi&nbsp;tbody&nbsp;td&nbsp;a:link,.sap_fi&nbsp;tbody&nbsp;td&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`a:visited{&nbsp;color:#000;&nbsp;text-decoration:none;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;8.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_fi&nbsp;tbody&nbsp;td&nbsp;a:hover`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`{&nbsp;color:#1068b3;&nbsp;text-decoration:none;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;9.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_bukrs{&nbsp;width:55%;font-family:'맑은고딕',`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`Malgun&nbsp;Gothic;&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`font-size:13px;&nbsp;border-top:1px&nbsp;solid&nbsp;#d1d1d1;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;10.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`.sap_bukrs&nbsp;thead&nbsp;th{&nbsp;background-color:#f1f1f1;&nbsp;border:0;&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`height:38px;&nbsp;border-bottom:1px&nbsp;solid&nbsp;#d1d1d1;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;11.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`table{border:0;border-collapse:collapse;&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`font-family:'맑은고딕',Malgun&nbsp;Gothic;&nbsp;}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;12.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lt/style&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;13.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&ltscript&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;14.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`$(document).ready(function(){`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;15.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`$('.fi_maintr').click(function(){`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;16.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`if($(this).parent().next("tr").css("display")&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`==&nbsp;"none"){`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;17.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`$(this).parent().next("tr").show();`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;18.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`$(this)[0].innerHTML&nbsp;=&nbsp;"&lta&nbsp;href='#'&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`onclick='return&nbsp;false;'&gt▣";`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;19.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`}else{`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;20.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`$(this).parent().next("tr").hide();`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;21.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`$(this)[0].innerHTML&nbsp;=&nbsp;"&lta&nbsp;href='#'&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`onclick='return&nbsp;false;'&gt□";`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;22.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`}`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;23.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`});`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;24.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`});`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;25.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lt/script&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;26.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 회사코드<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;IT_DOC&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;T001&nbsp;INTO&nbsp;LS_T001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;=&nbsp;IT_DOC-BUKRS.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lttable&nbsp;border="1"&nbsp;cellspacing="0"&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`cellpadding="1"&nbsp;class="sap_bukrs"&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;27.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lttr&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;28.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&ltth&nbsp;tabindex="0"&nbsp;scope="col"&nbsp;align="center"&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`width="20%"&nbsp;bgcolor="#F6F6F6"&nbsp;title="열&nbsp;회사코드"&nbsp;&gt회사코드`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;29.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lt/th&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;30.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&ltth&nbsp;tabindex="0"&nbsp;scope="col"&nbsp;align="center"&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`width="10%"&nbsp;title="열&nbsp;코드"&nbsp;&gt`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;LS_T001-BUKRS.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;31.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lt/th&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;32.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&ltth&nbsp;tabindex="0"&nbsp;scope="col"&nbsp;align="left"&nbsp;`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;`width="25%"&nbsp;title="열&nbsp;회사명"&nbsp;&gt`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&&&nbsp;LS_T001-BUTXT.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;33.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lt/th&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;34.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lt/tr&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;35.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&lt/table&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;36.<br />
+&nbsp;&nbsp;GT_HTML-LINE&nbsp;=&nbsp;`&ltbr&gt`.<br />
+&nbsp;&nbsp;INSERT&nbsp;GT_HTML&nbsp;INDEX&nbsp;37.<br />
+<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_DOWNLOAD&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+* Download<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;=&nbsp;'C:\Users\user\Desktop\test.html'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA_TAB&nbsp;=&nbsp;GT_HTML.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* &ltscript&gt는 다운로드시에만 적용함<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DELETE&nbsp;GT_HTML&nbsp;INDEX&nbsp;1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Export / HTML -&gt STRING<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'CONVERT_TABLE_TO_STRING'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_TABLINE_LENGTH&nbsp;=&nbsp;255<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_STRING&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;E_HTML<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_TABLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_HTML[].<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Check file size (1MB)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LV_SIZE&nbsp;=&nbsp;STRLEN(&nbsp;E_HTML&nbsp;).<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LV_SIZE&nbsp;&gt&nbsp;1000000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;OVER_FILESIZE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

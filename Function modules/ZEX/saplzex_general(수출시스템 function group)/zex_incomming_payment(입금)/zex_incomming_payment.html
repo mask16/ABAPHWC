@@ -1,0 +1,430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZEX_INCOMMING_PAYMENT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZEX_INCOMMING_PAYMENT</h2>
+<h3> Description: 입금</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZEX_INCOMMING_PAYMENT.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(P_ZNGRNO) LIKE  ZEX502-ZNGRNO<br />
+*"     REFERENCE(P_ZINPSQ) LIKE  ZEX502-ZINPSQ<br />
+*"  TABLES<br />
+*"      RETURN STRUCTURE  BAPIRET2<br />
+*"  EXCEPTIONS<br />
+*"      POST_ERROR<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zex_incomming_payment.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;V_XREF3&nbsp;LIKE&nbsp;ZEX502-XREF3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_VKGRP&nbsp;LIKE&nbsp;VBRP-VKGRP,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_VKBUR&nbsp;LIKE&nbsp;VBRP-VKBUR.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;RETURN.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;ZEX500.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX500<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E000&nbsp;WITH&nbsp;'입금의뢰&nbsp;관리번호를&nbsp;확인하시오.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;ZEX502.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX502<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E000&nbsp;WITH&nbsp;'입금&nbsp;내역을&nbsp;확인하시오.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;ZEX502-ZCOMPL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'전기완료&nbsp;상태입니다.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;ZEX005.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX005<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;=&nbsp;ZEX500-BUKRS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;CTU_PARAMS-DISMODE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-UNAME&nbsp;=&nbsp;ZEX005-ZSYMGR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ZEX005-DISMODE&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;CTU_PARAMS-DISMODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;ZEX005-DISMODE&nbsp;TO&nbsp;CTU_PARAMS-DISMODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CTU_PARAMS-UPDMODE&nbsp;&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;CTU_PARAMS-CATTMODE&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;CTU_PARAMS-DEFSIZE&nbsp;&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;CTU_PARAMS-RACOMMIT&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;CTU_PARAMS-NOBINPT&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;CTU_PARAMS-NOBIEND&nbsp;&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IT_503.<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX503<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_503<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IT_505.<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX505<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_505<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IT_006.<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX006<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_006<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;EQ&nbsp;ZEX500-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZFUSYN&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;SORT&nbsp;IT_006&nbsp;BY&nbsp;ZFPAGE&nbsp;ZFSEQU.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;V_WRBTR_1.<br />
+&nbsp;&nbsp;SELECT&nbsp;SUM(&nbsp;WRBTR&nbsp;)&nbsp;INTO&nbsp;V_WRBTR_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX504<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;WAERS&nbsp;&nbsp;EQ&nbsp;ZEX502-WAERS.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;IT_503&nbsp;WITH&nbsp;KEY&nbsp;ZINPSQ&nbsp;=&nbsp;P_ZINPSQ.<br />
+&nbsp;&nbsp;CLEAR&nbsp;VBRK.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBRK<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;EQ&nbsp;IT_503-VBELN.<br />
+   </div>
+   <div class="codeComment">
+* 사업영역<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;V_GSBER,&nbsp;V_PRCTR,&nbsp;V_VKGRP,&nbsp;V_VKBUR.<br />
+&nbsp;&nbsp;SELECT&nbsp;MAX(&nbsp;GSBER&nbsp;)&nbsp;MAX(&nbsp;PRCTR&nbsp;)&nbsp;MAX(&nbsp;VKGRP&nbsp;)&nbsp;MAX(&nbsp;VKBUR&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(V_GSBER,&nbsp;V_PRCTR,&nbsp;V_VKGRP,&nbsp;V_VKBUR)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBRP<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;EQ&nbsp;IT_503-VBELN.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;VBRK-VKORG&nbsp;VBRK-VTWEG&nbsp;VBRK-SPART&nbsp;V_VKBUR&nbsp;V_VKGRP&nbsp;INTO&nbsp;V_XREF3.<br />
+   </div>
+   <div class="codeComment">
+* 사업장<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;MAX(&nbsp;BUPLA&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;V_BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBRK<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;EQ&nbsp;IT_503-VBELN.<br />
+&nbsp;&nbsp;MOVE&nbsp;'1000'&nbsp;TO&nbsp;V_BUPLA.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;&nbsp;BDCDATA.<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BLDAT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Document&nbsp;Date<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BLART'&nbsp;&nbsp;&nbsp;'D3',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Type&nbsp;전표유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BUKRS'&nbsp;&nbsp;&nbsp;&nbsp;ZEX500-BUKRS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Company&nbsp;Code<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BUDAT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Date<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BKTXT'&nbsp;&nbsp;&nbsp;'수출대금입금',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;전표헤더텍스트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-WAERS'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-WAERS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Currency<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;'40',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;ZEX502-ZACCN1,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;외화당좌<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Enter<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 실입금액 = 입금액 - SUM(비용).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;V_ZIPAMT&nbsp;=&nbsp;ZEX502-ZIPAMT&nbsp;-&nbsp;V_WRBTR_1.<br />
+&nbsp;&nbsp;WRITE&nbsp;V_ZIPAMT&nbsp;CURRENCY&nbsp;ZEX502-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;실입금액<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;실입금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-VALUT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기준일<br />
+   </div>
+   <div class="codeComment">
+*--------<br />
+* 비용<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_505.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;IT_505-WRBTR&nbsp;&nbsp;CURRENCY&nbsp;IT_505-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;IT_505-NEWKO,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계정<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;IT_505-NEWBS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--------------------------------------------------------------------<br />
+*  Coding Block 주의.....<br />
+*    PERFORM  BDCDATA_APPEND USING :<br />
+*        'X' 'SAPLKACB'     '0002',<br />
+*        ' ' 'BDC_OKCODE'   '/00'.<br />
+*- Coding Block ----<br />
+<br />
+*   CostCenter비용 & 일반비용<br />
+*    IF IT_504-ZCHRTY EQ 'C'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;비용<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-MWSKZ'&nbsp;&nbsp;&nbsp;&nbsp;IT_505-MWSKZ,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Tax&nbsp;code<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-BUPLA'&nbsp;&nbsp;&nbsp;&nbsp;V_BUPLA,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사업장<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-KOSTL'&nbsp;&nbsp;&nbsp;&nbsp;IT_505-KOSTL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Cost&nbsp;Center.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-SGTXT'&nbsp;&nbsp;&nbsp;&nbsp;IT_505-SGTXT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;IT_505-ZCHRTY&nbsp;EQ&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;'=COBL_XERGO'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_COPA_SEG_NEGO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--------------------------------------------------------------------<br />
+*  Coding Block 주의.....<br />
+*    PERFORM  BDCDATA_APPEND USING :<br />
+*        'X' 'SAPLKACB'     '0002',<br />
+*        ' ' 'BDC_OKCODE'   '/00'.<br />
+*- Coding Block ----<br />
+*    ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;'11',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;VBRK-KUNRG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Customer<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Enter<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  PERFORM  BDCDATA_APPEND USING :<br />
+*      'X' 'SAPLKACB'     '0002',<br />
+*      ' ' 'BDC_OKCODE'   '=ENTE'.               " Enter<br />
+<br />
+* 입금액<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;WRITE&nbsp;ZEX502-ZIPAMT&nbsp;CURRENCY&nbsp;ZEX502-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;입금액<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0301',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;입금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-GSBER'&nbsp;&nbsp;&nbsp;&nbsp;V_GSBER,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사업영역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'=ZK'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0331',<br />
+   </div>
+   <div class="codeComment">
+*     ' ' 'BSEG-XREF2'   ZEX502-XREF2,          " 참조키2<br />
+*     ' ' 'BSEG-XREF3'   ZEX502-XREF3,          " 참조키3<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-XREF3'&nbsp;&nbsp;&nbsp;V_XREF3,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;참조키3<br />
+   </div>
+   <div class="codeComment">
+*     ' ' 'BSEG-FDLEV'   ZEX502-FDLEV,          " 계획레벨<br />
+*     ' ' 'BSEG-FDTAG'   ZEX502-ZIPDAT,         " 계획일<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'=ZK'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 저장.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0301',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-HKONT'&nbsp;&nbsp;&nbsp;ZEX502-HKONT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;G/L&nbsp;계정<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'=BU'.<br />
+<br />
+&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'BLN'&nbsp;FIELD&nbsp;''.<br />
+&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'GJR'&nbsp;FIELD&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;MESSTAB.<br />
+&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'FB01'&nbsp;&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;BDCDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPTIONS&nbsp;&nbsp;FROM&nbsp;CTU_PARAMS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;MESSTAB.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;MESSTAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;MESSTAB-MSGTYP&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGID&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-ID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGNR&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-NUMBER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV1&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV2&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV3&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV4&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V4.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'MESSAGE_TEXT_BUILD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-NUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE_TEXT_OUTPUT&nbsp;=&nbsp;RETURN-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;GET&nbsp;PARAMETER&nbsp;ID&nbsp;'BLN'&nbsp;FIELD&nbsp;BELNR.<br />
+&nbsp;&nbsp;GET&nbsp;PARAMETER&nbsp;ID&nbsp;'GJR'&nbsp;FIELD&nbsp;GJAHR.&nbsp;&nbsp;&nbsp;"&nbsp;회계년도.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;BELNR&nbsp;&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;&nbsp;GJAHR&nbsp;&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E000&nbsp;WITH&nbsp;'Data&nbsp;전기&nbsp;도중&nbsp;오류가&nbsp;발생하였습니다.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;UPDATE&nbsp;ZEX502<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;BELNR&nbsp;&nbsp;=&nbsp;BELNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHR&nbsp;&nbsp;=&nbsp;GJAHR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BLDAT&nbsp;&nbsp;=&nbsp;ZEX502-ZIPDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;&nbsp;=&nbsp;ZEX502-ZIPDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZCOMPL&nbsp;=&nbsp;'X'<br />
+&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'Data&nbsp;전기후&nbsp;저장&nbsp;도중&nbsp;오류가&nbsp;발생하였습니다.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SUM(&nbsp;ZIPAMT&nbsp;)&nbsp;INTO&nbsp;V_ZIPAMT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX502<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZCOMPL&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;IF&nbsp;V_ZIPAMT&nbsp;&lt&nbsp;ZEX500-ZNGRMT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;ZEX500<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;ZCOMPL&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;ZEX500<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;ZCOMPL&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: M8<br />
+*260   문서 &을(를)전기했습니다<br />
+*<br />
+* Message class: MIGO<br />
+*012   자재문서 &을(를) 전기했습니다<br />
+*<br />
+* Message class: ZEX01<br />
+*000   &<br />
+*001   & 관리번호 [&]이(가) &되었습니다.<br />
+*007   Data & 도중 오류가 발생하였습니다.<br />
+*011   영업문서와 재무문서의 수출유형이 다릅니다.<br />
+*015   문서범주는 동일해야 합니다<br />
+*027   관리번호 [&]은(는) 다른 사용자가 처리중입니다. 사용자 : &<br />
+*039   Incoterms는 동일해야 합니다.<br />
+*040   판매처는 동일해야 합니다.<br />
+*041   인도처는 동일해야 합니다.<br />
+*<br />
+* Message class: ZIM01<br />
+*019   Long Text [&]은(는) 최대 [&]라인 입력 가능. [&]라인 이후는 삭제됩니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

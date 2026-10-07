@@ -1,0 +1,330 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_IF_WEB_TF_READ</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_IF_WEB_TF_READ</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZSD_IF_WEB_TF_READ.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_USERID) TYPE  ZEUSERID_SD OPTIONAL<br />
+*"     VALUE(I_DATE_FR) TYPE  SY-DATUM OPTIONAL<br />
+*"     VALUE(I_DATE_TO) TYPE  SY-DATUM OPTIONAL<br />
+*"     VALUE(I_FLAG) TYPE  CHAR01 OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_RET) LIKE  ZSDS0001-RET<br />
+*"     VALUE(E_MSG) LIKE  ZSDS0001-MSG<br />
+*"  TABLES<br />
+*"      T_TAB STRUCTURE  ZSDS0320<br />
+*"      T_TAB2 STRUCTURE  ZSDT5081<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zsd_if_web_tf_read.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LS_5080&nbsp;LIKE&nbsp;ZSDT5080,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5081&nbsp;LIKE&nbsp;ZSDT5081,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_5080&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;LS_5080,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_5081&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;LS_5081.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_TABIX&nbsp;TYPE&nbsp;SY-TABIX.<br />
+<br />
+&nbsp;&nbsp;RANGES&nbsp;:&nbsp;LR_ERDAT&nbsp;FOR&nbsp;SY-DATUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LR_ERNAM&nbsp;FOR&nbsp;SY-UNAME.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Input Check<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;I_FLAG&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'내수,수출&nbsp;구분값을&nbsp;입력해주세요.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_DATE_FR&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'시작일자를&nbsp;입력해주세요'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* SELECT RNAGE 조건 담기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;I_DATE_TO&nbsp;=&nbsp;00000000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERDAT-LOW&nbsp;=&nbsp;I_DATE_FR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERDAT-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERDAT-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LR_ERDAT.&nbsp;CLEAR&nbsp;LR_ERDAT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERDAT-LOW&nbsp;=&nbsp;I_DATE_FR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERDAT-HIGH&nbsp;=&nbsp;I_DATE_TO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERDAT-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERDAT-OPTION&nbsp;=&nbsp;'BT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LR_ERDAT.&nbsp;CLEAR&nbsp;LR_ERDAT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_USERID&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERNAM-LOW&nbsp;=&nbsp;I_USERID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERNAM-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LR_ERNAM-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LR_ERNAM.&nbsp;CLEAR&nbsp;LR_ERNAM.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_5080<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5080<br />
+&nbsp;&nbsp;WHERE&nbsp;ERDAT&nbsp;IN&nbsp;LR_ERDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZTYPE&nbsp;EQ&nbsp;I_FLAG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ERNAM&nbsp;IN&nbsp;LR_ERNAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;FLAG&nbsp;&nbsp;&nbsp;EQ&nbsp;SPACE.&nbsp;"완료여부<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LT_5080&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'입력한&nbsp;조건에&nbsp;해당하는&nbsp;데이터가&nbsp;존재하지&nbsp;않습니다'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_5080&nbsp;INTO&nbsp;LS_5080.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_5080&nbsp;TO&nbsp;T_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_5081<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5081<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_5080<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;DOC_NO&nbsp;EQ&nbsp;LT_5080-DOC_NO.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;T_TAB&nbsp;BY&nbsp;DOC_NO&nbsp;MATNR.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LT_5081&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2[]&nbsp;=&nbsp;LT_5081.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_TAB2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;T_TAB&nbsp;WITH&nbsp;KEY&nbsp;DOC_NO&nbsp;=&nbsp;T_TAB2-DOC_NO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;T_TAB2-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-LFIMG&nbsp;=&nbsp;T_TAB-LFIMG&nbsp;+&nbsp;T_TAB2-REMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;T_TAB&nbsp;INDEX&nbsp;LV_TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;T_TAB[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;T_TAB&nbsp;BY&nbsp;ZTYPE&nbsp;MATKL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: AM<br />
+*287   Address cannot be maintained; entry in table TSADRV missing<br />
+*290   Entry missing in TSADRV; new address maintenance cannot be called<br />
+*291   Entry missing in TSADRV; new address maintenance cannot be called<br />
+*298   Address group & not defined; delete flag for address not possible<br />
+*<br />
+* Message class: EC<br />
+*089   Internal error: Unable to read screen data<br />
+*<br />
+* Message class: SCPR<br />
+*026   Table & is too wide. It cannot be processed<br />
+*028   The table/view & has no generated maintenance dialog<br />
+*035   Dictionary interface error: Contact SAP<br />
+*120   Table/view & not found<br />
+*273   Function module call error<br />
+*320   BC Set processing error<br />
+*395   Internal field description read error<br />
+*399   No data record activation information<br />
+*408   Table key not supported by activation links<br />
+*<br />
+* Message class: SV<br />
+*001   The selected function is not supported<br />
+*002   Number of retrieved entries: &<br />
+*004   No entries found that match selection criteria<br />
+*005   One entry chosen<br />
+*006   Number of chosen entries: &<br />
+*007   No previous entry exists<br />
+*008   No next entry exists<br />
+*009   An entry already exists with the same key<br />
+*010   An entry with this key is marked for deletion<br />
+*011   Number of deleted entries: &<br />
+*012   Number of changed entries: &<br />
+*013   Entry deleted<br />
+*014   Number of entries copied: &<br />
+*015   Target key must be different from source key<br />
+*016   Number of reset entries: &<br />
+*017   Entry reset<br />
+*018   Data was saved<br />
+*019   Choose the key from the allowed namespace<br />
+*024   Specify target entries<br />
+*025   Specify target entries<br />
+*026   Select entries before performing the function<br />
+*028   Table & not in DDIC<br />
+*032   Position the cursor on a valid entry<br />
+*033   Specify the key within the work area<br />
+*037   The maintenance dialog for & is incomplete or not defined<br />
+*039   Table & has no relevant fields<br />
+*040   & entries reset, & original and & new entries are still marked<br />
+*041   & entries reset, & original entries are still marked<br />
+*042   & entries reset, & new entries are still marked<br />
+*043   Data already saved<br />
+*044   Read access only<br />
+*045   Enter a start date that is before the end date<br />
+*046   Enter an end date that is after the start date<br />
+*047   Overlapping records are deleted or delimited<br />
+*049   Data locked by user & (display only)<br />
+*050   System error: Unable to lock table/view &<br />
+*051   No data maintenance authorization; display only<br />
+*053   No display authorization for requested data<br />
+*054   Maintenance of data in current client & not permitted<br />
+*055   Address for object & not found<br />
+*056   Mark at least one entry before selecting this function<br />
+*057   The selected entry is new and has no original<br />
+*058   The selected entries are new and have no original<br />
+*059   The selected entry is still in its original state<br />
+*060   The selected entries are still in their original state<br />
+*061   & entries are still originals, & new entries have no original<br />
+*065   No entries exist, double-click for long text<br />
+*066   Select block end<br />
+*084   No values can be displayed<br />
+*092   Change task & is being processed<br />
+*095   System error changing change task &<br />
+*096   Task & was changed<br />
+*098   Entry flagged for inclusion in task &<br />
+*099   Entry was flagged for deletion from task &<br />
+*105   & entries were flagged for inclusion in task &<br />
+*106   & entries were flagged for deletion from task &<br />
+*107   Entry was already in task &<br />
+*108   & entries were already in task &<br />
+*109   & entries included, & entries were contained: &<br />
+*110   Entry was not in task &<br />
+*111   & entries deleted, & entries were not included: &<br />
+*112   & entries were not in task &<br />
+*113   Entry could not be retrieved<br />
+*114   & entries could not be retrieved<br />
+*115   Entry could not be deleted<br />
+*116   & entries could not be deleted<br />
+*117   Do not make any changes (SAP entry)<br />
+*120   Other entries are retrieved and modified if necessary<br />
+*121   Deleted entry will be recovered and possibly changed<br />
+*122   Entry was delimited<br />
+*123   Number of delimited entries: &<br />
+*124   Process delimited entries<br />
+*125   Process delimited entry<br />
+*127   Delimit area of validity<br />
+*128   Delivery class &, transport not possible<br />
+*129   Related objects in various tasks<br />
+*130   Client & is local, transport not permitted<br />
+*132   Object locked for task &1, user &2 only display permitted<br />
+*134   Inconsistency in object definition, only display permitted<br />
+*136   Change with caution, entry belongs to customer<br />
+*138   Check maintenance object &1 or update function group &2<br />
+*139   Address data is not taken over<br />
+*140   &1 entries deleted, &2 entries taken over<br />
+*141   Individual entries cannot be put into the change request<br />
+*142   Transport is not possible for the specified data<br />
+*153   No language was chosen<br />
+*160   The installed system codepage does not allow any other languages<br />
+*161   Put the cursor on a form name<br />
+*162   The object &1 &2 &3 cannot be put in a request<br />
+*164   Table/view &1 is not in the Dictionary<br />
+*173   Function group &1 inconsistent<br />
+*174   Enter values in work area for non-key fields<br />
+*175   The selected BC Set function is not supported<br />
+*177   Data record contains fix value from BC Set and cannot be deleted<br />
+*183   Error in remote access to central Customizing Distribution system<br />
+*184   Data record contains fixed value from BC Set and cannot be changed<br />
+*202   You are not authorized to change fields with fixed BC Set values<br />
+*306   Table/view & is not active<br />
+*538   Dropdown lists are not supported in view clusters<br />
+*757   You have no maintenance authorization for this table key<br />
+*763   You have no maintenance authorization for the displayed data records<br />
+*764   Changed data record selection<br />
+*766   Restricted display of datasets<br />
+*808   Not all columns in the table can be displayed in the list<br />
+*810   View &1 is more than 1000 characters long<br />
+*818   &1 of &2 Business Configuration Set entries imported<br />
+*819   Business Configuration Set imported<br />
+*830   Last selected entry has been reached<br />
+*831   First selected entry has been reached<br />
+*863   Number of copied entries (including translations): &<br />
+*870   Maintenance dialog switched to list screen<br />
+*<br />
+* Message class: TB<br />
+*109   No maintenance authorization for cross-client tables (see Help)<br />
+*<br />
+* Message class: TK<br />
+*430   Client &1 has status 'not modifiable'<br />
+*729   Changes to Repository objects are not permitted in this client<br />
+*730   Changes to Repository or cross-client Customizing are not permitted<br />
+*731   You are not allowed to change cross-client Customizing<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

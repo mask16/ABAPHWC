@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHRR0020</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZHRR0020</h2>
+<h3> Description: 출퇴근시간 업로드</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;&nbsp;ZHRR0020<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zhrr0020 MESSAGE-ID zhrm01 NO STANDARD PAGE HEADING LINE-SIZE 255.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;INCLUDE.<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+include <a href ="zhrr0020_t01.html">zhrr0020_t01</a>.<br />
+include <a href ="zhrr0020_cls.html">zhrr0020_cls</a>.<br />
+include <a href ="zhrr0020_f1.html">zhrr0020_f1</a>.<br />
+<br />
+INITIALIZATION.<br />
+&nbsp;&nbsp;PERFORM&nbsp;initialization.<br />
+<br />
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR dataset..<br />
+&nbsp;&nbsp;PERFORM&nbsp;value_request_dataset.<br />
+<br />
+AT SELECTION-SCREEN.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;display_layout.<br />
+<br />
+START-OF-SELECTION.<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;upload_data.<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;make_data.<br />
+<br />
+END-OF-SELECTION.<br />
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;0100.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;STATUS_0100&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE status_0100 OUTPUT.<br />
+&nbsp;&nbsp;SET&nbsp;PF-STATUS&nbsp;'S0100'.<br />
+&nbsp;&nbsp;SET&nbsp;TITLEBAR&nbsp;'T0100'.<br />
+<br />
+ENDMODULE.                 " STATUS_0100  OUTPUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;EXIT&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE exit INPUT.<br />
+&nbsp;&nbsp;saveok&nbsp;=&nbsp;ok_code.<br />
+&nbsp;&nbsp;CLEAR&nbsp;ok_code.<br />
+&nbsp;&nbsp;CASE&nbsp;saveok.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BACK'&nbsp;OR&nbsp;'CANC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;TO&nbsp;SCREEN&nbsp;'0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'EXIT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;PROGRAM.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDMODULE.                 " EXIT  INPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;SHOW_ALV&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE show_alv OUTPUT.<br />
+&nbsp;&nbsp;IF&nbsp;g_custom_container&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_custom_container<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;container_name&nbsp;=&nbsp;'CON'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_grid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_parent&nbsp;=&nbsp;g_custom_container.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid-&gtregister_edit_event<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_event_id&nbsp;=&nbsp;cl_gui_alv_grid=&gtmc_evt_enter.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;create_fieldcatalog.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;create_layout.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;register_event&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;g_grid.&nbsp;&nbsp;&nbsp;"!!!&nbsp;enter&nbsp;key&nbsp;event...<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;event_receiver.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_handler.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--&nbsp;Toolbar&nbsp;제거<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_exclude_toolbar.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid-&gtset_table_for_first_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_layout<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_toolbar_excluding&nbsp;=&nbsp;gt_toolbar[]<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_fieldcat[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_sort[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_itab[].<br />
+<br />
+&nbsp;&nbsp;ELSE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid-&gtset_table_for_first_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_layout<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_toolbar_excluding&nbsp;=&nbsp;gt_toolbar[]<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_fieldcat[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_sort[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_itab[].<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDMODULE.                 " SHOW_ALV  OUTPUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;USER_COMMAND_0100&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE user_command_0100 INPUT.<br />
+&nbsp;&nbsp;saveok&nbsp;=&nbsp;ok_code.<br />
+&nbsp;&nbsp;CLEAR&nbsp;ok_code.<br />
+&nbsp;&nbsp;CASE&nbsp;saveok.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SAVE'.<br />
+   </div>
+   <div class="codeComment">
+*/&nbsp;데이터&nbsp;반영&nbsp;zhrt0001.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;:&nbsp;&nbsp;reflect&nbsp;LIKE&nbsp;zhrt0001-reflect.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_itab&nbsp;&nbsp;INTO&nbsp;gs_itab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;reflect.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;reflect<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;&nbsp;reflect<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zhrt0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;zpernr&nbsp;=&nbsp;gs_itab-zpernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;zdats&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;gs_itab-zdats.&nbsp;&nbsp;"기준일자.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;reflect&nbsp;IS&nbsp;INITIAL.&nbsp;&nbsp;&nbsp;"&nbsp;반영이&nbsp;된&nbsp;경우는&nbsp;업로드&nbsp;불가.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;gs_itab&nbsp;TO&nbsp;gt_0001.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gt_0001.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_itab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gt_0001[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;zhrt0001&nbsp;FROM&nbsp;TABLE&nbsp;gt_0001.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s016.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+ENDMODULE.                 " USER_COMMAND_0100  INPUT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;INIT_TAB&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE init_tab OUTPUT.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_itab&nbsp;INTO&nbsp;gs_itab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH:&nbsp;gs_itab-cellstyle,&nbsp;gt_gcell.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_itab-reflect&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;'BEGDA'&nbsp;&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;'BEG_TIME'&nbsp;&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;&nbsp;'ENDDA'&nbsp;&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;'END_TIME'&nbsp;&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;'BEGDA'&nbsp;&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;'BEG_TIME'&nbsp;&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;&nbsp;'ENDDA'&nbsp;&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_cellstyle&nbsp;&nbsp;USING&nbsp;'END_TIME'&nbsp;&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;LINES&nbsp;OF&nbsp;gt_gcell&nbsp;INTO&nbsp;TABLE&nbsp;gs_itab-cellstyle.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_itab-begda&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;gs_itab-endda&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_itab-log&nbsp;=&nbsp;icon_led_red.&nbsp;&nbsp;&nbsp;&nbsp;"=&nbsp;오류처리<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;gs_itab-mbegda&nbsp;&nbsp;IS&nbsp;INITIAL&nbsp;AND&nbsp;&nbsp;gs_itab-mendda&nbsp;IS&nbsp;INITIAL.&nbsp;&nbsp;&nbsp;&nbsp;"외출&nbsp;0,&nbsp;복귀x<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_itab-log&nbsp;=&nbsp;icon_led_red.&nbsp;&nbsp;&nbsp;&nbsp;"=&nbsp;오류처리<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;gs_itab-mbegda&nbsp;&nbsp;IS&nbsp;INITIAL&nbsp;AND&nbsp;&nbsp;NOT&nbsp;gs_itab-mendda&nbsp;IS&nbsp;INITIAL.&nbsp;&nbsp;&nbsp;"외출&nbsp;x,&nbsp;복귀&nbsp;o.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_itab-log&nbsp;=&nbsp;icon_led_red.&nbsp;&nbsp;&nbsp;&nbsp;"=&nbsp;오류처리<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_itab&nbsp;FROM&nbsp;gs_itab&nbsp;INDEX&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_itab.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;refresh_field_cat&nbsp;USING&nbsp;g_grid.<br />
+ENDMODULE.                 " INIT_TAB  OUTPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;T0100&nbsp;--&gt&nbsp;출퇴근&nbsp;데이터&nbsp;업로드<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;001&nbsp;DATASET<br />
+*&nbsp;F01&nbsp;Log<br />
+*&nbsp;F02&nbsp;기준일<br />
+*&nbsp;F03&nbsp;사원번호<br />
+*&nbsp;F04&nbsp;이름<br />
+*&nbsp;F05&nbsp;부서<br />
+*&nbsp;F06&nbsp;출근일<br />
+*&nbsp;F07&nbsp;출근시간<br />
+*&nbsp;F08&nbsp;퇴근일<br />
+*&nbsp;F09&nbsp;퇴근시간<br />
+*&nbsp;F10&nbsp;근무일정<br />
+*&nbsp;F11&nbsp;DB반영<br />
+*&nbsp;F12&nbsp;외출일자<br />
+*&nbsp;F13&nbsp;외출시간<br />
+*&nbsp;F14&nbsp;복귀일자<br />
+*&nbsp;F15&nbsp;복귀시간<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;HRPAY99IMPEXP<br />
+*004&nbsp;&nbsp;&nbsp;PCL2&nbsp;클러스터&nbsp;&1에&nbsp;대한&nbsp;읽기권한이&nbsp;없습니다<br />
+*005&nbsp;&nbsp;&nbsp;PCL2&nbsp;클러스터&nbsp;&1에&nbsp;대한&nbsp;쓰기권한이&nbsp;없습니다<br />
+*013&nbsp;&nbsp;&nbsp;프로그래밍&nbsp;오류:&nbsp;빈&nbsp;키입니다.&nbsp;HRPAY99IMPEXP의&nbsp;설명&nbsp;013을&nbsp;참조하십시오.<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;RP<br />
+*016&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;ZHRM01<br />
+*000&nbsp;&nbsp;&nbsp;&<br />
+*003&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+*004&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+*007&nbsp;&nbsp;&nbsp;수정할&nbsp;데이터를&nbsp;선택하세요.<br />
+*016&nbsp;&nbsp;&nbsp;데이터가&nbsp;저장되었습니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

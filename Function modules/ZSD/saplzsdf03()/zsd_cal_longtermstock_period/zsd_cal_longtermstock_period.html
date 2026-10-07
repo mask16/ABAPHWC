@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_CAL_LONGTERMSTOCK_PERIOD</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_CAL_LONGTERMSTOCK_PERIOD</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zsd_cal_longtermstock_period.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_MATNR) TYPE  MATNR<br />
+*"     VALUE(I_DATUM) TYPE  DATUM OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(O_SPMON) TYPE  SPMON<br />
+*"     VALUE(O_PERIO) TYPE  NUM03<br />
+*"     VALUE(O_RATIO)<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zsd_cal_longtermstock_period.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;p_matnr&nbsp;TYPE&nbsp;mara-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_datum&nbsp;TYPE&nbsp;datum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_spmon&nbsp;TYPE&nbsp;spmon.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;w_pos&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_yyyy&nbsp;TYPE&nbsp;c&nbsp;LENGTH&nbsp;4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_mm&nbsp;TYPE&nbsp;n&nbsp;LENGTH&nbsp;2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_pos&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_yyyy&nbsp;TYPE&nbsp;c&nbsp;LENGTH&nbsp;4&nbsp;VALUE&nbsp;'2011'.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;v_int&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v_inty&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v_intm&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v_datum&nbsp;TYPE&nbsp;datum.<br />
+<br />
+&nbsp;&nbsp;"기준일자<br />
+&nbsp;&nbsp;IF&nbsp;i_datum&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_datum&nbsp;=&nbsp;sy-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_spmon&nbsp;=&nbsp;sy-datum(6).<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_datum&nbsp;=&nbsp;i_datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_spmon&nbsp;=&nbsp;i_datum(6).<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"자재코드&nbsp;없는&nbsp;경우&nbsp;EXIT<br />
+&nbsp;&nbsp;IF&nbsp;i_matnr&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;p_matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_MATN1_OUTPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input&nbsp;&nbsp;=&nbsp;i_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;=&nbsp;p_matnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"장기재고&nbsp;코드&nbsp;알파벳&nbsp;체크<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;(&nbsp;p_matnr+1(1)&nbsp;CA&nbsp;sy-abcde<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;p_matnr+2(1)&nbsp;CA&nbsp;sy-abcde&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"생산년도&nbsp;계산<br />
+&nbsp;&nbsp;CLEAR:&nbsp;w_pos,&nbsp;w_yyyy.<br />
+&nbsp;&nbsp;FIND&nbsp;p_matnr+1(1)&nbsp;IN&nbsp;sy-abcde&nbsp;MATCH&nbsp;OFFSET&nbsp;w_pos.&nbsp;"A=0/O=14<br />
+<br />
+&nbsp;&nbsp;DO&nbsp;5&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;w_yyyy.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DO&nbsp;10&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-index&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_pos&nbsp;=&nbsp;14.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_pos&nbsp;=&nbsp;c_pos.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"10년단위&nbsp;체크<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;v_int.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_spmon(4)&nbsp;GE&nbsp;c_yyyy.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v_int&nbsp;=&nbsp;p_spmon(4)&nbsp;-&nbsp;c_yyyy.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;v_int&nbsp;LE&nbsp;9.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_yyyy&nbsp;=&nbsp;c_yyyy.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;c_pos.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;c_yyyy.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;c_pos.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;c_yyyy.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDDO.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_yyyy&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDDO.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;w_yyyy&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;"생산월&nbsp;계산<br />
+&nbsp;&nbsp;CLEAR:&nbsp;w_pos,&nbsp;v_int.<br />
+&nbsp;&nbsp;FIND&nbsp;p_matnr+2(1)&nbsp;IN&nbsp;sy-abcde&nbsp;MATCH&nbsp;OFFSET&nbsp;w_pos.&nbsp;"A=0/O=14<br />
+<br />
+&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;w_pos.<br />
+&nbsp;&nbsp;w_mm&nbsp;=&nbsp;w_pos.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;w_yyyy&nbsp;w_mm&nbsp;INTO&nbsp;o_spmon.<br />
+<br />
+<br />
+&nbsp;&nbsp;"기준년월&nbsp;대비&nbsp;생산년월&nbsp;차이<br />
+&nbsp;&nbsp;CLEAR:&nbsp;v_datum,&nbsp;v_intm,&nbsp;v_inty.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;o_spmon&nbsp;'01'&nbsp;INTO&nbsp;v_datum.<br />
+&nbsp;&nbsp;CALL FUNCTION 'HR_SGPBS_YRS_MTHS_DAYS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;beg_da&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_da&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;v_datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_month&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;v_intm<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_year&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;v_inty<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dateint_error&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"개월&nbsp;수&nbsp;계산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;v_intm&nbsp;=&nbsp;v_intm&nbsp;*&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;v_inty&nbsp;=&nbsp;v_inty&nbsp;*&nbsp;-1&nbsp;*&nbsp;12.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_perio&nbsp;=&nbsp;v_intm&nbsp;+&nbsp;v_inty.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;o_perio&nbsp;&gt&nbsp;0.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   2. 제품 제조일 기준 적용 할인율<br />
+*    1) 1년 ~ 1년 6개월 : 재고단가 이상 판매<br />
+*    2) 1년 6개월 ~ 2년 : 재고단가 30% 할인<br />
+*    3) 2년          ~ 3년 : 재고단가 40% 할인<br />
+*    4) 3년          ~ 4년 : 재고단가 50% 할인<br />
+*    5) 4년          ~ 5년 : 재고단가 60% 할인<br />
+*    6) 5년 이상            : 재고단가 70% 할인,<br />
+*                                 판정 후 폐기 검토<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;o_perio&nbsp;LE&nbsp;18.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;o_ratio.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;(&nbsp;o_perio&nbsp;GT&nbsp;18&nbsp;AND&nbsp;o_perio&nbsp;LE&nbsp;24&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_ratio&nbsp;=&nbsp;'0.30'.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;(&nbsp;o_perio&nbsp;GT&nbsp;24&nbsp;AND&nbsp;o_perio&nbsp;LE&nbsp;36&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_ratio&nbsp;=&nbsp;'0.40'.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;(&nbsp;o_perio&nbsp;GT&nbsp;36&nbsp;AND&nbsp;o_perio&nbsp;LE&nbsp;48&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_ratio&nbsp;=&nbsp;'0.50'.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;(&nbsp;o_perio&nbsp;GT&nbsp;48&nbsp;AND&nbsp;o_perio&nbsp;LE&nbsp;60&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_ratio&nbsp;=&nbsp;'0.60'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;o_ratio&nbsp;=&nbsp;'0.70'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZSDM<br />
+*026   That is not authorized.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

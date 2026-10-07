@@ -1,0 +1,340 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHRF_GROUPWARE_0005</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZHRF_GROUPWARE_0005</h2>
+<h3> Description: 출장(해외)신청서</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZHRF_GROUPWARE_0005.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(IV_0005) TYPE  ZHRF_GROUP_0005 OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_ERROR) TYPE  BAPIRETURN1<br />
+*"     VALUE(E_RETURN) TYPE  CHAR5<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zhrf_groupware_0005.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;ES_0005&nbsp;TYPE&nbsp;ZHRF_GROUP_0005,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_9002&nbsp;TYPE&nbsp;P9002,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RETURN1&nbsp;LIKE&nbsp;BAPIRETURN1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_KEY1&nbsp;LIKE&nbsp;BAPIPAKEY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_PERNR&nbsp;LIKE&nbsp;PREL-PERNR.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;GS_2002&nbsp;TYPE&nbsp;P2002.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;GS_9004&nbsp;TYPE&nbsp;P9002.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;GT_TLINE2&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;TLINE.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;GS_THEAD2&nbsp;LIKE&nbsp;THEAD.&nbsp;&nbsp;"OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;GT_TEXT2&nbsp;LIKE&nbsp;RSSOURCE-LINE&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;GT_TEXT2,&nbsp;GT_TEXT2[].<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;IV_0005&nbsp;TO&nbsp;GS_2002.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;IV_0005&nbsp;TO&nbsp;GS_9002.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2002-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2002-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2002-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;IV_0005-GUBUN&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_2002-AWART&nbsp;=&nbsp;&nbsp;'0401'.&nbsp;&nbsp;"출장<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_2002-SUBTY&nbsp;=&nbsp;&nbsp;'0401'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_9002-SUBTY&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;IV_0005-GUBUN&nbsp;=&nbsp;'2'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_2002-AWART&nbsp;=&nbsp;&nbsp;'0402'.&nbsp;&nbsp;"연수<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_2002-SUBTY&nbsp;=&nbsp;&nbsp;'0402'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_9002-SUBTY&nbsp;=&nbsp;'2'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"2019.09.23&nbsp;(0401&nbsp;출장,&nbsp;0402&nbsp;연수시&nbsp;9002&nbsp;이력만&nbsp;insert,<br />
+   </div>
+   <div class="codeComment">
+*              2002 시간관리는 not insert)<br />
+*  CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+*    EXPORTING<br />
+*      infty     = '2002'<br />
+*      number    = gs_2002-pernr<br />
+*      record    = gs_2002<br />
+*      operation = 'INS'<br />
+*    IMPORTING<br />
+*      return    = l_return1   "LIKE BAPIRETURN1<br />
+*      key       = l_key1.     "LIKE BAPIPAKEY<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;l_return1&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_error&nbsp;&nbsp;=&nbsp;&nbsp;l_return1&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_return1-type&nbsp;=&nbsp;'S'.&nbsp;&nbsp;&nbsp;&nbsp;"성공<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e_return&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e_return&nbsp;=&nbsp;'T1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"실패<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_return&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;E_RETURN&nbsp;NE&nbsp;'T1'.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'9002'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9002-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"LIKE&nbsp;BAPIPAKEY<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Long Text<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GT_TEXT2&nbsp;=&nbsp;IV_0005-ZTEXT.<br />
+&nbsp;&nbsp;APPEND&nbsp;GT_TEXT2.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'CONVERT_STREAM_TO_ITF_TEXT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LANGUAGE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_STREAM&nbsp;=&nbsp;GT_TEXT2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ITF_TEXT&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_TLINE2.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;GS_KEY&nbsp;TYPE&nbsp;PSKEY.<br />
+<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_9002&nbsp;TO&nbsp;GS_KEY.<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;GS_THEAD2,&nbsp;GS_KEY-ENDDA.<br />
+&nbsp;&nbsp;GS_KEY-INFTY&nbsp;=&nbsp;'9002'.<br />
+&nbsp;&nbsp;GS_THEAD2-TDOBJECT&nbsp;=&nbsp;'ZHR'.<br />
+&nbsp;&nbsp;GS_THEAD2-TDNAME&nbsp;=&nbsp;&nbsp;GS_KEY&nbsp;.<br />
+&nbsp;&nbsp;GS_THEAD2-TDID&nbsp;=&nbsp;'0002'.<br />
+&nbsp;&nbsp;GS_THEAD2-TDSPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'SAVE_TEXT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLIENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-MANDT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEADER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_THEAD2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SAVEMODE_DIRECT&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GT_TLINE2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LANGUAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+* Implement suitable error handling here<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;L_RETURN1&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_ERROR&nbsp;=&nbsp;L_RETURN1&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_RETURN1-TYPE&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.&nbsp;&nbsp;"성공<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T1'.&nbsp;&nbsp;"실패<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9002-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  CALL FUNCTION 'ENQUE_READ2'<br />
+*    EXPORTING<br />
+*      gclient = sy-mandt<br />
+*      gname   = 'PREL'<br />
+*      guname  = '*'<br />
+*    TABLES<br />
+*      enq     = lt_enq_read.<br />
+*<br />
+*  IF lt_enq_read[] IS NOT INITIAL.<br />
+*    CONCATENATE sy-mandt iv_0005-pernr INTO  l_garg.<br />
+*    LOOP AT lt_enq_read INTO lw_enq_read WHERE gname EQ 'PREL'<br />
+*                                           AND garg CS l_garg.<br />
+*      MOVE-CORRESPONDING lw_enq_read TO lw_enq_del.<br />
+*      APPEND lw_enq_del TO lt_enq_del.<br />
+*    ENDLOOP.<br />
+*  ENDIF.<br />
+*  CALL FUNCTION 'ENQUE_DELETE'<br />
+*    EXPORTING<br />
+*      check_upd_requests = 1<br />
+*    IMPORTING<br />
+*      subrc              = lv_subrc<br />
+*    TABLES<br />
+*      enq                = lt_enq_del.<br />
+*<br />
+*  gs_pernr = iv_0005-pernr.<br />
+*<br />
+*  MOVE-CORRESPONDING iv_0005  TO  record_s.<br />
+*  record_s-subty   = iv_0005-gubun.    "구분.<br />
+*  SUBMIT zhrb9002  AND RETURN  WITH  record_s  = record_s.<br />
+*  CLEAR: lt_messtab, lt_messtab[].<br />
+*  CALL FUNCTION 'ENQUE_READ2'<br />
+*    EXPORTING<br />
+*      gclient = sy-mandt<br />
+*      gname   = 'PREL'<br />
+*      guname  = '*'<br />
+*    TABLES<br />
+*      enq     = lt_enq_read.<br />
+*<br />
+*  lv_pernr = iv_0005-pernr.<br />
+*<br />
+*  CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+*    EXPORTING<br />
+*      pernr          = lv_pernr<br />
+*    EXCEPTIONS<br />
+*      foreign_lock   = 1<br />
+*      system_failure = 2.<br />
+*  IMPORT memory_abap TO error_table  FROM MEMORY ID 'ZHR0003'.<br />
+*  FREE MEMORY ID 'ZHR0003'.<br />
+*  CLEAR l_return1 .<br />
+*  IF error_table[] IS NOT INITIAL.<br />
+*    READ TABLE  error_table INDEX 1.<br />
+*    IF sy-subrc = 0.<br />
+*      l_return1-message  = error_table-msgtext.<br />
+*    ENDIF.<br />
+*    e_return = 'T1'.                       "실패<br />
+*  ELSE.<br />
+*    e_return = 'T0'.<br />
+*  ENDIF.<br />
+*  e_error  =  l_return1 .<br />
+*<br />
+*  CHECK  error_table[] IS INITIAL.<br />
+*  MOVE-CORRESPONDING iv_0005  TO gs_2002.<br />
+*  IF iv_0005-gubun = '1'.<br />
+*    gs_2002-awart =  '0401'.  "출장<br />
+*    gs_2002-subty =  '0401'..<br />
+*  ELSEIF iv_0005-gubun = '2'.<br />
+*    gs_2002-awart =  '0402'.  "연수<br />
+*    gs_2002-subty =  '0402'..<br />
+*  ENDIF.<br />
+*  CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+*    EXPORTING<br />
+*      infty     = '2002'<br />
+*      number    = gs_2002-pernr<br />
+*      record    = gs_2002<br />
+*      operation = 'INS'<br />
+*    IMPORTING<br />
+*      return    = l_return1   "LIKE  BAPIRETURN1<br />
+*      key       = l_key1.     " LIKE  BAPIPAKEY<br />
+*<br />
+*  IF l_return1 IS NOT INITIAL.<br />
+*    e_error  =  l_return1 .<br />
+*    IF l_return1-type = 'S'.              "성공<br />
+*      e_return = 'T0'.<br />
+*    ELSE.<br />
+*      e_return = 'T1'.                    "실패<br />
+*    ENDIF.<br />
+*  ELSE.<br />
+*    e_return = 'T0'.<br />
+*  ENDIF.<br />
+*<br />
+*  CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+*    EXPORTING<br />
+*      pernr          = lv_pernr<br />
+*    EXCEPTIONS<br />
+*      foreign_lock   = 1<br />
+*      system_failure = 2<br />
+*      OTHERS         = 3.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

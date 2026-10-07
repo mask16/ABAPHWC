@@ -1,0 +1,1043 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LZSE16NF30</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LZSE16NF30</h2>
+<h3> Description: PAI: Layouts Initial Screen</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+***INCLUDE&nbsp;LGTDISF30&nbsp;.<br />
+*----------------------------------------------------------------------*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DATA_CHANGED<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ER_DATA_CHANGED&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM data_changed USING lt_changed_data type ref to<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_alv_changed_data_protocol.<br />
+<br />
+data: ls_mod_cells type lvc_s_modi.<br />
+data: ls_ins_rows  type lvc_s_moce.<br />
+data: dref         type ref to data.<br />
+data: waref        type ref to data.<br />
+data: ld_lines     like sy-tabix.<br />
+data: ld_tabix     like sy-tabix.<br />
+data: ld_my_indx   like sy-tabix.<br />
+data: begin of ls_struc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tab(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;minus(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;field(30),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;ls_struc.<br />
+field-symbols: &ltvalue&gt.<br />
+field-symbols: &ltwa_save&gt type any.<br />
+<br />
+data: ld_once(1).<br />
+data: ld_rc       like sy-subrc.<br />
+data: wa_fieldcat type lvc_s_fcat.<br />
+field-symbols: &ltkey&gt type any,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltf1&gt,&nbsp;&ltf2&gt,&nbsp;&ltf3&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.fill&nbsp;current&nbsp;line&nbsp;into&nbsp;key&nbsp;to&nbsp;lock&nbsp;the&nbsp;entry&nbsp;on&nbsp;the&nbsp;database<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;define&nbsp;makro_fill_key_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_fieldcat_key&nbsp;into&nbsp;wa_fieldcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&1&nbsp;TO&nbsp;&ltF1&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;continue.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&2&nbsp;TO&nbsp;&ltF2&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;continue.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltf2&gt&nbsp;=&nbsp;&ltf1&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*.When&nbsp;I&nbsp;am&nbsp;here&nbsp;my&nbsp;global&nbsp;table&nbsp;&ltall_table_cell&gt<br />
+*.is&nbsp;not&nbsp;yet&nbsp;effected.&nbsp;After<br />
+*.this&nbsp;form&nbsp;the&nbsp;changes&nbsp;will&nbsp;be&nbsp;there,&nbsp;now&nbsp;I&nbsp;have&nbsp;got&nbsp;the&nbsp;old&nbsp;lines.<br />
+*-----------------------------------------------------------------------<br />
+*.Get&nbsp;the&nbsp;modified&nbsp;rows&nbsp;and&nbsp;store&nbsp;them&nbsp;in&nbsp;table&nbsp;gt_mod.<br />
+*.Get&nbsp;the&nbsp;inserted&nbsp;rows&nbsp;and&nbsp;store&nbsp;them&nbsp;in&nbsp;table&nbsp;gt_mod.<br />
+*.Table&nbsp;gt_mod&nbsp;contains&nbsp;pointer&nbsp;to&nbsp;the&nbsp;lines&nbsp;of&nbsp;&ltall_table_cell&gt&nbsp;and&nbsp;a<br />
+*.flag&nbsp;if&nbsp;the&nbsp;line&nbsp;has&nbsp;been&nbsp;modified&nbsp;or&nbsp;inserted.<br />
+*.Lateron&nbsp;the&nbsp;changed&nbsp;lines&nbsp;will&nbsp;be&nbsp;read&nbsp;from&nbsp;&ltall_table_cell&gt&nbsp;and&nbsp;be<br />
+*.inserted&nbsp;or&nbsp;modified&nbsp;on&nbsp;the&nbsp;database.<br />
+*-----------------------------------------------------------------------<br />
+*.If&nbsp;a&nbsp;line&nbsp;has&nbsp;been&nbsp;inserted&nbsp;I&nbsp;have&nbsp;to&nbsp;change&nbsp;the&nbsp;style&nbsp;of&nbsp;the&nbsp;key<br />
+*.fields&nbsp;to&nbsp;editable,&nbsp;otherwise&nbsp;I&nbsp;would&nbsp;get&nbsp;Insert&nbsp;Duprecs<br />
+************************************************************************<br />
+*.When&nbsp;a&nbsp;line&nbsp;has&nbsp;been&nbsp;inserted&nbsp;or&nbsp;modified,&nbsp;enqueue&nbsp;this&nbsp;entry&nbsp;by<br />
+*.locking&nbsp;the&nbsp;key.<br />
+************************************************************************<br />
+<br />
+*.As&nbsp;the&nbsp;deleted&nbsp;will&nbsp;disappear&nbsp;from&nbsp;&ltall_table_cell&gt&nbsp;I&nbsp;have&nbsp;to&nbsp;store<br />
+*.the&nbsp;information&nbsp;in&nbsp;&ltdel_table&gt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;loop&nbsp;at&nbsp;lt_changed_data-&gtmt_deleted_rows&nbsp;into&nbsp;ls_ins_rows.<br />
+   </div>
+   <div class="codeComment">
+*....Store&nbsp;the&nbsp;deleted&nbsp;line<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table_cell&gt&nbsp;index&nbsp;ls_ins_rows-row_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assigning&nbsp;&ltwa_cell&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*....Move&nbsp;all&nbsp;information&nbsp;into&nbsp;&ltdel_table&gt<br />
+*....I&nbsp;only&nbsp;need&nbsp;the&nbsp;structure&nbsp;of&nbsp;&ltall_table&gt,&nbsp;not&nbsp;the&nbsp;content!<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;waref&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;&ltall_table&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assign&nbsp;waref-&gt*&nbsp;to&nbsp;&ltwa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DO&nbsp;gd_lines&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;SY-INDEX&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltwa&gt&nbsp;TO&nbsp;&ltFS&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;EXIT.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;SY-INDEX&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltwa_cell&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;&ltFS_cell&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;EXIT.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS&gt&nbsp;=&nbsp;&ltfs_cell&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDDO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;&ltwa&gt&nbsp;to&nbsp;&ltdel_table&gt.<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*....Perhaps&nbsp;enqueue&nbsp;the&nbsp;deleted&nbsp;lines&nbsp;as&nbsp;well..........................<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;endloop.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.Get&nbsp;the&nbsp;inserted&nbsp;lines<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;loop&nbsp;at&nbsp;lt_changed_data-&gtmt_inserted_rows&nbsp;into&nbsp;ls_ins_rows.<br />
+   </div>
+   <div class="codeComment">
+*....Change&nbsp;the&nbsp;key&nbsp;to&nbsp;input,&nbsp;because&nbsp;the&nbsp;key<br />
+*....needs&nbsp;to&nbsp;be&nbsp;changed,&nbsp;otherwise&nbsp;I&nbsp;would&nbsp;get&nbsp;an&nbsp;insert&nbsp;duprec<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_cell&nbsp;into&nbsp;gs_cell.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;method&nbsp;lt_changed_data-&gtmodify_style<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting&nbsp;i_row_id&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_ins_rows-row_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_fieldname&nbsp;=&nbsp;gs_cell-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_style&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;cl_gui_alv_grid=&gtmc_style_enabled.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+   </div>
+   <div class="codeComment">
+*....gd-count&nbsp;contains&nbsp;my&nbsp;own&nbsp;unique&nbsp;number&nbsp;for&nbsp;every&nbsp;line.<br />
+*....It&nbsp;has&nbsp;been&nbsp;filled&nbsp;after&nbsp;the&nbsp;select&nbsp;with&nbsp;the&nbsp;number&nbsp;of&nbsp;found<br />
+*....lines.&nbsp;So&nbsp;every&nbsp;new&nbsp;line&nbsp;gets&nbsp;a&nbsp;higher&nbsp;number.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add&nbsp;1&nbsp;to&nbsp;gd-count.<br />
+   </div>
+   <div class="codeComment">
+*....Put&nbsp;the&nbsp;index&nbsp;into&nbsp;the&nbsp;dummy&nbsp;field<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;method&nbsp;lt_changed_data-&gtmodify_cell<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting&nbsp;i_row_id&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_ins_rows-row_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_fieldname&nbsp;=&nbsp;c_line_index<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gd-count.<br />
+   </div>
+   <div class="codeComment">
+*....Save&nbsp;the&nbsp;inserted&nbsp;lines<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;gt_mod&nbsp;with&nbsp;key&nbsp;indx&nbsp;=&nbsp;gd-count.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;gt_mod.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-indx&nbsp;=&nbsp;gd-count.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-type&nbsp;=&nbsp;type_ins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;gt_mod.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;endloop.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.Get&nbsp;ld_lines&nbsp;to&nbsp;decide&nbsp;whether&nbsp;the&nbsp;line&nbsp;has&nbsp;been&nbsp;inserted&nbsp;or&nbsp;changed<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;if&nbsp;gd-edit&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;&ltall_table_cell&gt&nbsp;lines&nbsp;ld_lines.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;&ltall_table&gt&nbsp;lines&nbsp;ld_lines.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;loop&nbsp;at&nbsp;lt_changed_data-&gtmt_good_cells&nbsp;into&nbsp;ls_mod_cells.<br />
+   </div>
+   <div class="codeComment">
+*....In&nbsp;field&nbsp;c_line_index&nbsp;my&nbsp;own&nbsp;index&nbsp;of&nbsp;this&nbsp;line&nbsp;is&nbsp;stored<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;method&nbsp;lt_changed_data-&gtget_cell_value<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting&nbsp;i_row_id&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_mod_cells-row_id<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_fieldname&nbsp;=&nbsp;c_line_index<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;importing&nbsp;e_value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_my_indx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;gt_mod&nbsp;with&nbsp;key&nbsp;indx&nbsp;=&nbsp;ld_my_indx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;gt_mod.<br />
+   </div>
+   <div class="codeComment">
+*.......Original&nbsp;index&nbsp;used&nbsp;by&nbsp;ALV.&nbsp;This&nbsp;is&nbsp;used&nbsp;to&nbsp;undo&nbsp;changes&nbsp;in<br />
+*.......case&nbsp;of&nbsp;enqueue&nbsp;locks.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-alv_indx&nbsp;=&nbsp;ls_mod_cells-row_id.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-indx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_my_indx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ld_my_indx&nbsp;&gt&nbsp;ld_lines.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-type&nbsp;=&nbsp;type_ins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-type&nbsp;=&nbsp;type_mod.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;gt_mod.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;endloop.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.Save&nbsp;the&nbsp;old&nbsp;information&nbsp;for&nbsp;change&nbsp;documents<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;if&nbsp;gd-edit&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ld_once.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assign&nbsp;local&nbsp;copy&nbsp;of&nbsp;initial&nbsp;line&nbsp;of&nbsp;&ltkey_table&gt&nbsp;to&nbsp;&ltkey&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_mod&nbsp;where&nbsp;type&nbsp;=&nbsp;type_mod<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;used&nbsp;&lt&gt&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_tabix&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table_cell&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;key&nbsp;(c_line_index)&nbsp;=&nbsp;gt_mod-indx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assigning&nbsp;&ltwa_save&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*.......enqueue&nbsp;the&nbsp;entry&nbsp;on&nbsp;the&nbsp;database&nbsp;to&nbsp;avoid&nbsp;double&nbsp;changes.&nbsp;It&nbsp;is<br />
+*.......not&nbsp;necessary&nbsp;to&nbsp;enqueue&nbsp;inserted&nbsp;lines,&nbsp;because&nbsp;another&nbsp;user<br />
+*.......will&nbsp;not&nbsp;get&nbsp;them.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_key_wa&nbsp;&ltwa_save&gt&nbsp;&ltkey&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;&ltkey&gt&nbsp;to&nbsp;&ltkey_table&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;enqueue_table&nbsp;using&nbsp;&ltkey&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;ld_rc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ld_Rc&nbsp;&lt&gt&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*..........Entry&nbsp;is&nbsp;locked&nbsp;-&gt&nbsp;undo&nbsp;changes.&nbsp;Send&nbsp;message&nbsp;only&nbsp;once<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ld_once&nbsp;&lt&gt&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i115(wusl)&nbsp;WITH&nbsp;&ltkey&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_once&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_fieldcat&nbsp;into&nbsp;wa_fieldcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltwa_save&gt&nbsp;TO&nbsp;&ltF3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;method&nbsp;lt_changed_data-&gtmodify_cell<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting&nbsp;i_row_id&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_mod-alv_indx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_fieldname&nbsp;=&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&ltf3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;gt_mod&nbsp;index&nbsp;ld_tabix.<br />
+   </div>
+   <div class="codeComment">
+*.......Entry&nbsp;can&nbsp;be&nbsp;changed&nbsp;-&gt&nbsp;save&nbsp;old&nbsp;entry<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;&ltwa_save&gt&nbsp;to&nbsp;&ltall_table_save&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-save&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mod-used&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modify&nbsp;gt_mod&nbsp;index&nbsp;ld_tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+ENDFORM.                    " DATA_CHANGED<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SAVE_CHANGES<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SAVE_CHANGES.<br />
+<br />
+data: begin of ls_err,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del_tab&nbsp;type&nbsp;se16n_tab,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del_error(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mod_tab&nbsp;type&nbsp;se16n_tab,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mod_error(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ins_tab&nbsp;type&nbsp;se16n_tab,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ins_error(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;ls_err.<br />
+data: ld_text(50).<br />
+data: del_error(1).<br />
+data: ins_error(1).<br />
+data: mod_error(1).<br />
+   </div>
+   <div class="codeComment">
+*data:&nbsp;ls_gtdiscd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;like&nbsp;gtdiscd.<br />
+   </div>
+   <div class="code">
+data: waref            type ref to data.<br />
+data: txtref           type ref to data.<br />
+data: tabref           type ref to data.<br />
+data: ld_timestamp     type se16n_id.<br />
+data: ls_se16n_cd_key  like se16n_cd_key.<br />
+data: ls_se16n_cd_data like se16n_cd_data.<br />
+data: lt_se16n_cd_data like se16n_cd_data occurs 0.<br />
+data: ld_pos           type se16n_pos.<br />
+data: wa_fieldcat      type lvc_s_fcat.<br />
+DATA: LD_TABIX LIKE SY-TABIX.<br />
+<br />
+FIELD-SYMBOLS: &ltINDX&gt.<br />
+data: ld_all_txt(1)    value 'X'.<br />
+data: lt_seltab        like se16n_seltab occurs 0 with header line.<br />
+   </div>
+   <div class="codeComment">
+*data:&nbsp;lt_where(72)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line.<br />
+   </div>
+   <div class="code">
+data: lt_where type se16n_where_132      occurs 0 with header line.<br />
+<br />
+field-symbols: &ltld_wa&gt, &ltf1&gt, &ltf2&gt.<br />
+field-symbols: &ltf3&gt, &ltf4&gt.<br />
+field-symbols: &ltkey_wa&gt  type any.<br />
+field-symbols: &lttxt_wa&gt  type any.<br />
+field-symbols: &ltwa_save&gt type any.<br />
+field-symbols: &lttab_wa&gt  type any.<br />
+<br />
+field-symbols: &ltvalue&gt type x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltinput&gt&nbsp;type&nbsp;x.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.to&nbsp;make&nbsp;sure&nbsp;that&nbsp;unauthorised&nbsp;changes&nbsp;are&nbsp;documented,&nbsp;save&nbsp;the&nbsp;change<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;do.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GET&nbsp;TIME&nbsp;STAMP&nbsp;FIELD&nbsp;LD_TIMESTAMP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;select&nbsp;single&nbsp;*&nbsp;from&nbsp;se16n_cd_key&nbsp;into&nbsp;ls_se16n_cd_key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;id&nbsp;=&nbsp;ld_timestamp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;enddo.<br />
+   </div>
+   <div class="codeComment">
+*.Now&nbsp;we&nbsp;have&nbsp;got&nbsp;a&nbsp;unique&nbsp;key&nbsp;-&gt&nbsp;prepare&nbsp;change&nbsp;documents<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;clear&nbsp;ld_pos.<br />
+&nbsp;&nbsp;clear:&nbsp;ls_se16n_cd_key.<br />
+&nbsp;&nbsp;refresh:&nbsp;lt_se16n_cd_data.<br />
+&nbsp;&nbsp;get&nbsp;time.<br />
+&nbsp;&nbsp;ls_se16n_cd_key-id&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_timestamp.<br />
+&nbsp;&nbsp;ls_se16n_cd_key-uname&nbsp;=&nbsp;sy-uname.<br />
+&nbsp;&nbsp;ls_se16n_cd_key-tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab.<br />
+&nbsp;&nbsp;ls_se16n_cd_key-sdate&nbsp;=&nbsp;sy-datlo.<br />
+&nbsp;&nbsp;ls_se16n_cd_key-stime&nbsp;=&nbsp;sy-timlo.<br />
+&nbsp;&nbsp;if&nbsp;gd-read_clnt&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_se16n_cd_key-clntdep&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_se16n_cd_key-clntdep&nbsp;=&nbsp;false.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+****&nbsp;MAKROS&nbsp;to&nbsp;save&nbsp;coding&nbsp;*********************************************<br />
+************************************************************************<br />
+<br />
+*.......................................................................<br />
+*.write&nbsp;change&nbsp;documents&nbsp;(data).........................................<br />
+*.input1&nbsp;--&gt&nbsp;counting&nbsp;number<br />
+*.input2&nbsp;--&gt&nbsp;line&nbsp;of&nbsp;output&nbsp;table<br />
+*.input3&nbsp;--&gt&nbsp;type&nbsp;of&nbsp;change&nbsp;(insert,&nbsp;modify,&nbsp;delete)<br />
+*.input4&nbsp;--&gt&nbsp;table&nbsp;name<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;define&nbsp;makro_write_cd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add&nbsp;1&nbsp;to&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ls_se16n_cd_data.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_se16n_cd_data-id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_timestamp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_se16n_cd_data-pos&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_se16n_cd_data-change_type&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_se16n_cd_data-tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&4.<br />
+   </div>
+   <div class="codeComment">
+*....Unicode-Change&nbsp;&ltx&gt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;SYSTEM-EXCEPTIONS&nbsp;ASSIGN_CASTING_ILLEGAL_CAST&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&2&nbsp;TO&nbsp;&ltINPUT&gt&nbsp;CASTING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCATCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;LS_SE16N_CD_DATA-VALUE&nbsp;TO&nbsp;&ltVALUE&gt&nbsp;CASTING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltVALUE&gt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&ltINPUT&gt.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_se16n_cd_data-value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_SE16N_CD_DATA-LENGTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;STRLEN(&nbsp;LS_SE16N_CD_DATA-VALUE&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_SE16N_CD_DATA&nbsp;TO&nbsp;LT_SE16N_CD_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.......................................................................<br />
+*.&ltwa_cell&gt&nbsp;contains&nbsp;also&nbsp;fields&nbsp;of&nbsp;text&nbsp;table&nbsp;(and&nbsp;tech&nbsp;fields).<br />
+*.I&nbsp;do&nbsp;not&nbsp;need&nbsp;all&nbsp;fields,&nbsp;so&nbsp;convert&nbsp;&ltwa_cell&gt&nbsp;into&nbsp;&lttab_wa&gt<br />
+*.input1&nbsp;--&gt&nbsp;&ltwa_cell&gt<br />
+*.input2&nbsp;--&gt&nbsp;&lttab_wa&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;define&nbsp;makro_fill_tab_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_fieldcat_tab&nbsp;into&nbsp;wa_fieldcat.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&1&nbsp;TO&nbsp;&ltF3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;continue.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&2&nbsp;TO&nbsp;&ltF4&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;continue.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltf4&gt&nbsp;=&nbsp;&ltf3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.......................................................................<br />
+*.fill&nbsp;workarea&nbsp;for&nbsp;text&nbsp;table&nbsp;out&nbsp;of&nbsp;workarea&nbsp;of&nbsp;output&nbsp;table&nbsp;+&nbsp;langu..<br />
+*.input1&nbsp;--&gt&nbsp;&ltwa_cell&gt<br />
+*.input2&nbsp;--&gt&nbsp;&lttxt_wa&gt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;define&nbsp;makro_fill_txt_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_fieldcat_txttab&nbsp;into&nbsp;wa_fieldcat.<br />
+   </div>
+   <div class="codeComment">
+*.......Fill&nbsp;language&nbsp;with&nbsp;current&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;wa_fieldcat-datatype&nbsp;=&nbsp;'LANG'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&2&nbsp;TO&nbsp;&ltF4&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltf4&gt&nbsp;=&nbsp;sy-langu.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&1&nbsp;TO&nbsp;&ltF3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;continue.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&2&nbsp;TO&nbsp;&ltF4&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;continue.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltf4&gt&nbsp;=&nbsp;&ltf3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.If&nbsp;I&nbsp;want&nbsp;to&nbsp;delete&nbsp;ALL&nbsp;dependent&nbsp;text-table-entries,&nbsp;I&nbsp;need&nbsp;to<br />
+*.create&nbsp;a&nbsp;where-statement<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;define&nbsp;makro_fill_txt_where.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refresh:&nbsp;lt_seltab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_fieldcat_txttab&nbsp;into&nbsp;wa_fieldcat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;key&nbsp;=&nbsp;true.<br />
+   </div>
+   <div class="codeComment">
+*.......Fill&nbsp;selection&nbsp;table&nbsp;with&nbsp;key&nbsp;fields&nbsp;(except&nbsp;language)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;wa_fieldcat-datatype&nbsp;&lt&gt&nbsp;'LANG'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;wa_fieldcat-fieldname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OF&nbsp;STRUCTURE&nbsp;&lttxt_wa&gt&nbsp;TO&nbsp;&ltF3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.&nbsp;continue.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;lt_seltab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_seltab-field&nbsp;=&nbsp;wa_fieldcat-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_seltab-sign&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_seltab-option&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_seltab-low&nbsp;=&nbsp;&ltf3&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;lt_seltab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'SE16N_CREATE_SELTAB'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_SEL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_seltab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_WHERE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;lt_where.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;&nbsp;End&nbsp;of&nbsp;makros&nbsp;*******************************************************<br />
+************************************************************************<br />
+<br />
+************************************************************************<br />
+*.In&nbsp;case&nbsp;of&nbsp;text&nbsp;table&nbsp;active,&nbsp;the&nbsp;field&nbsp;symbols&nbsp;contain&nbsp;more&nbsp;fields<br />
+*.than&nbsp;necessary&nbsp;for&nbsp;the&nbsp;primary&nbsp;table&nbsp;update.&nbsp;But&nbsp;the&nbsp;database&nbsp;func-<br />
+*.tions&nbsp;are&nbsp;able&nbsp;to&nbsp;handle&nbsp;this.&nbsp;The&nbsp;not&nbsp;known&nbsp;fields&nbsp;will&nbsp;be&nbsp;ignored.<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;clear:&nbsp;mod_error,&nbsp;ins_error,&nbsp;del_error,&nbsp;ls_err.<br />
+&nbsp;&nbsp;clear:&nbsp;gd_ins_nr,&nbsp;gd_mod_nr,&nbsp;gd_del_nr.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.create&nbsp;field-symbol&nbsp;for&nbsp;text-table-update<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;if&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;create&nbsp;data&nbsp;txtref&nbsp;type&nbsp;(gd-txt_tab).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assign&nbsp;txtref-&gt*&nbsp;to&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;endif.<br />
+   </div>
+   <div class="codeComment">
+*.create&nbsp;field-symbol&nbsp;for&nbsp;table-update<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;create&nbsp;data&nbsp;tabref&nbsp;type&nbsp;(gd-tab).<br />
+&nbsp;&nbsp;assign&nbsp;tabref-&gt*&nbsp;to&nbsp;&lttab_wa&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.First&nbsp;handle&nbsp;the&nbsp;deleted&nbsp;lines<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;loop&nbsp;at&nbsp;&ltdel_table&gt&nbsp;assigning&nbsp;&ltld_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LD_TABIX&nbsp;=&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;C_LINE_INDEX&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltLD_WA&gt&nbsp;TO&nbsp;&ltINDX&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;GT_MOD&nbsp;WHERE&nbsp;INDX&nbsp;=&nbsp;&ltINDX&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;&ltDEL_TABLE&gt&nbsp;INDEX&nbsp;LD_TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_txt_wa&nbsp;&ltld_wa&gt&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+   </div>
+   <div class="codeComment">
+*....&ltld_wa&gt&nbsp;contains&nbsp;more&nbsp;fields&nbsp;than&nbsp;the&nbsp;table&nbsp;-&gt&nbsp;create&nbsp;&lttab_wa&gt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_tab_wa&nbsp;&ltld_wa&gt&nbsp;&lttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-read_clnt&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ld_all_txt&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_txt_where.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;from&nbsp;(gd-txt_tab)&nbsp;client&nbsp;specified<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;(lt_where).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;(gd-txt_tab)&nbsp;client&nbsp;specified&nbsp;from&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttxt_wa&gt&nbsp;type_del&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-del_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-del_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;(gd-tab)&nbsp;client&nbsp;specified&nbsp;from&nbsp;&lttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*..........at&nbsp;the&nbsp;moment&nbsp;only&nbsp;the&nbsp;current&nbsp;language&nbsp;will&nbsp;be&nbsp;deleted<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ld_all_txt&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_txt_where.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;from&nbsp;(gd-txt_tab)&nbsp;where&nbsp;(lt_where).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;(gd-txt_tab)&nbsp;from&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*.............no&nbsp;error,&nbsp;because&nbsp;there&nbsp;must&nbsp;not&nbsp;be&nbsp;an&nbsp;entry<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del_error&nbsp;=&nbsp;true.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-del_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-txt_tab.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-del_error&nbsp;=&nbsp;true.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttxt_wa&gt&nbsp;type_del&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete&nbsp;(gd-tab)&nbsp;from&nbsp;&lttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-del_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-del_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttab_wa&gt&nbsp;type_del&nbsp;gd-tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add&nbsp;1&nbsp;to&nbsp;gd_del_nr.<br />
+&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;waref&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;&ltall_table&gt.<br />
+&nbsp;&nbsp;assign&nbsp;waref-&gt*&nbsp;to&nbsp;&ltwa&gt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*.Now&nbsp;divide&nbsp;the&nbsp;other&nbsp;changes&nbsp;into&nbsp;modified&nbsp;and&nbsp;inserted<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_mod&nbsp;where&nbsp;type&nbsp;&lt&gt&nbsp;type_del.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table_cell&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;key&nbsp;(c_line_index)&nbsp;=&nbsp;gt_mod-indx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assigning&nbsp;&ltwa_cell&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_tab_wa&nbsp;&ltwa_cell&gt&nbsp;&lttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;gt_mod-type.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;type_mod.<br />
+   </div>
+   <div class="codeComment">
+*.........fill&nbsp;all&nbsp;necessary&nbsp;fields&nbsp;into&nbsp;text&nbsp;table<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_txt_wa&nbsp;&ltwa_cell&gt&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-read_clnt&nbsp;=&nbsp;true.<br />
+   </div>
+   <div class="codeComment">
+*............Update&nbsp;text&nbsp;table&nbsp;if&nbsp;existent<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;(GD-TXT_TAB)&nbsp;CLIENT&nbsp;SPECIFIED&nbsp;FROM&nbsp;&ltTXT_WA&gt.<br />
+   </div>
+   <div class="codeComment">
+*...............If&nbsp;line&nbsp;has&nbsp;been&nbsp;modified,&nbsp;store&nbsp;old&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;&ltALL_TABLE_SAVE&gt&nbsp;INDEX&nbsp;GT_MOD-SAVE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGNING&nbsp;&ltWA_SAVE&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKRO_FILL_TXT_WA&nbsp;&ltWA_SAVE&gt&nbsp;&ltTXT_WA&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKRO_WRITE_CD&nbsp;LD_POS&nbsp;&ltTXT_WA&gt&nbsp;TYPE_MOD&nbsp;GD-TXT_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOD_ERROR&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ERR-MOD_TAB&nbsp;&nbsp;&nbsp;=&nbsp;GD-TXT_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ERR-MOD_ERROR&nbsp;=&nbsp;TRUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;(GD-TAB)&nbsp;CLIENT&nbsp;SPECIFIED&nbsp;FROM&nbsp;&ltTAB_WA&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GD-NO_TXT&nbsp;&lt&gt&nbsp;TRUE&nbsp;AND&nbsp;GD-TXT_TAB&nbsp;&lt&gt&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;(GD-TXT_TAB)&nbsp;FROM&nbsp;&ltTXT_WA&gt.<br />
+   </div>
+   <div class="codeComment">
+*...............If&nbsp;line&nbsp;has&nbsp;been&nbsp;modified,&nbsp;store&nbsp;old&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table_save&gt&nbsp;index&nbsp;gt_mod-save<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assigning&nbsp;&ltwa_save&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_txt_wa&nbsp;&ltwa_save&gt&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttxt_wa&gt&nbsp;type_mod&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mod_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-mod_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-mod_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;update&nbsp;(gd-tab)&nbsp;from&nbsp;&lttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mod_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-mod_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-mod_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+   </div>
+   <div class="codeComment">
+*.........If&nbsp;line&nbsp;has&nbsp;been&nbsp;modified,&nbsp;store&nbsp;old&nbsp;one<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;&ltALL_TABLE_SAVE&gt&nbsp;INDEX&nbsp;GT_MOD-SAVE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGNING&nbsp;&ltWA_SAVE&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKRO_FILL_TAB_WA&nbsp;&ltWA_SAVE&gt&nbsp;&ltTAB_WA&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttab_wa&gt&nbsp;type_mod&nbsp;gd-tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add&nbsp;1&nbsp;to&nbsp;gd_mod_nr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;type_ins.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_fill_txt_wa&nbsp;&ltwa_cell&gt&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-read_clnt&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;insert&nbsp;(gd-txt_tab)&nbsp;client&nbsp;specified&nbsp;from&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttxt_wa&gt&nbsp;type_ins&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ins_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-ins_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-ins_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;insert&nbsp;(gd-tab)&nbsp;client&nbsp;specified&nbsp;from&nbsp;&lttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;gd-no_txt&nbsp;&lt&gt&nbsp;true&nbsp;and&nbsp;gd-txt_tab&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;insert&nbsp;(gd-txt_tab)&nbsp;from&nbsp;&lttxt_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttxt_wa&gt&nbsp;type_ins&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ins_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-ins_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-txt_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-ins_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;insert&nbsp;(gd-tab)&nbsp;from&nbsp;&lttab_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ins_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-ins_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_err-ins_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;makro_write_cd&nbsp;ld_pos&nbsp;&lttab_wa&gt&nbsp;type_ins&nbsp;gd-tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add&nbsp;1&nbsp;to&nbsp;gd_ins_nr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;endloop.<br />
+   </div>
+   <div class="codeComment">
+*.If&nbsp;anything&nbsp;to&nbsp;do<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;if&nbsp;gd_ins_nr&nbsp;&gt&nbsp;0&nbsp;or<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gd_del_nr&nbsp;&gt&nbsp;0&nbsp;or<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gd_mod_nr&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ins_error&nbsp;&lt&gt&nbsp;true&nbsp;and<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del_error&nbsp;&lt&gt&nbsp;true&nbsp;and<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mod_error&nbsp;&lt&gt&nbsp;true.<br />
+   </div>
+   <div class="codeComment">
+*.......Write&nbsp;own&nbsp;change-documents.....................................<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;insert&nbsp;se16n_cd_key&nbsp;from&nbsp;ls_se16n_cd_key.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;x121(wusl).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;insert&nbsp;se16n_cd_data&nbsp;from&nbsp;table&nbsp;lt_se16n_cd_data.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;x121(wusl).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+   </div>
+   <div class="codeComment">
+*.......Now&nbsp;do&nbsp;the&nbsp;changes.............................................<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;commit&nbsp;work.<br />
+   </div>
+   <div class="codeComment">
+*.......Dequeue&nbsp;the&nbsp;locks..............................................<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;&ltkey_table&gt&nbsp;assigning&nbsp;&ltkey_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;dequeue_table&nbsp;using&nbsp;&ltkey_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refresh:&nbsp;gt_mod,&nbsp;&ltdel_table&gt,&nbsp;&ltall_table_save&gt,&nbsp;&ltkey_table&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;screen&nbsp;300&nbsp;starting&nbsp;at&nbsp;5&nbsp;5&nbsp;ending&nbsp;at&nbsp;50&nbsp;10.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rollback&nbsp;work.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refresh:&nbsp;gt_mod,&nbsp;&ltdel_table&gt,&nbsp;&ltall_table_save&gt,&nbsp;&ltkey_table&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;ls_err-del_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ld_text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;text-erd&nbsp;ls_err-del_tab&nbsp;into&nbsp;ld_text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;i112(wusl)&nbsp;with&nbsp;ld_text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;ls_err-mod_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ld_text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;text-erm&nbsp;ls_err-mod_tab&nbsp;into&nbsp;ld_text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;i112(wusl)&nbsp;with&nbsp;ld_text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elseif&nbsp;ls_err-ins_error&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;ld_text.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;text-eri&nbsp;ls_err-ins_tab&nbsp;into&nbsp;ld_text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;i430(mo).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+ENDFORM.                    " SAVE_CHANGES<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;enqueue_table<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_&ltKEY&gt&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM enqueue_table USING KEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;value(rc).<br />
+<br />
+data: sperrdat like rstable-varkey.<br />
+FIELD-SYMBOLS: &ltFS1&gt, &ltFS2&gt.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;KEY&nbsp;TO&nbsp;&ltFS1&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;SPERRDAT&nbsp;TO&nbsp;&ltFS2&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+<br />
+&nbsp;&nbsp;&ltFS2&gt&nbsp;=&nbsp;&ltFS1&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_E_TABLEE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE_RSTABLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sperrdat<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_SCOPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_WAIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_COLLECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rc&nbsp;=&nbsp;sy-subrc.<br />
+<br />
+ENDFORM.                    " enqueue_table<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;dequeue_table<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_&ltKEY_WA&gt&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM dequeue_table USING KEY.<br />
+<br />
+data: sperrdat like rstable-varkey.<br />
+FIELD-SYMBOLS: &ltFS1&gt, &ltFS2&gt.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;KEY&nbsp;TO&nbsp;&ltFS1&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;SPERRDAT&nbsp;TO&nbsp;&ltFS2&gt&nbsp;CASTING&nbsp;TYPE&nbsp;X.<br />
+<br />
+&nbsp;&nbsp;&ltFS2&gt&nbsp;=&nbsp;&ltFS1&gt.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_E_TABLEE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE_RSTABLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sperrdat.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X_VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_SCOPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'3'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_SYNCHRON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_COLLECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " dequeue_table<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;fill_gt_se16n_rf<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM fill_gt_se16n_rf .<br />
+<br />
+data: ls_tstct like tstct.<br />
+data: ld_tabix like sy-tabix.<br />
+<br />
+&nbsp;&nbsp;refresh&nbsp;gt_se16n_rf.<br />
+&nbsp;&nbsp;select&nbsp;*&nbsp;from&nbsp;se16n_rf&nbsp;into&nbsp;table&nbsp;gt_se16n_rf&nbsp;where&nbsp;tab&nbsp;=&nbsp;gd-tab.<br />
+&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;sort&nbsp;gt_se16n_rf&nbsp;by&nbsp;pos.<br />
+&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_se16n_rf&nbsp;where&nbsp;fcode_text&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_tabix&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;&nbsp;TSTCT&nbsp;into&nbsp;ls_tstct<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;SPRSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-langu<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;TCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_se16n_rf-fcode.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_se16n_rf-fcode_text&nbsp;=&nbsp;ls_tstct-ttext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;modify&nbsp;gt_se16n_rf&nbsp;index&nbsp;ld_tabix.<br />
+&nbsp;&nbsp;endloop.<br />
+<br />
+ENDFORM.                    " fill_gt_se16n_rf<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;add_ctmenu<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_E_OBJECT&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM add_ctmenu  USING menu type ref to cl_ctmenu.<br />
+<br />
+&nbsp;&nbsp;call&nbsp;method&nbsp;menu-&gtADD_SEPARATOR.<br />
+<br />
+&nbsp;&nbsp;loop&nbsp;at&nbsp;gt_se16n_rf.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;menu-&gtadd_function<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;fcode&nbsp;=&nbsp;gt_se16n_rf-fcode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;=&nbsp;&nbsp;gt_se16n_Rf-fcode_text.<br />
+&nbsp;&nbsp;endloop.<br />
+<br />
+ENDFORM.                    " add_ctmenu<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;call_fcode<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_LD_ROW&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_LD_COL&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_E_UCOMM&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM call_fcode  USING value(LD_ROW)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value(LD_COL)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fcode&nbsp;like&nbsp;sy-ucomm.<br />
+<br />
+data: ls_se16n_rf like se16n_rf.<br />
+data: ld_fcode_40(40).<br />
+field-symbols: &ltwa_table&gt type any.<br />
+<br />
+&nbsp;&nbsp;if&nbsp;gd-edit&nbsp;=&nbsp;true.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table_cell&gt&nbsp;index&nbsp;ld_row&nbsp;assigning&nbsp;&ltwa_table&gt.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;&ltall_table&gt&nbsp;index&nbsp;ld_row&nbsp;assigning&nbsp;&ltwa_table&gt.<br />
+&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;read&nbsp;table&nbsp;gt_se16n_Rf&nbsp;into&nbsp;ls_se16n_rf&nbsp;with&nbsp;key&nbsp;fcode&nbsp;=&nbsp;fcode.<br />
+&nbsp;&nbsp;check:&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*.in&nbsp;case&nbsp;of&nbsp;special&nbsp;function,&nbsp;call&nbsp;this&nbsp;function<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;if&nbsp;ls_se16n_rf-function&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call function ls_se16n_rf-function<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting&nbsp;&nbsp;i_tab&nbsp;&nbsp;&nbsp;=&nbsp;gd-tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_wa&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&ltwa_table&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_fcode&nbsp;=&nbsp;fcode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exceptions&nbsp;others&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;i123(wusl)&nbsp;with&nbsp;fcode.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ld_fcode_40&nbsp;=&nbsp;fcode.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;authority-check&nbsp;object&nbsp;'S_TCODE'&nbsp;id&nbsp;'TCD'&nbsp;field&nbsp;ld_fcode_40.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;i401(ga2)&nbsp;with&nbsp;ld_fcode_40.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;transaction&nbsp;fcode.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+ENDFORM.                    " call_fcode<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

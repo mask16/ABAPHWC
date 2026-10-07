@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZFIR0017</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZFIR0017</h2>
+<h3> Description: 세금계산서 발행</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;&nbsp;ZFIR0017<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;모듈/서브모듈&nbsp;:&nbsp;FI<br />
+*&&nbsp;&nbsp;Type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;REPORT<br />
+*&&nbsp;&nbsp;T_Code&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ZFIR0017<br />
+*&&nbsp;&nbsp;Init&nbsp;ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AB04<br />
+*&&nbsp;&nbsp;Init&nbsp;day&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;2012.12.27<br />
+*&&nbsp;&nbsp;Description&nbsp;&nbsp;&nbsp;:&nbsp;세금계산서&nbsp;발행<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFICATION&nbsp;LOG<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;2013.04.01&nbsp;:&nbsp;금액합산용&nbsp;인터널테이블(GT_KUNNR)에&nbsp;세금코드&nbsp;안들어가도록&nbsp;수정(남기정컨설턴트&nbsp;확인사항)&nbsp;BY&nbsp;김희상<br />
+*&&nbsp;2013.04.05&nbsp;:&nbsp;채번시&nbsp;잠금&nbsp;오브젝트&nbsp;추가&nbsp;BY&nbsp;김희상<br />
+*&&nbsp;2013.05.03&nbsp;:&nbsp;업종/업태가&nbsp;마스터와&nbsp;반대로&nbsp;저장되는&nbsp;부분&nbsp;수정&nbsp;BY&nbsp;김희상<br />
+*&&nbsp;2024.08.01&nbsp;:&nbsp;미래날짜로&nbsp;발행&nbsp;제한<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zfir0017 NO STANDARD PAGE HEADING LINE-SIZE 123<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE-ID&nbsp;zfim1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;INCLUDE<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+include <a href ="zfir0017_top,.html">zfir0017_top,</a>.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zfir0017_cls,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zfir0017_o01,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zfir0017_i01,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zfir0017_f01,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zfir0017_cf01.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Initialization<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+INITIALIZATION.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_init_data.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;vkbur<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;gv_vkbur<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zsdt9010<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;uname&nbsp;=&nbsp;sy-uname.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gv_vkbur&nbsp;NE&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;s_vkbur-low&nbsp;&nbsp;=&nbsp;gv_vkbur.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;s_vkbur.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;screen-group1&nbsp;=&nbsp;'M1'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gv_vkbur&nbsp;NE&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;screen-invisible&nbsp;=&nbsp;'0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;screen-input&nbsp;=&nbsp;'0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;SCREEN.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;At&nbsp;Selection-screen&nbsp;On&nbsp;Value-Request&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*----------------------------------------------------------------------*<br />
+*AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;p_kunnr.<br />
+*&nbsp;&nbsp;PERFORM&nbsp;p_kunnr_help.<br />
+<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_zunnr-low.<br />
+&nbsp;&nbsp;PERFORM&nbsp;z_kunnr-low_help.<br />
+<br />
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_zunnr-high.<br />
+&nbsp;&nbsp;PERFORM&nbsp;z_kunnr-high_help.<br />
+<br />
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_spmon-low.<br />
+&nbsp;&nbsp;PERFORM&nbsp;f4_spmon&nbsp;CHANGING&nbsp;s_spmon-low.<br />
+<br />
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_spmon-high.<br />
+&nbsp;&nbsp;PERFORM&nbsp;f4_spmon&nbsp;CHANGING&nbsp;s_spmon-high.<br />
+<br />
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_bupla.<br />
+&nbsp;&nbsp;PERFORM&nbsp;p_bupla_help.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Start-of-selection<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_ranges.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_main_data.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_sub_data.<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_lock_data.<br />
+&nbsp;&nbsp;IF&nbsp;gt_main[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s005&nbsp;DISPLAY&nbsp;LIKE&nbsp;'W'.&nbsp;&nbsp;"해당&nbsp;데이터가&nbsp;존재하지&nbsp;않습니다.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;'0100'.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;End-od-selection<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+END-OF-SELECTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;0100&nbsp;--&gt&nbsp;세금계산서&nbsp;발행&nbsp;&<br />
+*&nbsp;0101&nbsp;--&gt&nbsp;순방향&nbsp;세금계산서&nbsp;발행<br />
+*&nbsp;0102&nbsp;--&gt&nbsp;역방향&nbsp;세금계산서&nbsp;발행<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;001&nbsp;조회&nbsp;조건<br />
+*&nbsp;002&nbsp;순방향<br />
+*&nbsp;003&nbsp;역방향<br />
+*&nbsp;004&nbsp;발행형태<br />
+*&nbsp;005&nbsp;업데이트&nbsp;모드<br />
+<br />
+<br />
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사업장<br />
+*&nbsp;P_KUNNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;고객<br />
+*&nbsp;P_MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BDC모드<br />
+*&nbsp;S_BELNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;전표번호<br />
+*&nbsp;S_BUDAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;전기일<br />
+*&nbsp;S_BUKRS&nbsp;D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+*&nbsp;S_KTOKD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;고객&nbsp;계정그룹<br />
+*&nbsp;S_SPMON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;년월<br />
+*&nbsp;S_VBELN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대금청구문서&nbsp;번호<br />
+*&nbsp;S_VKBUR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사무소<br />
+*&nbsp;S_ZUNNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;영업사원<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;ZFIM1<br />
+*000&nbsp;&nbsp;&nbsp;&&nbsp;&&nbsp;&&nbsp;&<br />
+*005&nbsp;&nbsp;&nbsp;해당&nbsp;데이터가&nbsp;존재하지&nbsp;않습니다.<br />
+*011&nbsp;&nbsp;&nbsp;성공적으로&nbsp;처리&nbsp;되었습니다<br />
+*078&nbsp;&nbsp;&nbsp;체크&nbsp;표시된&nbsp;전표&nbsp;데이터가&nbsp;없습니다.<br />
+*079&nbsp;&nbsp;&nbsp;선택된&nbsp;라인중&nbsp;이미&nbsp;발행완료된&nbsp;데이터가&nbsp;있습니다.<br />
+*080&nbsp;&nbsp;&nbsp;이미&nbsp;존재하는&nbsp;세금계산서&nbsp;번호&nbsp;입니다.<br />
+*081&nbsp;&nbsp;&nbsp;역방향&nbsp;발행은&nbsp;세금계산서&nbsp;번호를&nbsp;기입하셔야&nbsp;합니다.<br />
+*082&nbsp;&nbsp;&nbsp;서로&nbsp;다른&nbsp;고객의&nbsp;데이터가&nbsp;존재합니다.<br />
+*083&nbsp;&nbsp;&nbsp;해당&nbsp;전표는&nbsp;잠금&nbsp;상태입니다.<br />
+*112&nbsp;&nbsp;&nbsp;세금계산서&nbsp;대체&nbsp;처리중&nbsp;오류&nbsp;발생,&nbsp;발행결과&nbsp;내역을&nbsp;확인&nbsp;하십시오.<br />
+*113&nbsp;&nbsp;&nbsp;다른&nbsp;사용자가&nbsp;사용중이니&nbsp;잠시후&nbsp;다시&nbsp;처리하시기&nbsp;바랍니다.<br />
+*117&nbsp;&nbsp;&nbsp;세금계산서&nbsp;발행월이&nbsp;다릅니다.<br />
+*120&nbsp;&nbsp;&nbsp;미래&nbsp;날짜로&nbsp;발행&nbsp;할&nbsp;수&nbsp;없습니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

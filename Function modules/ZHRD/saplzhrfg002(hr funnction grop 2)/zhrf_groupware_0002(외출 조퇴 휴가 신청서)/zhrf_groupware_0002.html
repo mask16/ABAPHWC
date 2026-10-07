@@ -1,0 +1,527 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHRF_GROUPWARE_0002</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZHRF_GROUPWARE_0002</h2>
+<h3> Description: 외출 조퇴 휴가 신청서</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZHRF_GROUPWARE_0002.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(IV_0002) TYPE  ZHRF_GROUP_0002 OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_ERROR) TYPE  BAPIRETURN1<br />
+*"     VALUE(E_RETURN) TYPE  CHAR5<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zhrf_groupware_0002.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;&nbsp;:&nbsp;ES_0002&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZHRF_GROUP_0002,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2001&nbsp;&nbsp;TYPE&nbsp;&nbsp;P2001,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005&nbsp;&nbsp;TYPE&nbsp;&nbsp;P2005,&nbsp;&nbsp;&nbsp;"add<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_9019&nbsp;&nbsp;TYPE&nbsp;&nbsp;P9019,&nbsp;&nbsp;&nbsp;"add<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPIRETURN1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_KEY1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPIPAKEY.<br />
+&nbsp;&nbsp;DATA&nbsp;&nbsp;&nbsp;&nbsp;LV_RETURN&nbsp;&nbsp;LIKE&nbsp;&nbsp;BAPIRETURN1&nbsp;.<br />
+&nbsp;&nbsp;DATA&nbsp;&nbsp;&nbsp;&nbsp;E_WOTNR&nbsp;TYPE&nbsp;P.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_ENQ_DEL&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;SEQG3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_ENQ_READ&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;SEQG7,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LW_ENQ_READ&nbsp;TYPE&nbsp;SEQG7,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LW_ENQ_DEL&nbsp;&nbsp;TYPE&nbsp;SEQG3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_SUBRC&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;DATA&nbsp;L_NUMVER&nbsp;TYPE&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;DATA&nbsp;I_SUBRC&nbsp;TYPE&nbsp;SY-SUBRC.<br />
+&nbsp;&nbsp;DATA&nbsp;L_GARG&nbsp;TYPE&nbsp;EQEGRAARG.<br />
+<br />
+&nbsp;&nbsp;"s&nbsp;add<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_MOLGA&nbsp;&nbsp;&nbsp;TYPE&nbsp;MOLGA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PWS_RESULT&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;PDPSP&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;TMP_DATE&nbsp;TYPE&nbsp;DATUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUM&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;"e&nbsp;add<br />
+<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;IV_0002&nbsp;&nbsp;TO&nbsp;GS_2001.<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;IV_0002&nbsp;&nbsp;TO&nbsp;GS_2005.&nbsp;"add<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;IV_0002&nbsp;&nbsp;TO&nbsp;GS_9019.&nbsp;"add<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMPREL' "s add<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"e&nbsp;add<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;"s&nbsp;add<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"e&nbsp;add<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*IF iv_0002-AWART IS NOT INITIAL.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0110'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0111'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0130'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0200'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0220'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0221'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0222'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0230'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0240'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0241'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0300'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0320'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0330'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0340'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0341'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0400'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0450'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0500'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0501'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0510'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0700'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0710'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0800'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0900'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_2001-SUBTY&nbsp;=&nbsp;IV_0002-AWART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_2001-INFTY&nbsp;&nbsp;=&nbsp;'2001'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2001'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-SUBTY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_RETURN1&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_ERROR&nbsp;&nbsp;=&nbsp;&nbsp;L_RETURN1&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_RETURN1-TYPE&nbsp;=&nbsp;'S'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"성공<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2001'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-SUBTY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"실패<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2001'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-SUBTY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*else.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ELSEIF&nbsp;IV_0002-AWART&nbsp;=&nbsp;''&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"s&nbsp;add<br />
+   </div>
+   <div class="codeComment">
+*  gs_2001-subty = iv_0002-AWART.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-INFTY&nbsp;&nbsp;=&nbsp;'2005'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;PWS_RESULT,&nbsp;PWS_RESULT[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_READ_TIMEDATA_PSP'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN_DATE&nbsp;=&nbsp;GS_2005-BEGDA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END_DATE&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-ENDDA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSON_ID&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERS_AVAIL&nbsp;=&nbsp;PWS_RESULT.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'OFF'&nbsp;OR&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'OFFN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;PWS_RESULT-TAGTY&nbsp;=&nbsp;'1'&nbsp;OR&nbsp;PWS_RESULT-FTKLA&nbsp;=&nbsp;'1'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_2005-ENDUZ&nbsp;BETWEEN&nbsp;'130000'AND&nbsp;'210000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-PBEG1&nbsp;=&nbsp;'120000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-PEND1&nbsp;=&nbsp;'130000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_2005-ENDUZ&nbsp;BETWEEN&nbsp;'020000'AND&nbsp;'100000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-PBEG1&nbsp;=&nbsp;'010000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-PEND1&nbsp;=&nbsp;'020000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_2005-BEGUZ&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'DAY0'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'DAY1'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'DAY2'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'DAY3'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'DAY5'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'DAY6'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-VERSL&nbsp;=&nbsp;'6'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'NIGT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-VERSL&nbsp;=&nbsp;'6'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'OFF'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;PWS_RESULT-TPROG&nbsp;=&nbsp;'OFFN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_2005-VERSL&nbsp;=&nbsp;'7'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*    IF gs_2005-beguz is not INITIAL.<br />
+*<br />
+*       IF  gs_2005-beguz = '040000' and gs_2005-enduz = '080000' or<br />
+*           gs_2005-beguz = '180000' and gs_2005-enduz = '220000' or<br />
+*           gs_2005-beguz = '170000' and gs_2005-enduz = '210000' or<br />
+*           gs_2005-beguz = '080000' and gs_2005-enduz = '120000'.<br />
+*          gs_2005-VERSL = '6'.<br />
+*       ENDIF.<br />
+*<br />
+*    ENDIF.<br />
+*<br />
+*      CALL FUNCTION 'DAY_IN_WEEK'<br />
+*          EXPORTING<br />
+*            DATUM = gs_2005-BEGDA<br />
+*          IMPORTING<br />
+*            WOTNR = E_WOTNR.<br />
+*<br />
+*      CALL FUNCTION 'DAY_IN_WEEK'<br />
+*          EXPORTING<br />
+*            DATUM = gs_2005-ENDDA<br />
+*          IMPORTING<br />
+*            WOTNR = E_WOTNR.<br />
+*<br />
+*    IF E_WOTNR = '6' or E_WOTNR = '7'.<br />
+*<br />
+*     IF gs_2005-enduz BETWEEN '130000'and '210000'.<br />
+*        gs_2005-PBEG1 = '120000'.<br />
+*        gs_2005-PEND1 = '130000'.<br />
+*     ENdIF.<br />
+*<br />
+*     IF gs_2005-enduz BETWEEN '020000'and '100000'.<br />
+*        gs_2005-PBEG1 = '010000'.<br />
+*        gs_2005-PEND1 = '020000'.<br />
+*     ENdIF.<br />
+*    ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2005'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+   </div>
+   <div class="codeComment">
+*       subtype   = gs_2001-subty<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_RETURN1&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_ERROR&nbsp;&nbsp;=&nbsp;&nbsp;L_RETURN1&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_RETURN1-TYPE&nbsp;=&nbsp;'S'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"성공<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2005'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+   </div>
+   <div class="codeComment">
+*           subtype   = gs_2001-subty<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"실패<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'2005'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+   </div>
+   <div class="codeComment">
+*           subtype   = gs_2001-subty<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_2005-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;ELSEIF&nbsp;IV_0002-AWART&nbsp;=&nbsp;'1200'&nbsp;OR&nbsp;IV_0002-AWART&nbsp;=&nbsp;'0100'.&nbsp;"중식야식<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"----------------------------------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_9019-INFTY&nbsp;&nbsp;=&nbsp;'9019'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_9019-SUBTY&nbsp;=&nbsp;IV_0002-AWART.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_9019-SUBTY&nbsp;=&nbsp;'1200'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_9019-ZDATAR4&nbsp;=&nbsp;'1'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_9019-ZDATAR5&nbsp;=&nbsp;'1'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'9019'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019-SUBTY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_RETURN1&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_ERROR&nbsp;&nbsp;=&nbsp;&nbsp;L_RETURN1&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_RETURN1-TYPE&nbsp;=&nbsp;'S'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"성공<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'9019'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019-SUBTY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"실패<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'9019'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTYPE&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019-SUBTY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECORD&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERATION&nbsp;=&nbsp;'INS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_RETURN1&nbsp;&nbsp;&nbsp;"LIKE&nbsp;&nbsp;BAPIRETURN1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_KEY1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;&nbsp;BAPIPAKEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN&nbsp;=&nbsp;'T0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_9019-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"----------------------------------------------------------<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"----------------------------------------------------------<br />
+   </div>
+   <div class="codeComment">
+* GS_9019-SUBTY = IV_0002-AWART.<br />
+*  GS_2001-INFTY  = '9019'.<br />
+*    CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+*      EXPORTING<br />
+*        INFTY     = '9019'<br />
+*        NUMBER    = GS_9019-PERNR<br />
+*        SUBTYPE   = GS_9019-SUBTY<br />
+*        RECORD    = GS_9019<br />
+*        OPERATION = 'INS'<br />
+*      IMPORTING<br />
+*        RETURN    = L_RETURN1   "LIKE  BAPIRETURN1<br />
+*        KEY       = L_KEY1.     " LIKE  BAPIPAKEY<br />
+*<br />
+*    IF L_RETURN1 IS NOT INITIAL.<br />
+*      E_ERROR  =  L_RETURN1 .<br />
+*      IF L_RETURN1-TYPE = 'S'.              "성공<br />
+*        E_RETURN = 'T0'.<br />
+*        CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+*          EXPORTING<br />
+*            INFTY     = '9019'<br />
+*            NUMBER    = GS_9019-PERNR<br />
+*            SUBTYPE   = GS_9019-SUBTY<br />
+*            RECORD    = GS_9019<br />
+*            OPERATION = 'INS'<br />
+*          IMPORTING<br />
+*            RETURN    = L_RETURN1   "LIKE  BAPIRETURN1<br />
+*            KEY       = L_KEY1.     " LIKE  BAPIPAKEY<br />
+*      ELSE.<br />
+*        E_RETURN = 'T1'.                       "실패<br />
+*        CALL FUNCTION 'HR_INFOTYPE_OPERATION'<br />
+*          EXPORTING<br />
+*            INFTY     = '9019'<br />
+*            NUMBER    = GS_9019-PERNR<br />
+*            SUBTYPE   = GS_9019-SUBTY<br />
+*            RECORD    = GS_9019<br />
+*            OPERATION = 'INS'<br />
+*          IMPORTING<br />
+*            RETURN    = L_RETURN1   "LIKE  BAPIRETURN1<br />
+*            KEY       = L_KEY1.     " LIKE  BAPIPAKEY<br />
+*      ENDIF.<br />
+*    ELSE.<br />
+*      E_RETURN = 'T0'.<br />
+*    ENDIF.<br />
+*<br />
+*<br />
+*    CALL FUNCTION 'DEQUEUE_EMPREL'<br />
+*      EXPORTING<br />
+*        PERNR          = GS_9019-PERNR<br />
+*      EXCEPTIONS<br />
+*        FOREIGN_LOCK   = 1<br />
+*        SYSTEM_FAILURE = 2<br />
+*        OTHERS         = 3.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;"----------------------------------------------------------<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;"e&nbsp;add<br />
+<br />
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>SZADR</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: SZADR</h2>
+<h3> Description: Business Address Services</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+TYPE-POOL szadr.<br />
+   </div>
+   <div class="codeComment">
+***********************************************************************<br />
+*&nbsp;&nbsp;&nbsp;Typen&nbsp;der&nbsp;&nbsp;&nbsp;Z&nbsp;e&nbsp;n&nbsp;t&nbsp;r&nbsp;a&nbsp;l&nbsp;e&nbsp;n&nbsp;&nbsp;&nbsp;A&nbsp;d&nbsp;r&nbsp;e&nbsp;ß&nbsp;v&nbsp;e&nbsp;r&nbsp;w&nbsp;a&nbsp;l&nbsp;t&nbsp;u&nbsp;n&nbsp;g<br />
+***********************************************************************<br />
+<br />
+*{&nbsp;&nbsp;&nbsp;(Alles&nbsp;aufreißen/verbergen)<br />
+*{&nbsp;&nbsp;Allgemeine&nbsp;Typen<br />
+   </div>
+   <div class="code">
+TYPES: szadr_bool(1) TYPE c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_boole(1)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_length&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_index&nbsp;LIKE&nbsp;sy-tabix,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_name_line&nbsp;LIKE&nbsp;adrs-line0.<br />
+<br />
+TYPES: szadr_error_table LIKE addr_error OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_error_line&nbsp;TYPE&nbsp;LINE&nbsp;OF&nbsp;szadr_error_table.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;&nbsp;Typen&nbsp;f#r&nbsp;die&nbsp;Namensaufbereitung<br />
+   </div>
+   <div class="code">
+TYPES: szadr_t005o LIKE t005o,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_it005o&nbsp;TYPE&nbsp;szadr_t005o&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_name_fields_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;LIKE&nbsp;t005o-fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value&nbsp;LIKE&nbsp;name_parts-name_text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldconv&nbsp;LIKE&nbsp;t005o-fieldconv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_name_fields_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_name_fields_tab&nbsp;TYPE&nbsp;szadr_name_fields_line&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_name_values_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname&nbsp;LIKE&nbsp;t005o-fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value&nbsp;LIKE&nbsp;name_parts-name_text,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Ausgabewert<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;length&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;offset&nbsp;TYPE&nbsp;i,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TOTAL_LENGTH&nbsp;TYPE&nbsp;I,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldconv&nbsp;LIKE&nbsp;t005o-fieldconv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_name_values_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_name_values_tab&nbsp;TYPE&nbsp;szadr_name_values_line&nbsp;OCCURS&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;die&nbsp;komplexen&nbsp;Datenobjekte<br />
+*&nbsp;Komplexes&nbsp;Datenobjekt&nbsp;zum&nbsp;Adreßtyp&nbsp;1<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_addr1_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nation&nbsp;LIKE&nbsp;adrc-nation,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;LIKE&nbsp;addr1_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr1_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_addr1_tab&nbsp;TYPE&nbsp;szadr_addr1_line&nbsp;OCCURS&nbsp;0,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Komplexes&nbsp;Datenobjekt&nbsp;zum&nbsp;Adreßtyp&nbsp;2<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_addr2_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nation&nbsp;LIKE&nbsp;adrc-nation,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;LIKE&nbsp;addr2_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr2_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_addr2_tab&nbsp;TYPE&nbsp;szadr_addr2_line&nbsp;OCCURS&nbsp;0,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Komplexes&nbsp;Datenobjekt&nbsp;zum&nbsp;Adreßtyp&nbsp;3<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_addr3_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nation&nbsp;LIKE&nbsp;adrc-nation,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;LIKE&nbsp;addr3_data,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;field-names&nbsp;can&nbsp;look&nbsp;like:<br />
+*&nbsp;&nbsp;&nbsp;addr3_complete-addr3_tab-data-so_key&nbsp;(!)&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;don't&nbsp;forget&nbsp;-DATA-&nbsp;)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr3_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_addr3_tab&nbsp;TYPE&nbsp;szadr_addr3_line&nbsp;OCCURS&nbsp;0,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adtel_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtel&nbsp;LIKE&nbsp;adtel,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adtel_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adtel_tab&nbsp;TYPE&nbsp;szadr_adtel_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adfax_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adfax&nbsp;LIKE&nbsp;adfax,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adfax_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adfax_tab&nbsp;TYPE&nbsp;szadr_adfax_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adttx_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adttx&nbsp;LIKE&nbsp;adttx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adttx_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adttx_tab&nbsp;TYPE&nbsp;szadr_adttx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adtlx_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtlx&nbsp;LIKE&nbsp;adtlx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adtlx_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adtlx_tab&nbsp;TYPE&nbsp;szadr_adtlx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adsmtp_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adsmtp&nbsp;LIKE&nbsp;adsmtp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adsmtp_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adsmtp_tab&nbsp;TYPE&nbsp;szadr_adsmtp_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adrml_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrml&nbsp;LIKE&nbsp;adrml,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adrml_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adrml_tab&nbsp;TYPE&nbsp;szadr_adrml_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adx400_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adx400&nbsp;LIKE&nbsp;adx400,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adx400_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adx400_tab&nbsp;TYPE&nbsp;szadr_adx400_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adrfc_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrfc&nbsp;LIKE&nbsp;adrfc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adrfc_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adrfc_tab&nbsp;TYPE&nbsp;szadr_adrfc_line&nbsp;OCCURS&nbsp;0,<br />
+   </div>
+   <div class="codeComment">
+*-------------------------------&nbsp;"*178i+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adprt_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adprt&nbsp;LIKE&nbsp;adprt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adprt_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adprt_tab&nbsp;TYPE&nbsp;szadr_adprt_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adssf_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adssf&nbsp;LIKE&nbsp;adssf,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adssf_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adssf_tab&nbsp;TYPE&nbsp;szadr_adssf_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_aduri_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aduri&nbsp;LIKE&nbsp;aduri,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_aduri_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_aduri_tab&nbsp;TYPE&nbsp;szadr_aduri_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adpag_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;LIKE&nbsp;adrc-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adpag&nbsp;LIKE&nbsp;adpag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adpag_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adpag_tab&nbsp;TYPE&nbsp;szadr_adpag_line&nbsp;OCCURS&nbsp;0,<br />
+   </div>
+   <div class="codeComment">
+*------------------------------&nbsp;"*178i-<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adrct_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_rem&nbsp;LIKE&nbsp;addr_rem,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adrct_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adrct_tab&nbsp;TYPE&nbsp;szadr_adrct_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adrt_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adcomrem&nbsp;LIKE&nbsp;adcomrem,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adrt_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adrt_tab&nbsp;TYPE&nbsp;szadr_adrt_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adru_line,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aduse&nbsp;LIKE&nbsp;aduse,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adru_line,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adru_tab&nbsp;TYPE&nbsp;szadr_adru_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i+<br />
+   </div>
+   <div class="codeComment">
+*--------------------------------&nbsp;"*201d+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_adrt_c_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adcomrem&nbsp;LIKE&nbsp;adcomrem,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adrt_c_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adrt_c_tab&nbsp;TYPE&nbsp;szadr_adrt_c_line&nbsp;OCCURS&nbsp;0,<br />
+   </div>
+   <div class="codeComment">
+*--------------------------------&nbsp;"*201d-<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_addr1_complete,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;addr1_sel-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrhandle&nbsp;LIKE&nbsp;addr1_sel-addrhandle,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr1_tab&nbsp;TYPE&nbsp;szadr_addr1_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtel_tab&nbsp;TYPE&nbsp;szadr_adtel_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adfax_tab&nbsp;TYPE&nbsp;szadr_adfax_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adttx_tab&nbsp;TYPE&nbsp;szadr_adttx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtlx_tab&nbsp;TYPE&nbsp;szadr_adtlx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adsmtp_tab&nbsp;TYPE&nbsp;szadr_adsmtp_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrml_tab&nbsp;TYPE&nbsp;szadr_adrml_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adx400_tab&nbsp;TYPE&nbsp;szadr_adx400_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrfc_tab&nbsp;TYPE&nbsp;szadr_adrfc_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adprt_tab&nbsp;TYPE&nbsp;szadr_adprt_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adssf_tab&nbsp;TYPE&nbsp;szadr_adssf_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aduri_tab&nbsp;TYPE&nbsp;szadr_aduri_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adpag_tab&nbsp;TYPE&nbsp;szadr_adpag_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrct_tab&nbsp;TYPE&nbsp;szadr_adrct_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrt_tab&nbsp;TYPE&nbsp;szadr_adrt_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adru_tab&nbsp;TYPE&nbsp;szadr_adru_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr1_complete,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_addr1_table&nbsp;TYPE&nbsp;szadr_addr1_complete&nbsp;OCCURS&nbsp;0,&nbsp;"*1785i+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_st_adrc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADDRNUMBER&nbsp;LIKE&nbsp;ADRC-ADDRNUMBER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_st_adrc,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_adrc_table&nbsp;TYPE&nbsp;szadr_st_adrc&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*1785i-<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_addr2_complete,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;addr2_sel-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrhandle&nbsp;LIKE&nbsp;addr2_sel-addrhandle,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;addr2_sel-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pershandle&nbsp;LIKE&nbsp;addr2_sel-pershandle,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr2_tab&nbsp;TYPE&nbsp;szadr_addr2_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtel_tab&nbsp;TYPE&nbsp;szadr_adtel_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adfax_tab&nbsp;TYPE&nbsp;szadr_adfax_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adttx_tab&nbsp;TYPE&nbsp;szadr_adttx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtlx_tab&nbsp;TYPE&nbsp;szadr_adtlx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adsmtp_tab&nbsp;TYPE&nbsp;szadr_adsmtp_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrml_tab&nbsp;TYPE&nbsp;szadr_adrml_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adx400_tab&nbsp;TYPE&nbsp;szadr_adx400_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrfc_tab&nbsp;TYPE&nbsp;szadr_adrfc_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adprt_tab&nbsp;TYPE&nbsp;szadr_adprt_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adssf_tab&nbsp;TYPE&nbsp;szadr_adssf_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aduri_tab&nbsp;TYPE&nbsp;szadr_aduri_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adpag_tab&nbsp;TYPE&nbsp;szadr_adpag_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrct_tab&nbsp;TYPE&nbsp;szadr_adrct_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrt_tab&nbsp;TYPE&nbsp;szadr_adrt_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adru_tab&nbsp;TYPE&nbsp;szadr_adru_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr2_complete,<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;szadr_addr3_complete,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;addr3_sel-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrhandle&nbsp;LIKE&nbsp;addr3_sel-addrhandle,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;addr3_sel-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pershandle&nbsp;LIKE&nbsp;addr3_sel-pershandle,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr3_tab&nbsp;TYPE&nbsp;szadr_addr3_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtel_tab&nbsp;TYPE&nbsp;szadr_adtel_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adfax_tab&nbsp;TYPE&nbsp;szadr_adfax_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adttx_tab&nbsp;TYPE&nbsp;szadr_adttx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtlx_tab&nbsp;TYPE&nbsp;szadr_adtlx_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adsmtp_tab&nbsp;TYPE&nbsp;szadr_adsmtp_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrml_tab&nbsp;TYPE&nbsp;szadr_adrml_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adx400_tab&nbsp;TYPE&nbsp;szadr_adx400_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrfc_tab&nbsp;TYPE&nbsp;szadr_adrfc_line&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adprt_tab&nbsp;TYPE&nbsp;szadr_adprt_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adssf_tab&nbsp;TYPE&nbsp;szadr_adssf_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aduri_tab&nbsp;TYPE&nbsp;szadr_aduri_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adpag_tab&nbsp;TYPE&nbsp;szadr_adpag_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrct_tab&nbsp;TYPE&nbsp;szadr_adrct_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*201d<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrt_tab&nbsp;TYPE&nbsp;szadr_adrt_line&nbsp;OCCURS&nbsp;0,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrt_c_tab&nbsp;TYPE&nbsp;szadr_adrt_c_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*201d<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adru_tab&nbsp;TYPE&nbsp;szadr_adru_line&nbsp;OCCURS&nbsp;0,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr3_complete.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_addr_complete_sample,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_type&nbsp;TYPE&nbsp;ad_adrtype,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address1&nbsp;TYPE&nbsp;szadr_addr1_complete,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address2&nbsp;TYPE&nbsp;szadr_addr2_complete,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address3&nbsp;TYPE&nbsp;szadr_addr3_complete,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr_complete_sample.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;die&nbsp;Sperrbausteine:<br />
+   </div>
+   <div class="code">
+TYPES:  szadr_enq_mode LIKE dd26e-enqmode,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_enq_scope(1)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_enq_wait(1)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_enq_collect&nbsp;LIKE&nbsp;ddenq_like-collect,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_enq_synchron(1)&nbsp;TYPE&nbsp;c.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;das&nbsp;Handling&nbsp;von&nbsp;SO_KEY:<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_so_key_line1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so_key&nbsp;LIKE&nbsp;adcp-so_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_so_key_line1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_so_key_tab1&nbsp;TYPE&nbsp;szadr_so_key_line1&nbsp;OCCURS&nbsp;0.<br />
+<br />
+<br />
+TYPES: BEGIN OF szadr_so_key_line2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so_key&nbsp;LIKE&nbsp;adcp-so_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adcp-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adcp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_type&nbsp;&nbsp;LIKE&nbsp;szad_field-addr_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_flag&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_so_key_line2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_so_key_tab2&nbsp;TYPE&nbsp;szadr_so_key_line2&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_so_key_line3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adcp-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adcp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so_key&nbsp;LIKE&nbsp;adcp-so_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_flag&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;relation_index&nbsp;LIKE&nbsp;sy-tabix,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_so_key_line3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_so_key_tab3&nbsp;TYPE&nbsp;szadr_so_key_line3&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_so_key_line4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so_key&nbsp;LIKE&nbsp;adcp-so_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adcp-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adcp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name_text&nbsp;&nbsp;LIKE&nbsp;adrp-name_text,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_type&nbsp;&nbsp;LIKE&nbsp;szad_field-addr_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_flag&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_so_key_line4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_so_key_tab4&nbsp;TYPE&nbsp;szadr_so_key_line4&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_so_key_line5,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so_key&nbsp;LIKE&nbsp;adcp-so_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adcp-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adcp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_type&nbsp;&nbsp;LIKE&nbsp;szad_field-addr_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_flag&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;deflt_comm&nbsp;LIKE&nbsp;adrc-deflt_comm,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;consnumber&nbsp;LIKE&nbsp;adr2-consnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;home_consnumber&nbsp;LIKE&nbsp;adr2-consnumber,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*288i<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMM_TABLE&nbsp;&nbsp;&nbsp;"beliebiger&nbsp;Tabellentyp<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_so_key_line5,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_so_key_tab5&nbsp;TYPE&nbsp;szadr_so_key_line5&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_so_key_line6,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so_key&nbsp;LIKE&nbsp;adcp-so_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adcp-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adcp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;comp_pers&nbsp;&nbsp;LIKE&nbsp;adcp-comp_pers,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_so_key_line6,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_so_key_tab6&nbsp;TYPE&nbsp;szadr_so_key_line6&nbsp;OCCURS&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_get_type_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adcp-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adcp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_type&nbsp;&nbsp;LIKE&nbsp;szad_field-addr_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_flag&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_get_type_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;szadr_get_type_tab&nbsp;TYPE&nbsp;szadr_get_type_line&nbsp;OCCURS&nbsp;0.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*{&nbsp;Typen&nbsp;f#r&nbsp;den&nbsp;FB&nbsp;ADDR_PERS_COMP_NAME_SEARCH:<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_person_group_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pers_group&nbsp;LIKE&nbsp;adpgroups-pers_group,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sign(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_person_group_line.<br />
+TYPES: szadr_person_group_tab TYPE szadr_person_group_line OCCURS 0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;TYPES:&nbsp;SZADR_PERSON_GROUPS&nbsp;LIKE&nbsp;ADPGROUPS&nbsp;OCCURS&nbsp;0.<br />
+<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_appl_tab_name,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_tab&nbsp;type&nbsp;ad_appltab,<br />
+&nbsp;&nbsp;end&nbsp;of&nbsp;szadr_appl_tab_name.<br />
+TYPES: szadr_appl_tab type szadr_appl_tab_name occurs 0.<br />
+<br />
+TYPES: szadr_name_search_string LIKE adrp-name_text.<br />
+<br />
+TYPES: BEGIN OF szadr_name_search_fields,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name_last&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;&nbsp;&nbsp;adrp-name_last,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name_first&nbsp;&nbsp;&nbsp;LIKE&nbsp;&nbsp;&nbsp;adrp-name_first,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name_comp&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;&nbsp;&nbsp;adrc-mc_name1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_name_search_fields.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;die&nbsp;Adreßaufbereitung&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_printform_table_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line_type&nbsp;TYPE&nbsp;ad_line_tp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_line&nbsp;LIKE&nbsp;adrs-line0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_printform_table_line.<br />
+TYPES: szadr_printform_table TYPE szadr_printform_table_line OCCURS 0.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;das&nbsp;Referenzhandling<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_addr_ref_switch_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_table_old&nbsp;LIKE&nbsp;addr_ref-appl_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_field_old&nbsp;LIKE&nbsp;addr_ref-appl_field,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_key_old&nbsp;&nbsp;&nbsp;LIKE&nbsp;addr_ref-appl_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_table_new&nbsp;LIKE&nbsp;addr_ref-appl_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_field_new&nbsp;LIKE&nbsp;addr_ref-appl_field,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_key_new&nbsp;&nbsp;&nbsp;LIKE&nbsp;addr_ref-appl_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_error&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr_ref_switch_line.<br />
+TYPES: szadr_addr_ref_switch_tab TYPE szadr_addr_ref_switch_line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_addr_ref_read_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adrc-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_ref&nbsp;LIKE&nbsp;addr_ref,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type&nbsp;TYPE&nbsp;swo_objtyp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_key&nbsp;TYPE&nbsp;swo_typeid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_key_extension&nbsp;TYPE&nbsp;swo_typeid,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*465i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reference_not_valid&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type_unknown&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_key_unknown&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dummy_reference&nbsp;TYPE&nbsp;ad_refdflt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_addr_ref_read_line.<br />
+TYPES: szadr_addr_ref_read_tab TYPE szadr_addr_ref_read_line OCCURS 0.<br />
+<br />
+TYPES: BEGIN OF szadr_pers_ref_read_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adrp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pers_ref&nbsp;LIKE&nbsp;pers_ref,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type&nbsp;TYPE&nbsp;swo_objtyp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_key&nbsp;TYPE&nbsp;swo_typeid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reference_not_valid&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type_unknown&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_key_unknown&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dummy_reference&nbsp;TYPE&nbsp;ad_refdflt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_pers_ref_read_line.<br />
+TYPES: szadr_pers_ref_read_tab TYPE szadr_pers_ref_read_line OCCURS 0.<br />
+<br />
+TYPES: BEGIN OF szadr_adownerref_read_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adownerref&nbsp;LIKE&nbsp;adownerref,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_adownerref_read_line.<br />
+TYPES: szadr_adownerref_read_tab TYPE szadr_adownerref_read_line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;die&nbsp;inverse&nbsp;Suche&nbsp;mit&nbsp;Kommunikationsdaten<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_comm_key_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;adr2-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnumber&nbsp;LIKE&nbsp;adr2-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_from&nbsp;&nbsp;LIKE&nbsp;adr2-date_from,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;consnumber&nbsp;LIKE&nbsp;adr2-consnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flgdefault&nbsp;LIKE&nbsp;adr2-flgdefault,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;home_flag&nbsp;&nbsp;LIKE&nbsp;adr2-home_flag,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*288i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dft_receiv&nbsp;LIKE&nbsp;adr2-dft_receiv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_from&nbsp;TYPE&nbsp;ad_valfrom,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_to&nbsp;&nbsp;&nbsp;TYPE&nbsp;ad_valto,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*981i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_comm_key_line.<br />
+TYPES: szadr_comm_key_tab TYPE szadr_comm_key_line OCCURS 0.<br />
+<br />
+TYPES: BEGIN OF szadr_comm_strategy_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;strategy&nbsp;LIKE&nbsp;tcstr-strategy,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;LIKE&nbsp;tcstrp-pos,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;comm_type&nbsp;TYPE&nbsp;ad_comm,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;skip_flag&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status&nbsp;TYPE&nbsp;adcstrstat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_comm_strategy_line.<br />
+TYPES: szadr_comm_strategy_tab TYPE szadr_comm_strategy_line OCCURS 0.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;die&nbsp;Kommunikationsstrategien<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_comm_values,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtel&nbsp;&nbsp;LIKE&nbsp;adtel,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adfax&nbsp;&nbsp;LIKE&nbsp;adfax,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adttx&nbsp;&nbsp;LIKE&nbsp;adttx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adtlx&nbsp;&nbsp;LIKE&nbsp;adtlx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adsmtp&nbsp;LIKE&nbsp;adsmtp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrml&nbsp;&nbsp;LIKE&nbsp;adrml,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adx400&nbsp;LIKE&nbsp;adx400,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adrfc&nbsp;&nbsp;LIKE&nbsp;adrfc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adprt&nbsp;&nbsp;LIKE&nbsp;adprt,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adssf&nbsp;&nbsp;LIKE&nbsp;adssf,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aduri&nbsp;&nbsp;LIKE&nbsp;aduri,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adpag&nbsp;&nbsp;LIKE&nbsp;adpag,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"*178i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_comm_values.<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;die&nbsp;ALE-Verteilung<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_object_addr1_key_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_type&nbsp;LIKE&nbsp;swotobjid-objtype,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_id&nbsp;LIKE&nbsp;swotobjid-objkey,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_number&nbsp;LIKE&nbsp;adrc-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_table&nbsp;LIKE&nbsp;adrv-appl_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_field&nbsp;LIKE&nbsp;adrv-appl_field,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gen_key&nbsp;LIKE&nbsp;adownerref-gen_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_number_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parameter_error&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;block_flag&nbsp;TYPE&nbsp;AD_BLKFLAG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"1976i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_table&nbsp;LIKE&nbsp;addr_error,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_object_addr1_key_line.<br />
+TYPES: szadr_object_addr1_key_tab TYPE szadr_object_addr1_key_line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_object_addr2_key_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_type&nbsp;LIKE&nbsp;swotobjid-objtype,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_id&nbsp;LIKE&nbsp;swotobjid-objkey,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;person_number&nbsp;LIKE&nbsp;adrp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_number&nbsp;LIKE&nbsp;adrc-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_table_p&nbsp;LIKE&nbsp;adrv-appl_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_field_p&nbsp;LIKE&nbsp;adrv-appl_field,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gen_key_p&nbsp;LIKE&nbsp;adownerref-gen_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_table_a&nbsp;LIKE&nbsp;adrv-appl_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_field_a&nbsp;LIKE&nbsp;adrv-appl_field,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gen_key_a&nbsp;LIKE&nbsp;adownerref-gen_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;person_number_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_number_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parameter_error&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;block_flag&nbsp;TYPE&nbsp;AD_BLKFLAG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"1976i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_table&nbsp;LIKE&nbsp;addr_error,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_object_addr2_key_line.<br />
+TYPES: szadr_object_addr2_key_tab TYPE szadr_object_addr2_key_line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0.<br />
+<br />
+TYPES: BEGIN OF szadr_object_addr3_key_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_type&nbsp;LIKE&nbsp;swotobjid-objtype,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_id&nbsp;LIKE&nbsp;swotobjid-objkey,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;person_number&nbsp;LIKE&nbsp;adrp-persnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_number&nbsp;LIKE&nbsp;adrc-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_table_p&nbsp;LIKE&nbsp;adrv-appl_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_field_p&nbsp;LIKE&nbsp;adrv-appl_field,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gen_key_p&nbsp;LIKE&nbsp;adownerref-gen_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_table_a&nbsp;LIKE&nbsp;adrv-appl_table,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appl_field_a&nbsp;LIKE&nbsp;adrv-appl_field,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gen_key_a&nbsp;LIKE&nbsp;adownerref-gen_key,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;person_number_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_number_not_found&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parameter_error&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;block_flag&nbsp;TYPE&nbsp;AD_BLKFLAG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"1976i<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_table&nbsp;LIKE&nbsp;addr_error,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_object_addr3_key_line.<br />
+TYPES: szadr_object_addr3_key_tab TYPE szadr_object_addr3_key_line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0.<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+*{&nbsp;Typen&nbsp;f#r&nbsp;ADDR_COMPARE<br />
+   </div>
+   <div class="code">
+TYPES: BEGIN OF szadr_compare_addr1_line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrnumber&nbsp;LIKE&nbsp;addr1_sel-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addrhandle&nbsp;LIKE&nbsp;addr1_sel-addrhandle,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;remote_addrnumber&nbsp;LIKE&nbsp;addr1_sel-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_is_equal&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address_not_exist&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rem_address_not_exist&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parameter_error&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;internal_error&nbsp;LIKE&nbsp;szad_field-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_table&nbsp;LIKE&nbsp;addr_error,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;szadr_compare_addr1_line.<br />
+TYPES: szadr_compare_addr1_tab TYPE szadr_compare_addr1_line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OCCURS&nbsp;0.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*}<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

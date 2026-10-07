@@ -1,0 +1,524 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LSVIMF21</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LSVIMF21</h2>
+<h3> Description: Subroutines for activating profiles</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;GET_TRANSP_INFO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;get&nbsp;client&nbsp;state&nbsp;and&nbsp;transport&nbsp;objects&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_transp_info.<br />
+&nbsp;&nbsp;LOCAL:&nbsp;e071.<br />
+&nbsp;&nbsp;DATA:&nbsp;obj_type&nbsp;LIKE&nbsp;objh-objecttype,&nbsp;last_category&nbsp;LIKE&nbsp;objh-objcateg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_clidep&nbsp;LIKE&nbsp;objh-clidep&nbsp;VALUE&nbsp;'X',&nbsp;gti_e071&nbsp;LIKE&nbsp;e071,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_protect&nbsp;LIKE&nbsp;objh-protect,&nbsp;gti_cliindep_state(1)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gti_x030l&nbsp;LIKE&nbsp;x030l,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gti_tabname&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gti_client_role&nbsp;LIKE&nbsp;t000-cccategory,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gti_flag_safe(1)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cursetting&nbsp;TYPE&nbsp;cursetting,&nbsp;addr_e071k&nbsp;LIKE&nbsp;e071k,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;importable&nbsp;TYPE&nbsp;objimp&nbsp;value&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tr_result&nbsp;LIKE&nbsp;trpari-s_checked,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr_e071k2&nbsp;LIKE&nbsp;e071k.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;check&nbsp;if&nbsp;logging&nbsp;of&nbsp;changes&nbsp;is&nbsp;necessary<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;gti_flag_safe&nbsp;=&nbsp;x_header-flag.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-customauth&nbsp;CO&nbsp;no_transport_classes."transport&nbsp;impossible<br />
+&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;vim_transport_denied.&nbsp;"no&nbsp;standard&nbsp;logging<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;x_header-frm_e071,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"no&nbsp;individual&nbsp;transport<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ka.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'TRSP'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;maint_mode&nbsp;EQ&nbsp;transportieren.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i128(sv)&nbsp;WITH&nbsp;"Auslieferungsklasse&nbsp;&,&nbsp;kein&nbsp;Transport&nbsp;m#g<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-customauth.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;missing_corr_number.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'ORDR'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sy-subrc&nbsp;=&nbsp;9.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;x_header-customauth&nbsp;CO&nbsp;no_transport_log_classes.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-frm_e071&nbsp;EQ&nbsp;space&nbsp;AND&nbsp;x_header-frm_e071ks&nbsp;EQ&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ka&nbsp;EQ&nbsp;space.&nbsp;&nbsp;&nbsp;"no&nbsp;individual&nbsp;transport&nbsp;routines<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;vim_transport_denied.&nbsp;"no&nbsp;transport<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'TRSP'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;maint_mode&nbsp;EQ&nbsp;transportieren.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i128(sv)&nbsp;WITH&nbsp;"Auslieferungsklasse&nbsp;&,&nbsp;kein&nbsp;Transport&nbsp;m#g<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-customauth.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;missing_corr_number.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'ORDR'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"no&nbsp;standard&nbsp;logging<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sy-subrc&nbsp;=&nbsp;9.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;9.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&lt&lt&lt&nbsp;#bergangsl#sung&nbsp;Transportstatus&nbsp;des&nbsp;Mandanten&nbsp;Anfang<br />
+*&nbsp;check&nbsp;if&nbsp;client&nbsp;allows&nbsp;transport<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'VIEW_GET_CLIENT_STATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;transp_state&nbsp;&nbsp;&nbsp;=&nbsp;vim_client_state<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cliindep_state&nbsp;=&nbsp;gti_cliindep_state<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client_state&nbsp;&nbsp;&nbsp;=&nbsp;gti_client_role.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-clidep&nbsp;NE&nbsp;space&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"clientdependent&nbsp;and<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-customauth&nbsp;CN&nbsp;sap_only_classes.&nbsp;"not&nbsp;delclass&nbsp;`S`<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;vim_client_state.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_local_clnt.&nbsp;"client&nbsp;is&nbsp;local&nbsp;-&gt&nbsp;transport&nbsp;denied<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern&nbsp;OR&nbsp;maint_mode&nbsp;EQ&nbsp;anzeigen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;excl_cua_funct-function&nbsp;=&nbsp;'TRSP'.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;excl_cua_funct-function&nbsp;=&nbsp;'ORDR'.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;vim_transport_denied.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i130(sv)&nbsp;WITH&nbsp;"Mandant&nbsp;ist&nbsp;lokal,&nbsp;keine&nbsp;Transporte&nbsp;m<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sy-mandt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISE&nbsp;missing_corr_number.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_locked.&nbsp;"client&nbsp;is&nbsp;locked&nbsp;-&gt&nbsp;no&nbsp;changes&nbsp;but&nbsp;transport<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;MAINT_MODE&nbsp;EQ&nbsp;AENDERN.&nbsp;&nbsp;"only&nbsp;for&nbsp;CUST/CUSY&nbsp;objects!!!!!!<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;I430(TK)&nbsp;WITH&nbsp;SY-MANDT."Mandant&nbsp;&1&nbsp;'nicht&nbsp;#nderbar'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAINT_MODE&nbsp;=&nbsp;STATUS-ACTION&nbsp;=&nbsp;ANZEIGEN.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ELSE.&nbsp;"clientindependent&nbsp;or&nbsp;deliveryclass&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;vim_client_state&nbsp;=&nbsp;vim_log.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"such&nbsp;objects&nbsp;always&nbsp;log<br />
+&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"xheader-clidep&nbsp;ne&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&lt&lt&lt&nbsp;#bergangsl#sung&nbsp;Transportstatus&nbsp;des&nbsp;Mandanten&nbsp;Ende<br />
+*&nbsp;if&nbsp;transport&nbsp;allowed&nbsp;-&gt&nbsp;get&nbsp;transport&nbsp;objects<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;gti_e071&nbsp;=&nbsp;e071.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-frm_e071&nbsp;NE&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"individual&nbsp;transport&nbsp;objects<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;(x_header-frm_e071)&nbsp;IN&nbsp;PROGRAM&nbsp;(sy-repid).<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;gti_flag_safe&nbsp;EQ&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"240997<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;automatic&nbsp;recording&nbsp;of&nbsp;changes&nbsp;switched&nbsp;on&nbsp;in&nbsp;SE54<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gti_e071&nbsp;TO&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;x_header-frm_e071&nbsp;EQ&nbsp;space&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;"no&nbsp;individual&nbsp;transport<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ks&nbsp;EQ&nbsp;space&nbsp;AND&nbsp;&nbsp;"routines&nbsp;and&nbsp;no&nbsp;standard<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ka&nbsp;EQ&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;no&nbsp;events&nbsp;concerning&nbsp;change&nbsp;recording&nbsp;are&nbsp;used<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gti_e071&nbsp;TO&nbsp;vim_corr_objtab.&nbsp;&nbsp;&nbsp;&nbsp;"but&nbsp;check&nbsp;cliiendep&nbsp;settings<br />
+&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;vim_transport_denied.&nbsp;MODIFY&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'TRSP'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'ORDR'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gti_flag_safe&nbsp;=&nbsp;'@'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;get&nbsp;object&nbsp;category&nbsp;and&nbsp;client&nbsp;dependency&nbsp;for&nbsp;transport&nbsp;objects<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;vim_corr_objtab-object.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_view_type.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"-&gt&nbsp;view<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type&nbsp;=&nbsp;vim_view.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;transp_object.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"-&gt&nbsp;tables<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type&nbsp;=&nbsp;vim_tabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_tran_type.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"-&gt&nbsp;individual&nbsp;transaction<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type&nbsp;=&nbsp;vim_tran.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_clus_type.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"-&gt&nbsp;cluster&nbsp;of&nbsp;views/tables/clusters<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type&nbsp;=&nbsp;vim_clst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"-&gt&nbsp;may&nbsp;be:&nbsp;TLOGO&nbsp;object&nbsp;?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;obj_type&nbsp;=&nbsp;vim_logo.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;obj_type&nbsp;NE&nbsp;vim_logo.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;objh<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;objectname&nbsp;EQ&nbsp;vim_corr_objtab-obj_name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;objecttype&nbsp;EQ&nbsp;obj_type.&nbsp;"#EC&nbsp;CI_GENBUFF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;"TLOGO&nbsp;-&gt&nbsp;use&nbsp;obj&nbsp;type&nbsp;as&nbsp;obj&nbsp;name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;objh<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;objectname&nbsp;EQ&nbsp;vim_corr_objtab-object<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;objecttype&nbsp;EQ&nbsp;obj_type.&nbsp;"#EC&nbsp;CI_GENBUFF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;obj_type&nbsp;NE&nbsp;vim_logo.&nbsp;"set&nbsp;defaults&nbsp;for&nbsp;table&nbsp;transp.&nbsp;obj.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-viewname&nbsp;EQ&nbsp;vim_corr_objtab-obj_name&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;x_header-bastab&nbsp;EQ&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_corr_objtab-object&nbsp;EQ&nbsp;vim_view_type&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-bastab&nbsp;NE&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_corr_objtab-object&nbsp;EQ&nbsp;transp_object&nbsp;)&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_called_by_cluster&nbsp;NE&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_calling_cluster&nbsp;EQ&nbsp;vim_corr_objtab-obj_name&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_corr_objtab-object&nbsp;EQ&nbsp;vim_clus_type.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-clidep&nbsp;EQ&nbsp;space.&nbsp;"clientindependent<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-customauth&nbsp;CO&nbsp;customizing_delivery_classes.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_cust_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;x_header-customauth&nbsp;CO&nbsp;sap_only_classes.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;x_header-customauth&nbsp;CO&nbsp;application_delivery_classes.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_appl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"clientdependent<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-customauth&nbsp;CO&nbsp;customizing_delivery_classes.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_cust.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;x_header-customauth&nbsp;CO&nbsp;sap_only_classes.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_cust_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;x_header-customauth&nbsp;CO&nbsp;application_delivery_classes.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_appl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-clidep&nbsp;&nbsp;&nbsp;=&nbsp;x_header-clidep.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"unknown&nbsp;object&nbsp;-&gt&nbsp;check&nbsp;if&nbsp;clientdep.&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_corr_objtab-object&nbsp;EQ&nbsp;transp_object.&nbsp;"table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gti_tabname&nbsp;=&nbsp;vim_corr_objtab-obj_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DDIF_NAMETAB_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;&nbsp;=&nbsp;gti_tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x030l_wa&nbsp;&nbsp;=&nbsp;gti_x030l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_found&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0&nbsp;AND&nbsp;gti_x030l-flagbyte&nbsp;O&nbsp;vim_clidep.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_cust."clientdependent&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-clidep&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"no&nbsp;nametab&nbsp;or&nbsp;clientindependent<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-clidep&nbsp;&nbsp;&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"unknown&nbsp;object&nbsp;-&gt&nbsp;syst<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-clidep&nbsp;&nbsp;&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;"vim_logo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"no&nbsp;objh-object&nbsp;-&gt&nbsp;syst<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;vim_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-clidep&nbsp;&nbsp;&nbsp;=&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;note&nbsp;lockable&nbsp;transport&nbsp;object<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_corr_objtab-lockable&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"obj_type&nbsp;ne&nbsp;vim_logo<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;entry&nbsp;in&nbsp;OBJH&nbsp;found&nbsp;-&gt&nbsp;check&nbsp;current&nbsp;setting,&nbsp;importability,<br />
+*&nbsp;protect-flag<br />
+*&nbsp;Customizing&nbsp;adresses&nbsp;can&nbsp;only&nbsp;be&nbsp;maintained&nbsp;in&nbsp;connection&nbsp;with&nbsp;a<br />
+*&nbsp;customizing&nbsp;object.&nbsp;Therefore&nbsp;Current&nbsp;Settings&nbsp;cannot&nbsp;be&nbsp;set&nbsp;by<br />
+*&nbsp;object&nbsp;ADDRESS&nbsp;or&nbsp;object&nbsp;ADDRESS_4.6,&nbsp;but&nbsp;only&nbsp;by&nbsp;Current<br />
+*&nbsp;Settings&nbsp;of&nbsp;the&nbsp;corresponding&nbsp;customizing&nbsp;object.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&nbsp;OBJH-OBJECTNAME&nbsp;&lt&gt&nbsp;&nbsp;'ADDRESS'&nbsp;&nbsp;AND&nbsp;&nbsp;OBJH-OBJECTNAME&nbsp;&lt&gt&nbsp;&nbsp;'ADDRESS_4.6'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;objh-cursetting&nbsp;&lt&gt&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF615995/2000b<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cursetting&nbsp;=&nbsp;objh-cursetting.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UF615995/2000e<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;objh-importable&nbsp;&lt&gt&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;objh-importable&nbsp;&lt&nbsp;importable.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;PORTABLE<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;"most&nbsp;unimportable"&nbsp;object&nbsp;sets&nbsp;standard<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;importable&nbsp;=&nbsp;objh-importable.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;objh-protect&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;objh-objectname&nbsp;EQ&nbsp;x_header-viewname&nbsp;AND&nbsp;"current&nbsp;VIM&nbsp;object<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;x_header-bastab&nbsp;EQ&nbsp;space&nbsp;AND&nbsp;objh-objecttype&nbsp;EQ&nbsp;vim_view&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-bastab&nbsp;NE&nbsp;space&nbsp;AND&nbsp;objh-objecttype&nbsp;EQ&nbsp;vim_tabl&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-frm_e071&nbsp;EQ&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ks&nbsp;EQ&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ka&nbsp;EQ&nbsp;space.&nbsp;"no&nbsp;individ.&nbsp;transp.&nbsp;routines<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;vim_transport_denied.&nbsp;"no&nbsp;transport<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'TRSP'&nbsp;TO&nbsp;excl_cua_funct-function.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'ORDR'&nbsp;TO&nbsp;excl_cua_funct-function.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"240997<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"no&nbsp;standard&nbsp;logging<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;"curr.&nbsp;VIM&nbsp;obj./ignore&nbsp;added&nbsp;individual&nbsp;transport&nbsp;objects<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"protect&nbsp;ne&nbsp;space<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;OBJH-OBJECTTYPE&nbsp;EQ&nbsp;VIM_LOGO.<br />
+*&nbsp;note&nbsp;object&nbsp;as&nbsp;lockable&nbsp;transport&nbsp;object&nbsp;until&nbsp;TR_OBJECTS_*&nbsp;force<br />
+*&nbsp;TLOGO-objects&nbsp;too&nbsp;&nbsp;"changed&nbsp;in&nbsp;4.0<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;objh-checkid&nbsp;EQ&nbsp;'L'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"note&nbsp;lockable&nbsp;object!<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_corr_objtab-lockable&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"sy-subrc&nbsp;ne&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;(&nbsp;objh-objcateg&nbsp;EQ&nbsp;vim_syst&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;EQ&nbsp;vim_cust_syst&nbsp;)&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_category&nbsp;NE&nbsp;vim_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_category&nbsp;=&nbsp;objh-objcateg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;objh-clidep&nbsp;EQ&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_clidep&nbsp;=&nbsp;objh-clidep.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.&nbsp;&nbsp;"may&nbsp;be&nbsp;user&nbsp;exits.....<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;(&nbsp;x_header-frm_e071&nbsp;NE&nbsp;space&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-frm_e071ks&nbsp;EQ&nbsp;space&nbsp;AND&nbsp;x_header-frm_e071ka&nbsp;EQ&nbsp;space&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;vim_transport_denied.&nbsp;MODIFY&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'TRSP'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'ORDR'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.&nbsp;"if&nbsp;no&nbsp;object&nbsp;could&nbsp;be&nbsp;determined&nbsp;exit&nbsp;this&nbsp;routine<br />
+&nbsp;&nbsp;ELSEIF&nbsp;gti_flag_safe&nbsp;EQ&nbsp;'@'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"temporaryly&nbsp;appended<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;x_header-adrnbrflag&nbsp;EQ&nbsp;'N'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"new&nbsp;version&nbsp;of&nbsp;addresses&nbsp;used<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;addresses<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH:&nbsp;vim_addr_e071k_tab,&nbsp;vim_addr_e071_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'ADDR_TRANSPORT_TDAT_ENTRIES'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e071k_tab&nbsp;=&nbsp;vim_addr_e071k_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;addr_e071k2&nbsp;=&nbsp;e071k.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;vim_addr_e071k_tab&nbsp;INTO&nbsp;addr_e071k.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gti_e071-object&nbsp;=&nbsp;addr_e071k2-mastertype&nbsp;=&nbsp;addr_e071k-mastertype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gti_e071-obj_name&nbsp;=&nbsp;addr_e071k2-mastername&nbsp;=&nbsp;addr_e071k-mastername.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gti_e071&nbsp;TO&nbsp;vim_addr_e071_tab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gti_e071&nbsp;TO&nbsp;vim_corr_objtab.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;vim_addr_e071k_tab&nbsp;FROM&nbsp;addr_e071k2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;CHECK&nbsp;X_HEADER-FLAG&nbsp;NE&nbsp;VIM_TRANSPORT_DENIED.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"240997<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;objh-objcateg&nbsp;NE&nbsp;vim_syst&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;last_category&nbsp;EQ&nbsp;vim_syst&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_category&nbsp;EQ&nbsp;vim_cust_syst&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;objh-objcateg&nbsp;=&nbsp;last_category.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;objh-clidep&nbsp;=&nbsp;last_clidep.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;no&nbsp;logging&nbsp;for&nbsp;settings&nbsp;in&nbsp;productive&nbsp;clients<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;cursetting&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;x_header-cursetting&nbsp;=&nbsp;x_header-flag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;x_header-cursetting&nbsp;USING&nbsp;'&nbsp;XXY'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;put&nbsp;importable-flag&nbsp;into&nbsp;x_header.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;importable&nbsp;&lt&gt&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;x_header-importable&nbsp;=&nbsp;importable.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern&nbsp;AND&nbsp;objh-clidep&nbsp;NE&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cursetting&nbsp;NE&nbsp;space&nbsp;AND&nbsp;gti_client_role&nbsp;EQ&nbsp;'P'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;x_header-flag&nbsp;=&nbsp;vim_transport_denied.&nbsp;MODIFY&nbsp;x_header&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'ORDR'&nbsp;TO&nbsp;excl_cua_funct-function.&nbsp;COLLECT&nbsp;excl_cua_funct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"240997<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;CHECK&nbsp;X_HEADER-FLAG&nbsp;NE&nbsp;VIM_TRANSPORT_DENIED.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"240997<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;x_header-flag&nbsp;NE&nbsp;vim_transport_denied&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_actopts-transp_off&nbsp;NE&nbsp;bc_transport_denied&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_client_state&nbsp;EQ&nbsp;vim_locked&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;objh-objcateg&nbsp;EQ&nbsp;vim_cust&nbsp;OR&nbsp;objh-objcateg&nbsp;EQ&nbsp;vim_cust_syst&nbsp;)&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maint_mode&nbsp;EQ&nbsp;aendern.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"only&nbsp;for&nbsp;CUST/CUSY&nbsp;objects!!!!!!<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i430(tk)&nbsp;WITH&nbsp;sy-mandt.&nbsp;&nbsp;&nbsp;&nbsp;"Mandant&nbsp;&1&nbsp;'nicht&nbsp;#nderbar'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;maint_mode&nbsp;=&nbsp;status-action&nbsp;=&nbsp;anzeigen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;dba_sellist-*sys*&nbsp;TO&nbsp;&ltvim_sellist&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;vim_enqueue_range&nbsp;=&nbsp;x_header-subsetflag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;enqueue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'D'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CASE&nbsp;gti_cliindep_state.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_noact.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_nocliindep_cust.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern&nbsp;AND&nbsp;objh-objcateg&nbsp;=&nbsp;vim_cust_syst.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;x_header-flag&nbsp;NE&nbsp;vim_transport_denied.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;vim_actopts-transp_off&nbsp;NE&nbsp;bc_transport_denied.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i731(tk).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;WITH&nbsp;SY-MANDT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maint_mode&nbsp;=&nbsp;status-action&nbsp;=&nbsp;anzeigen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;dba_sellist-*sys*&nbsp;TO&nbsp;&ltvim_sellist&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_enqueue_range&nbsp;=&nbsp;x_header-subsetflag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;enqueue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'D'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_client_state&nbsp;=&nbsp;vim_noact.&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_noreposiandcust.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;maint_mode&nbsp;EQ&nbsp;aendern&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;objh-objcateg&nbsp;=&nbsp;vim_syst&nbsp;OR&nbsp;objh-objcateg&nbsp;=&nbsp;vim_cust_syst&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;x_header-flag&nbsp;NE&nbsp;vim_transport_denied.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;vim_actopts-transp_off&nbsp;NE&nbsp;bc_transport_denied.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i730(tk).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;WITH&nbsp;SY-MANDT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maint_mode&nbsp;=&nbsp;status-action&nbsp;=&nbsp;anzeigen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;dba_sellist-*sys*&nbsp;TO&nbsp;&ltvim_sellist&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_enqueue_range&nbsp;=&nbsp;x_header-subsetflag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;enqueue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'D'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_client_state&nbsp;=&nbsp;vim_noact.&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;vim_noreposichanges.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;vim_corr_objtab&nbsp;INTO&nbsp;e071.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'TR_CHECK_TYPE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wi_e071&nbsp;&nbsp;&nbsp;=&nbsp;e071<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pe_result&nbsp;=&nbsp;tr_result.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;PE_RESULT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;syntax&nbsp;&nbsp;transport&nbsp;&nbsp;TADIR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TLOCK<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SPACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;(only&nbsp;for&nbsp;sapsccs)<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system&nbsp;object&nbsp;or&nbsp;illegal&nbsp;name&nbsp;selection<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(T100,&nbsp;SAPL....,&nbsp;...&nbsp;)<br />
+*&nbsp;no&nbsp;repository&nbsp;object&nbsp;and&nbsp;not&nbsp;lockable?<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;'TLP'&nbsp;CS&nbsp;tr_result.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i729(tk).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"WITH&nbsp;SY-MANDT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-flag&nbsp;NE&nbsp;vim_transport_denied&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_actopts-transp_off&nbsp;NE&nbsp;bc_transport_denied.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maint_mode&nbsp;=&nbsp;status-action&nbsp;=&nbsp;anzeigen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;dba_sellist-*sys*&nbsp;TO&nbsp;&ltvim_sellist&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_enqueue_range&nbsp;=&nbsp;x_header-subsetflag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;enqueue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'D'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_client_state&nbsp;=&nbsp;vim_noact.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                               "get_transp_info<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

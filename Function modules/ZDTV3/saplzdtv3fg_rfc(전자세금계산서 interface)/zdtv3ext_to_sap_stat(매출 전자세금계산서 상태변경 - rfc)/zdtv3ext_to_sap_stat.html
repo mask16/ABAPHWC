@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3EXT_TO_SAP_STAT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3EXT_TO_SAP_STAT</h2>
+<h3> Description: 매출 전자세금계산서 상태변경 - RFC</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3EXT_TO_SAP_STAT.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(BUTTON) TYPE  ZDTV3E_BUTTON<br />
+*"     VALUE(INV_TYPE) TYPE  ZDTV3E_INV_TYPE<br />
+*"     VALUE(INV_SEQ) TYPE  ZDTV3E_INV_SEQ<br />
+*"     VALUE(REASON) TYPE  ZDTV3E_REASON OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(RETURN) TYPE  ZDTV3S_RETURN<br />
+*"----------------------------------------------------------------------<br />
+*<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3ext_to_sap_stat.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_SEND_DATA&nbsp;LIKE&nbsp;ZDTV3S_INFSEND&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;I_BUTTON&nbsp;,&nbsp;I_INV_TYPE.<br />
+&nbsp;&nbsp;I_BUTTON&nbsp;&nbsp;&nbsp;=&nbsp;BUTTON.<br />
+&nbsp;&nbsp;I_INV_TYPE&nbsp;=&nbsp;INV_TYPE.<br />
+&nbsp;&nbsp;CASE&nbsp;I_INV_TYPE&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_PROGRAM&nbsp;=&nbsp;'ZDTV3_AR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;GS_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19999'&nbsp;INV_SEQ&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'는&nbsp;매출관리&nbsp;존재하지&nbsp;않습니다'&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_PROGRAM&nbsp;=&nbsp;'ZDTV3_AP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;GS_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AP_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19999'&nbsp;INV_SEQ&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'는&nbsp;매출관리&nbsp;존재하지&nbsp;않습니다'&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19999'&nbsp;INV_SEQ&nbsp;INV_TYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'이&nbsp;매입/매출이&nbsp;아닙니다.'&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   ASP 업체별 기능사용 유무 확인.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zdtv3sap_chk_asp_funct(ASP 업체별 사용가능한 기능)/zdtv3sap_chk_asp_funct.html">'ZDTV3SAP_CHK_ASP_FUNCT'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_SEQ&nbsp;&nbsp;=&nbsp;GS_HEAD-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASP_CODE&nbsp;=&nbsp;GS_HEAD-ASP_CODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUTTON&nbsp;&nbsp;&nbsp;=&nbsp;I_BUTTON<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_TYPE&nbsp;=&nbsp;I_INV_TYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;=&nbsp;RETURN.<br />
+&nbsp;&nbsp;IF&nbsp;RETURN-TYPE&nbsp;EQ&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   버튼별 기능을 제외해야할 상태 찾기.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_BUTTON<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUTTON&nbsp;&nbsp;&nbsp;EQ&nbsp;I_BUTTON<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;EXC_STAT&nbsp;EQ&nbsp;GS_HEAD-STATUS.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-CODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'19999'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-INV_SEQ&nbsp;=&nbsp;GS_HEAD-INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'현재상태&nbsp;['&nbsp;GS_HEAD-STATUS&nbsp;']는&nbsp;처리할수&nbsp;없습니다.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;RETURN-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   국세청전송분은 제외<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GS_HEAD-NTS_SEND_FLAG+1(1)&nbsp;EQ&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-CODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'13020'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-INV_SEQ&nbsp;=&nbsp;GS_HEAD-INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'국세청&nbsp;전송&nbsp;완료및&nbsp;진행중인['&nbsp;GS_HEAD-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;']&nbsp;전자세금계산서입니다.'&nbsp;INTO&nbsp;RETURN-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*자재발행마감확인.<br />
+* 자체발행 ASP CODE 읽기.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zdtv3sap_sel_comp_asp(전자세금계산서 자체발행 ASP CODE 읽기)/zdtv3sap_sel_comp_asp.html">'ZDTV3SAP_SEL_COMP_ASP'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASP_CODE&nbsp;=&nbsp;G_ASP_CODE.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;G_ASP_CODE&nbsp;EQ&nbsp;GS_HEAD-ASP_CODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;G_CLOSED&nbsp;.<br />
+   </div>
+   <div class="codeComment">
+*       자체발행 마감정보 읽기.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;call function <a href ="../zdtv3sap_chk_comp_closed(전자세금계산서 - 자체발행분 마감관리)/zdtv3sap_chk_comp_closed.html">'ZDTV3SAP_CHK_COMP_CLOSED'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_HEAD-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUE_DATE&nbsp;=&nbsp;GS_HEAD-ISSUE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUPLA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_HEAD-BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_SEQ&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_HEAD-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLOSED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_CLOSED.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;G_CLOSED&nbsp;EQ&nbsp;'Y'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-CODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'10012'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-INV_SEQ&nbsp;=&nbsp;GS_HEAD-INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'전기&nbsp;마감된&nbsp;['&nbsp;GS_HEAD-INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;']&nbsp;전자세금계산서입니다.'&nbsp;INTO&nbsp;RETURN-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*   매출 전자세금계산서 BUTTON별 점검 USER EXIT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;GS_RETURN.<br />
+&nbsp;&nbsp;I_INV_SEQ&nbsp;=&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;CASE&nbsp;I_INV_TYPE&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zdtv3i_u061&nbsp;if&nbsp;found.html">ZDTV3I_U061&nbsp;IF&nbsp;FOUND</a>.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zdtv3i_u060&nbsp;if&nbsp;found.html">ZDTV3I_U060&nbsp;IF&nbsp;FOUND</a>.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;IF&nbsp;GS_RETURN-TYPE&nbsp;EQ&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;GS_RETURN&nbsp;TO&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LT_SEND_DATA[].<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_HEAD&nbsp;TO&nbsp;LT_SEND_DATA.<br />
+&nbsp;&nbsp;LT_SEND_DATA-REASON&nbsp;=&nbsp;REASON.<br />
+&nbsp;&nbsp;APPEND&nbsp;LT_SEND_DATA.<br />
+   </div>
+   <div class="codeComment">
+* 매출세금계산서 상태 BC 전송<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zdtv3sap_snd_stat(매출세금계산서 상태 BC 전송)/zdtv3sap_snd_stat.html">'ZDTV3SAP_SND_STAT'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUTTON&nbsp;&nbsp;=&nbsp;I_BUTTON<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROGRAM&nbsp;=&nbsp;G_PROGRAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;&nbsp;=&nbsp;LT_SEND_DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;=&nbsp;GT_RETURN.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_RETURN&nbsp;WITH&nbsp;KEY&nbsp;TYPE&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;GT_RETURN&nbsp;TO&nbsp;RETURN.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_RETURN&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;GT_RETURN&nbsp;TO&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

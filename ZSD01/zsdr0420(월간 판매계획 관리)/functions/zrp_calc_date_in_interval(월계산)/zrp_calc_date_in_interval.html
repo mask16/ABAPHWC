@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZRP_CALC_DATE_IN_INTERVAL</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZRP_CALC_DATE_IN_INTERVAL</h2>
+<h3> Description: 월계산</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZRP_CALC_DATE_IN_INTERVAL.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(DATE) LIKE  P0001-BEGDA<br />
+*"     REFERENCE(DAYS) LIKE  T5A4A-DLYDY<br />
+*"     REFERENCE(MONTHS) LIKE  T5A4A-DLYMO<br />
+*"     REFERENCE(SIGNUM) LIKE  T5A4A-SPLIT<br />
+*"     REFERENCE(YEARS) LIKE  T5A4A-DLYYR<br />
+*"  EXPORTING<br />
+*"     REFERENCE(CALC_DATE) LIKE  P0001-BEGDA<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zrp_calc_date_in_interval.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;DATA:&nbsp;ACT_DATE&nbsp;&nbsp;&nbsp;TYPE&nbsp;D,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Tagesdatum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Frist&nbsp;in&nbsp;Tagen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Frist&nbsp;in&nbsp;Monaten<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;YRS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Frist&nbsp;in&nbsp;Jahren<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TTL_YRS&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Jahre&nbsp;(insgesamt)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;P&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Rundungsfaktor&nbsp;(wg.&nbsp;Ganz-<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DECIMALS&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"zahlendarstellung),&nbsp;um&nbsp;kommerz.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VALUE&nbsp;'0.50'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Rundung&nbsp;zu&nbsp;umgehen<br />
+<br />
+<br />
+&nbsp;&nbsp;ACT_DATE&nbsp;=&nbsp;DATE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Datum&nbsp;uebernehmen&nbsp;&nbsp;&nbsp;QXOK067676<br />
+   </div>
+   <div class="codeComment">
+* Datums-Berechnung darf nur innerhalb definierter Grenzen<br />
+* (LOW-DATE,HIGH-DATE) erfolgen<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SIGNUM&nbsp;=&nbsp;'-'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Berechnung&nbsp;in&nbsp;Vergangenheit?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYS&nbsp;=&nbsp;-&nbsp;DAYS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Werte&nbsp;mit&nbsp;negativem&nbsp;Vor-<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;=&nbsp;-&nbsp;MONTHS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"zeichen&nbsp;versehen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;YRS&nbsp;=&nbsp;-&nbsp;YEARS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROUND&nbsp;=&nbsp;-&nbsp;ROUND.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Rundungskonstante<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DYS&nbsp;=&nbsp;DAYS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Werte&nbsp;mit&nbsp;positivem&nbsp;Vor-<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;=&nbsp;MONTHS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"zeichen&nbsp;belassen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;YRS&nbsp;=&nbsp;YEARS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   Frist in Tagen<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ACT_DATE&nbsp;=&nbsp;ACT_DATE&nbsp;+&nbsp;DYS.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Frist&nbsp;in&nbsp;Tagen<br />
+   </div>
+   <div class="codeComment">
+*    ACT_DATE = ACT_DATE + MON.<br />
+*   Frist in Monaten<br />
+*   es koennte auch vorkommen, dass mehr als 12 Monate vorgesehen sind,<br />
+*   darum muessen diese angepasst werden<br />
+*---------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;MON&nbsp;&lt&gt&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ueberhaupt&nbsp;Monate&nbsp;angegeben?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;MON&nbsp;&gt&nbsp;11&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"mehr&nbsp;als&nbsp;1&nbsp;Jahr&nbsp;(plus&nbsp;oder<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;&lt&nbsp;-11.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;weniger)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;YRS&nbsp;=&nbsp;MON&nbsp;/&nbsp;12&nbsp;-&nbsp;ROUND.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Resultat&nbsp;als&nbsp;Integer<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;=&nbsp;MON&nbsp;-&nbsp;YRS&nbsp;*&nbsp;12.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"verbleibende&nbsp;Monate<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;=&nbsp;&nbsp;ACT_DATE+4(2)&nbsp;+&nbsp;MON.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Summation&nbsp;der<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;MON&nbsp;&lt=&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ins&nbsp;Vorjahr&nbsp;hinein?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;YRS&nbsp;=&nbsp;YRS&nbsp;-&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Gesamtzahl&nbsp;Jahre&nbsp;erhoehen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;=&nbsp;MON&nbsp;+&nbsp;12.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Anzahl&nbsp;Monate&nbsp;korrigieren<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;MON&nbsp;&gt&nbsp;12.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ins&nbsp;Folgejahr&nbsp;hinein?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;YRS&nbsp;=&nbsp;YRS&nbsp;+&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Gesamtzahl&nbsp;Jahre&nbsp;erhoehen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MON&nbsp;=&nbsp;MON&nbsp;-&nbsp;12.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Anzahl&nbsp;Monate&nbsp;korrigieren<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNPACK&nbsp;MON&nbsp;TO&nbsp;ACT_DATE+4(2).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Monate&nbsp;uebernehmen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   Frist in Jahren<br />
+*    TTL_YRS = YRS + TTL_YRS.           "Gesamtzahl an Jahren<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ACT_DATE(4)&nbsp;=&nbsp;ACT_DATE(4)&nbsp;+&nbsp;YRS&nbsp;.&nbsp;&nbsp;&nbsp;&nbsp;"Frist&nbsp;in&nbsp;Jahren<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   nun muss noch geprueft werden, ob es sich beim ermittelten Datum<br />
+*   um eine gueltige Datumsangabe (lt. Kalender) handelt; ungueltige<br />
+*   waere z.Bsp. 29.02.1991<br />
+*--------------------------<br />
+*    PERFORM VALID_DATE USING ACT_DATE  "Vorzeichen          QXOK085926<br />
+*                             SIGNUM.   "beachten            QXOK085926<br />
+*                           "                    QXOK067676<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALC_DATE&nbsp;=&nbsp;ACT_DATE.<br />
+<br />
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

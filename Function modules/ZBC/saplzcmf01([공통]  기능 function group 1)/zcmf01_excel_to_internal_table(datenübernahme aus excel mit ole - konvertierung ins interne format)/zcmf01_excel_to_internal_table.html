@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZCMF01_EXCEL_TO_INTERNAL_TABLE</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZCMF01_EXCEL_TO_INTERNAL_TABLE</h2>
+<h3> Description: Daten#bernahme aus Excel mit OLE - Konvertierung ins interne Format</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZCMF01_EXCEL_TO_INTERNAL_TABLE .<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(FILENAME) LIKE  RLGRAP-FILENAME<br />
+*"     VALUE(I_BEGIN_COL) TYPE  I<br />
+*"     VALUE(I_BEGIN_ROW) TYPE  I<br />
+*"     VALUE(I_END_COL) TYPE  I<br />
+*"     VALUE(I_END_ROW) TYPE  I<br />
+*"  TABLES<br />
+*"      INTERN STRUCTURE  ZCMS0001<br />
+*"  EXCEPTIONS<br />
+*"      INCONSISTENT_PARAMETERS<br />
+*"      UPLOAD_OLE<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zcmf01_excel_to_internal_table.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;excel_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;ty_t_sender.<br />
+&nbsp;&nbsp;DATA:&nbsp;ld_separator&nbsp;&nbsp;TYPE&nbsp;&nbsp;c.<br />
+&nbsp;&nbsp;DATA:&nbsp;application&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;workbook&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;range&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;worksheet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;ole2_object.<br />
+&nbsp;&nbsp;DATA:&nbsp;h_cell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;ole2_object,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_cell1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;ole2_object.<br />
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ld_rc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.<br />
+   </div>
+   <div class="codeComment">
+*   R#ckgabewert der Methode "clipboard_export     "<br />
+<br />
+* Makro f#r Fehlerbehandlung der Methods<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DEFINE&nbsp;m_message.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;id&nbsp;sy-msgid&nbsp;type&nbsp;sy-msgty&nbsp;number&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.&nbsp;raise&nbsp;upload_ole.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+* check parameters<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;i_begin_row&nbsp;&gt&nbsp;i_end_row.&nbsp;RAISE&nbsp;inconsistent_parameters.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;i_begin_col&nbsp;&gt&nbsp;i_end_col.&nbsp;RAISE&nbsp;inconsistent_parameters.&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* Get TAB-sign for separation of fields<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLASS&nbsp;cl_abap_char_utilities&nbsp;DEFINITION&nbsp;LOAD.<br />
+&nbsp;&nbsp;ld_separator&nbsp;=&nbsp;cl_abap_char_utilities=&gthorizontal_tab.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* open file in Excel<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;application-header&nbsp;=&nbsp;space&nbsp;OR&nbsp;application-handle&nbsp;=&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;application&nbsp;'Excel.Application'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;&nbsp;OF&nbsp;application&nbsp;&nbsp;&nbsp;&nbsp;'Workbooks'&nbsp;=&nbsp;workbook.<br />
+&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;&nbsp;OF&nbsp;workbook&nbsp;'Open'&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;#1&nbsp;=&nbsp;filename.<br />
+&nbsp;&nbsp;m_message.<br />
+   </div>
+   <div class="codeComment">
+*  set property of application 'Visible' = 1.<br />
+*  m_message.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;GET&nbsp;PROPERTY&nbsp;OF&nbsp;&nbsp;application&nbsp;'ACTIVESHEET'&nbsp;=&nbsp;worksheet.<br />
+&nbsp;&nbsp;m_message.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* mark whole spread sheet<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF&nbsp;worksheet&nbsp;'Cells'&nbsp;=&nbsp;h_cell<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;#1&nbsp;=&nbsp;i_begin_row&nbsp;#2&nbsp;=&nbsp;i_begin_col.<br />
+&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF&nbsp;worksheet&nbsp;'Cells'&nbsp;=&nbsp;h_cell1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;#1&nbsp;=&nbsp;i_end_row&nbsp;#2&nbsp;=&nbsp;i_end_col.<br />
+&nbsp;&nbsp;m_message.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;&nbsp;OF&nbsp;worksheet&nbsp;'RANGE'&nbsp;=&nbsp;range<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING&nbsp;#1&nbsp;=&nbsp;h_cell&nbsp;#2&nbsp;=&nbsp;h_cell1.<br />
+&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF&nbsp;range&nbsp;'SELECT'.<br />
+&nbsp;&nbsp;m_message.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* copy marked area (whole spread sheet) into Clippboard<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF&nbsp;range&nbsp;'COPY'.<br />
+&nbsp;&nbsp;m_message.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* read clipboard into ABAP<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtclipboard_import<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;excel_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cntl_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+   </div>
+   <div class="codeComment">
+*      ERROR_NO_GUI         = 2<br />
+*      NOT_SUPPORTED_BY_GUI = 3<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;a037(alsmex).<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;separated_to_intern_convert&nbsp;TABLES&nbsp;excel_tab&nbsp;intern<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&nbsp;ld_separator.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* clear clipboard<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;excel_tab.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtclipboard_export<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;excel_tab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ld_rc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cntl_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+   </div>
+   <div class="codeComment">
+*       ERROR_NO_GUI         = 2<br />
+*       NOT_SUPPORTED_BY_GUI = 3<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* quit Excel and free ABAP Object - unfortunately, this does not kill<br />
+* the Excel process<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;OF&nbsp;application&nbsp;'QUIT'.<br />
+&nbsp;&nbsp;m_message.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* &gt&gt&gt&gt&gt Begin of change note 575877<br />
+* to kill the Excel process it's necessary to free all used objects<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;h_cell.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;h_cell1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;range.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;worksheet.&nbsp;&nbsp;&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;workbook.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_message.<br />
+&nbsp;&nbsp;FREE&nbsp;OBJECT&nbsp;application.&nbsp;&nbsp;m_message.<br />
+   </div>
+   <div class="codeComment">
+* &lt&lt&lt&lt&lt End of change note 575877<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ALSMEX<br />
+*037   클립보드내용의 Import중에 오류가 발생했습니다<br />
+*<br />
+* Message class: KX<br />
+*001   & & & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

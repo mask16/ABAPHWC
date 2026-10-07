@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHRF_GROUPWARE_0011</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZHRF_GROUPWARE_0011</h2>
+<h3> Description: 잔여연차</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZHRF_GROUPWARE_0011.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_IMPORT) TYPE  ZHRFS_GROUP_0011<br />
+*"  TABLES<br />
+*"      ET_0001 STRUCTURE  ZHRF_GROUP_0011<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zhrf_groupware_0011.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+TABLES: pa2006.<br />
+<br />
+DATA: GS_PERNR TYPE P_PERNR.<br />
+DATA: GT_RT         TYPE HRPAY99_RT WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_CRT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;PC208&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_RGDIR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;PC261&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_EVPDIR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;PC261&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_PAY_RESULT&nbsp;TYPE&nbsp;PAY99_RESULT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_TAB01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;HRPAY99_TAB_OF_RESULTS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_CRT_TAB&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;HRPAY99_TAB_OF_RESULTS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_TAB01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;PAY99_RESULT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_RT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;PC207,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_CRT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;PC208,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_ENDDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;D,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PAYTP(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GV_OCR_TXT(40).<br />
+<br />
+DATA: ENTRYDATE LIKE P0000-BEGDA.<br />
+DATA: LS_9007 TYPE ZHRS9007.<br />
+DATA: T500L_WA TYPE T500L.<br />
+DATA: L_LGARTNAME(4).<br />
+DATA: GV_MOLGA_P TYPE MOLGA.<br />
+DATA: 1020_ANZHL TYPE PRANZ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1030_ANZHL&nbsp;TYPE&nbsp;PRANZ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1010_ANZHL&nbsp;TYPE&nbsp;PRANZ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TIME&nbsp;TYPE&nbsp;PRANZ.<br />
+<br />
+DATA: 4ME  LIKE GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S301&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S302&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S4UE&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S3T1&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DSUM&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PSUM&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TSUM&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1490_BETRG&nbsp;LIKE&nbsp;GT_RT-BETRG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1010_BETRG&nbsp;LIKE&nbsp;GT_RT-BETRG.<br />
+<br />
+DATA: GT_T511  TYPE TABLE OF T511 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GT_T512W&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;T512W&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+DATA: T_ORGEH LIKE ZHRS9001 OCCURS 0 WITH HEADER LINE.<br />
+<br />
+DATA: PAYTY LIKE GT_RGDIR-PAYTY.<br />
+DATA: DATS LIKE PC261-BONDT.<br />
+DATA: BE_DATE LIKE P0001-BEGDA.<br />
+<br />
+DATA: L_INFO LIKE ZHRS9003 OCCURS 0 WITH HEADER LINE.<br />
+DATA: CH_PERSK LIKE ZHRS9003-PERSK,  "사원하위 그룹<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CH_PKTXT&nbsp;LIKE&nbsp;ZHRS9003-PKTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CH_ORGEH&nbsp;LIKE&nbsp;ZHRS9003-ORGEH,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CH_ORGTX&nbsp;LIKE&nbsp;ZHRS9003-ORGTX,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CH_ENAME&nbsp;LIKE&nbsp;ZHRS9003-ENAME.<br />
+<br />
+DATA: GT_9011 LIKE ZHRT9011 OCCURS 0 WITH HEADER LINE.<br />
+DATA: I_DATS  LIKE GT_9011-PAYDT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATS&nbsp;LIKE&nbsp;GT_9011-PAYDT.<br />
+<br />
+<br />
+DATA  : p_pernr LIKE pa2006-pernr ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_begda&nbsp;LIKE&nbsp;pa2006-begda&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_endda&nbsp;LIKE&nbsp;pa2006-endda&nbsp;.<br />
+<br />
+DATA: lt_quota TYPE TABLE OF pa2006  WITH HEADER LINE ,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wa_quota&nbsp;TYPE&nbsp;pa2006.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;I_PERNR&nbsp;LIKE&nbsp;ZHRFS_GROUP_0011-I_PERNR.<br />
+&nbsp;&nbsp;DATA:&nbsp;I_BEGDA&nbsp;LIKE&nbsp;ZHRFS_GROUP_0011-I_BEGDA.<br />
+&nbsp;&nbsp;DATA:&nbsp;I_ENDDA&nbsp;LIKE&nbsp;ZHRFS_GROUP_0011-I_ENDDA.<br />
+<br />
+&nbsp;&nbsp;I_PERNR&nbsp;=&nbsp;I_IMPORT-I_PERNR.<br />
+&nbsp;&nbsp;I_BEGDA&nbsp;=&nbsp;I_IMPORT-I_BEGDA.<br />
+&nbsp;&nbsp;I_ENDDA&nbsp;=&nbsp;I_IMPORT-I_ENDDA.<br />
+<br />
+&nbsp;&nbsp;GS_PERNR&nbsp;=&nbsp;I_PERNR.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 개인 인사정보<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zhrf0002(사번으로 개인 인사 정보 읽어오기)/zhrf0002.html">'ZHRF0002'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IPERNR&nbsp;&nbsp;&nbsp;=&nbsp;GS_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPERINFO&nbsp;=&nbsp;L_INFO.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;L_INFO&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;CHECK&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;CH_PKTXT&nbsp;=&nbsp;L_INFO-PKTXT.<br />
+&nbsp;&nbsp;CH_ORGEH&nbsp;=&nbsp;L_INFO-ORGEH.<br />
+&nbsp;&nbsp;CH_ORGTX&nbsp;=&nbsp;L_INFO-ORGTX.<br />
+&nbsp;&nbsp;CH_ENAME&nbsp;=&nbsp;L_INFO-ENAME&nbsp;.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*IF I_BEGDA NE '20250101'.<br />
+*  I_BEGDA = '20250101'.<br />
+*  I_ENDDA = '20251231'.<br />
+*ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;pa2006<br />
+&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;lt_quota<br />
+&nbsp;&nbsp;WHERE&nbsp;pernr&nbsp;=&nbsp;I_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;desta&nbsp;=&nbsp;I_BEGDA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;deend&nbsp;=&nbsp;I_ENDDA.<br />
+<br />
+DATA: PERSNR TYPE P_PERNR.<br />
+<br />
+&nbsp;&nbsp;PERSNR&nbsp;=&nbsp;I_PERNR.<br />
+&nbsp;&nbsp;CALL FUNCTION 'HR_ENTRY_DATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERSNR&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;PERSNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENTRYDATE&nbsp;=&nbsp;ENTRYDATE.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_quota.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;lt_quota&nbsp;TO&nbsp;ET_0001.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ET_0001-PERNR&nbsp;=&nbsp;GS_PERNR.&nbsp;&nbsp;&nbsp;"사번<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ET_0001-ZDATS&nbsp;=&nbsp;ENTRYDATE.&nbsp;&nbsp;"입사일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ET_0001-ENAME&nbsp;=&nbsp;CH_ENAME.&nbsp;&nbsp;&nbsp;"성명<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ET_0001-ORGTX&nbsp;=&nbsp;CH_ORGTX.&nbsp;&nbsp;&nbsp;"부서<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ET_0001-ZDATS1&nbsp;=&nbsp;ET_0001-ANZHL&nbsp;-&nbsp;ET_0001-KVERB.&nbsp;&nbsp;&nbsp;"잔여연차<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ET_0001.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: HRPAY99IMPEXP<br />
+*004   PCL2 클러스터 &1에 대한 읽기권한이 없습니다<br />
+*005   PCL2 클러스터 &1에 대한 쓰기권한이 없습니다<br />
+*013   프로그래밍 오류: 빈 키입니다. HRPAY99IMPEXP의 설명 013을 참조하십시오.<br />
+*<br />
+* Message class: RP<br />
+*016   & & & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

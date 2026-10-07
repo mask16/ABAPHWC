@@ -1,0 +1,734 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZMMR1000F01</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZMMR1000F01</h2>
+<h3> Description: Include ZMMR0860F01</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZMMR1000_F01<br />
+*&---------------------------------------------------------------------*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SELECT_DATA<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;창고&nbsp;재고&nbsp;및&nbsp;수주&nbsp;잔량&nbsp;조회<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SELECT_DATA.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;SET_WERKS_LGORT&nbsp;CHANGING&nbsp;LT_WERKS&nbsp;LT_LGORT.<br />
+&nbsp;&nbsp;PERFORM&nbsp;GET_SO_PO_DATA.<br />
+&nbsp;&nbsp;PERFORM&nbsp;CALCULATE_SO_OPEN_QTY.<br />
+&nbsp;&nbsp;PERFORM&nbsp;CALCULATE_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;PERFORM&nbsp;CALCULATE_PO_OPEN_QTY.<br />
+&nbsp;&nbsp;PERFORM&nbsp;SUMMARIZE_OPEN_QTY.<br />
+&nbsp;&nbsp;PERFORM&nbsp;GET_STOCK_DATA.<br />
+&nbsp;&nbsp;PERFORM&nbsp;FINALIZE_DATA.<br />
+<br />
+ENDFORM.                    "SELECT_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;GET_SO_PO_DATA<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SO,&nbsp;PO&nbsp;데이터&nbsp;조회<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM GET_SO_PO_DATA.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;LT_ZSDT1150,&nbsp;LT_SO,&nbsp;LT_PO_UB.<br />
+&nbsp;&nbsp;LV_DATE_FROM&nbsp;=&nbsp;SY-DATUM&nbsp;-&nbsp;365.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;VBELN&nbsp;POSNR&nbsp;ERDAT&nbsp;STEPS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_ZSDT1150<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT1150<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ERDAT&nbsp;BETWEEN&nbsp;LV_DATE_FROM&nbsp;AND&nbsp;SY-DATUM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STEPS&nbsp;=&nbsp;'F'.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;SO,&nbsp;PO&nbsp;분리<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ZSDT1150&nbsp;INTO&nbsp;LS_ZSDT1150.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_ZSDT1150-VBELN&nbsp;CP&nbsp;'4*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_ZSDT1150&nbsp;TO&nbsp;LT_PO_UB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;LS_ZSDT1150-VBELN&nbsp;CP&nbsp;'0*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_ZSDT1150&nbsp;TO&nbsp;LT_SO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;SO&nbsp;데이터&nbsp;조회<br />
+&nbsp;&nbsp;CLEAR:&nbsp;LT_SO_ALL,&nbsp;LT_SO_ZK1FD,&nbsp;LT_SO_NON_ZK1FD.<br />
+&nbsp;&nbsp;IF&nbsp;LT_SO&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;A~VBELN&nbsp;B~AUART&nbsp;A~POSNR&nbsp;A~MATNR&nbsp;A~WERKS&nbsp;A~LGORT&nbsp;A~KWMENG&nbsp;A~MEINS&nbsp;M~MTART&nbsp;M~MATKL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_SO_ALL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBAP&nbsp;AS&nbsp;A<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;VBAK&nbsp;AS&nbsp;B&nbsp;ON&nbsp;A~VBELN&nbsp;=&nbsp;B~VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MARA&nbsp;AS&nbsp;M&nbsp;ON&nbsp;A~MATNR&nbsp;=&nbsp;M~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_SO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~VBELN&nbsp;=&nbsp;LT_SO-VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~POSNR&nbsp;=&nbsp;LT_SO-POSNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~MATNR&nbsp;IN&nbsp;S_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;M~MTART&nbsp;IN&nbsp;S_MTART<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;M~MATKL&nbsp;IN&nbsp;S_MATKL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~WERKS&nbsp;IN&nbsp;LT_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~LGORT&nbsp;IN&nbsp;LT_LGORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;B~AUART&nbsp;NOT&nbsp;IN&nbsp;('ZRE',&nbsp;'ZK2').&nbsp;&nbsp;"반품&nbsp;제외<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ZK1FD,&nbsp;ZFD&nbsp;분리<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_SO_ALL&nbsp;INTO&nbsp;LS_VBAK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_VBAK-AUART&nbsp;=&nbsp;'ZK1'&nbsp;OR&nbsp;LS_VBAK-AUART&nbsp;=&nbsp;'ZFD'&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_VBAK&nbsp;TO&nbsp;LT_SO_ZK1FD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_VBAK&nbsp;TO&nbsp;LT_SO_NON_ZK1FD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;LT_PO_UB_TEMP,&nbsp;LT_PO_EKPO.<br />
+&nbsp;&nbsp;IF&nbsp;LT_PO_UB&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;POSNR을&nbsp;NUMC&nbsp;5로&nbsp;변환<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PO_UB&nbsp;INTO&nbsp;LS_PO_UB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_PO_UB_TEMP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_PO_UB&nbsp;TO&nbsp;LS_PO_UB_TEMP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_UB_TEMP-POSNR_NUMC&nbsp;=&nbsp;LS_PO_UB-POSNR.&nbsp;"&nbsp;CHAR&nbsp;6&nbsp;-&gt&nbsp;NUMC&nbsp;5&nbsp;변환<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_PO_UB_TEMP&nbsp;TO&nbsp;LT_PO_UB_TEMP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;PO&nbsp;데이터&nbsp;조회<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;K~BSART&nbsp;E~EBELN&nbsp;E~EBELP&nbsp;E~MATNR&nbsp;E~WERKS&nbsp;E~RESLO&nbsp;E~MENGE&nbsp;E~MEINS&nbsp;M~MTART&nbsp;M~MATKL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_PO_EKPO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;EKPO&nbsp;AS&nbsp;E<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;EKKO&nbsp;AS&nbsp;K&nbsp;ON&nbsp;E~EBELN&nbsp;=&nbsp;K~EBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MARA&nbsp;AS&nbsp;M&nbsp;ON&nbsp;E~MATNR&nbsp;=&nbsp;M~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_PO_UB_TEMP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;E~EBELN&nbsp;=&nbsp;LT_PO_UB_TEMP-VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~EBELP&nbsp;=&nbsp;LT_PO_UB_TEMP-POSNR_NUMC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~MATNR&nbsp;IN&nbsp;S_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;M~MTART&nbsp;IN&nbsp;S_MTART<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;M~MATKL&nbsp;IN&nbsp;S_MATKL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~WERKS&nbsp;IN&nbsp;LT_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~RESLO&nbsp;IN&nbsp;LT_LGORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~LOEKZ&nbsp;NOT&nbsp;IN&nbsp;('S',&nbsp;'L').&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"품목&nbsp;보류,&nbsp;삭제인&nbsp;경우&nbsp;제외<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+ENDFORM.                    "GET_SO_PO_DATA<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;CALCULATE_SO_OPEN_QTY<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;기타&nbsp;SO(ZK1,&nbsp;ZFD제외)&nbsp;&nbsp;납품&nbsp;문서&nbsp;조회&nbsp;및&nbsp;잔량&nbsp;계산<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CALCULATE_SO_OPEN_QTY.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;LT_LIPS.<br />
+&nbsp;&nbsp;IF&nbsp;LT_SO_NON_ZK1FD&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;L~VBELN&nbsp;L~POSNR&nbsp;L~MATNR&nbsp;L~WERKS&nbsp;L~LGORT&nbsp;L~LFIMG&nbsp;L~MEINS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V~VBELV&nbsp;V~POSNV&nbsp;V~RFMNG&nbsp;V~MEINS&nbsp;AS&nbsp;VBFA_MEINS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_LIPS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBFA&nbsp;AS&nbsp;V<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;LIPS&nbsp;AS&nbsp;L&nbsp;ON&nbsp;L~VBELN&nbsp;=&nbsp;V~VBELN&nbsp;AND&nbsp;L~POSNR&nbsp;=&nbsp;V~POSNN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_SO_NON_ZK1FD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;V~VBELV&nbsp;=&nbsp;LT_SO_NON_ZK1FD-VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;V~POSNV&nbsp;=&nbsp;LT_SO_NON_ZK1FD-POSNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;V~VBTYP_N&nbsp;=&nbsp;'J'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;LT_OPEN_QTY.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_SO_NON_ZK1FD&nbsp;INTO&nbsp;LS_SO_NON_ZK1FD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-VBELN&nbsp;=&nbsp;LS_SO_NON_ZK1FD-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-POSNR&nbsp;=&nbsp;LS_SO_NON_ZK1FD-POSNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-MATNR&nbsp;=&nbsp;LS_SO_NON_ZK1FD-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-WERKS&nbsp;=&nbsp;LS_SO_NON_ZK1FD-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-LGORT&nbsp;=&nbsp;LS_SO_NON_ZK1FD-LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-KWMENG&nbsp;=&nbsp;LS_SO_NON_ZK1FD-KWMENG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-MEINS&nbsp;=&nbsp;LS_SO_NON_ZK1FD-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-AUART&nbsp;=&nbsp;LS_SO_NON_ZK1FD-AUART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-MTART&nbsp;=&nbsp;LS_SO_NON_ZK1FD-MTART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-MATKL&nbsp;=&nbsp;LS_SO_NON_ZK1FD-MATKL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;LS_OPEN_QTY-RFMNG,&nbsp;LS_OPEN_QTY-LFIMG,&nbsp;LV_P_LGORT,&nbsp;LV_LFIMG_TOTAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_SO_NON_ZK1FD-KWMENG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;LT_LIPS에서&nbsp;납품&nbsp;데이터&nbsp;처리<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_LIPS&nbsp;INTO&nbsp;LS_LIPS&nbsp;WHERE&nbsp;VBELV&nbsp;=&nbsp;LS_SO_NON_ZK1FD-VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;POSNV&nbsp;=&nbsp;LS_SO_NON_ZK1FD-POSNR.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;RFMNG&nbsp;누적&nbsp;(VBFA의&nbsp;납품&nbsp;수량)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-RFMNG&nbsp;=&nbsp;LS_OPEN_QTY-RFMNG&nbsp;+&nbsp;LS_LIPS-RFMNG.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;LIPS&nbsp;처리<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_LIPS-LGORT&nbsp;IN&nbsp;LT_LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_P_LGORT&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-LFIMG&nbsp;=&nbsp;LS_OPEN_QTY-LFIMG&nbsp;+&nbsp;LS_LIPS-LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_LFIMG_TOTAL&nbsp;=&nbsp;LV_LFIMG_TOTAL&nbsp;+&nbsp;LS_LIPS-LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_OPEN_QTY-OPEN_QTY&nbsp;-&nbsp;LS_LIPS-LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_OPEN_QTY-OPEN_QTY&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_OPEN_QTY&nbsp;TO&nbsp;LT_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    "CALCULATE_SO_OPEN_QTY<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;CALCULATE_ZK1FD_OPEN_QTY<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZK1,&nbsp;ZFD&nbsp;자재이동&nbsp;문서&nbsp;조회&nbsp;및&nbsp;잔량&nbsp;계산<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CALCULATE_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;CLEAR&nbsp;LT_VBFA_ZK1FD.<br />
+&nbsp;&nbsp;IF&nbsp;LT_SO_ZK1FD&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;V~VBELV&nbsp;V~POSNV&nbsp;V~VBTYP_N&nbsp;V~VBELN&nbsp;V~RFMNG&nbsp;V~MEINS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_VBFA_ZK1FD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBFA&nbsp;AS&nbsp;V<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_SO_ZK1FD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;V~VBELV&nbsp;=&nbsp;LT_SO_ZK1FD-VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;V~POSNV&nbsp;=&nbsp;LT_SO_ZK1FD-POSNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;V~VBTYP_N&nbsp;=&nbsp;'R'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;LT_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;IF&nbsp;LT_SO_ZK1FD&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_SO_ZK1FD&nbsp;INTO&nbsp;LS_SO_ZK1FD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_SO_ZK1FD&nbsp;TO&nbsp;LS_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ZK1FD_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_SO_ZK1FD-KWMENG.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA:&nbsp;LV_RFMNG_TOTAL&nbsp;TYPE&nbsp;VBFA-RFMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LV_RFMNG_TOTAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_VBFA_ZK1FD&nbsp;INTO&nbsp;LS_VBFA_ZK1FD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELV&nbsp;=&nbsp;LS_SO_ZK1FD-VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;POSNV&nbsp;=&nbsp;LS_SO_ZK1FD-POSNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;VBTYP_N&nbsp;=&nbsp;'R'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_RFMNG_TOTAL&nbsp;=&nbsp;LV_RFMNG_TOTAL&nbsp;+&nbsp;LS_VBFA_ZK1FD-RFMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LV_RFMNG_TOTAL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ZK1FD_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_SO_ZK1FD-KWMENG.&nbsp;"&nbsp;R이&nbsp;없으면&nbsp;KWMENG&nbsp;유지<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ZK1FD_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_SO_ZK1FD-KWMENG&nbsp;-&nbsp;LV_RFMNG_TOTAL.&nbsp;"&nbsp;R&nbsp;있으면&nbsp;차감<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_ZK1FD_OPEN_QTY-OPEN_QTY&nbsp;&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_ZK1FD_OPEN_QTY&nbsp;TO&nbsp;LT_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+ENDFORM.                    "CALCULATE_ZK1FD_OPEN_QTY<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;CALCULATE_PO_OPEN_QTY<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;재고전송오더&nbsp;납품문서&nbsp;조회&nbsp;및&nbsp;잔량&nbsp;계산<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CALCULATE_PO_OPEN_QTY.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;LT_PO_EKBE,&nbsp;LT_PO_OPEN_QTY.<br />
+&nbsp;&nbsp;IF&nbsp;LT_PO_EKPO&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;EKBE에서&nbsp;납품문서&nbsp;조회<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;E~EBELN&nbsp;E~EBELP&nbsp;E~VGABE&nbsp;E~BELNR&nbsp;E~MENGE&nbsp;P~RESLO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_PO_EKBE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;EKBE&nbsp;AS&nbsp;E<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;EKPO&nbsp;AS&nbsp;P&nbsp;ON&nbsp;E~EBELN&nbsp;=&nbsp;P~EBELN&nbsp;AND&nbsp;E~EBELP&nbsp;=&nbsp;P~EBELP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_PO_EKPO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;E~EBELN&nbsp;=&nbsp;LT_PO_EKPO-EBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~EBELP&nbsp;=&nbsp;LT_PO_EKPO-EBELP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;E~VGABE&nbsp;IN&nbsp;('6',&nbsp;'8')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;P~MATNR&nbsp;IN&nbsp;S_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;P~WERKS&nbsp;IN&nbsp;LT_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;P~RESLO&nbsp;IN&nbsp;LT_LGORT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;PO&nbsp;잔여수량&nbsp;계산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PO_EKPO&nbsp;INTO&nbsp;LS_PO_EKPO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_PO_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-AUART&nbsp;=&nbsp;LS_PO_EKPO-BSART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-VBELN&nbsp;=&nbsp;LS_PO_EKPO-EBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-POSNR&nbsp;=&nbsp;LS_PO_EKPO-EBELP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-MATNR&nbsp;=&nbsp;LS_PO_EKPO-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-WERKS&nbsp;=&nbsp;LS_PO_EKPO-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-LGORT&nbsp;=&nbsp;LS_PO_EKPO-RESLO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-KWMENG&nbsp;=&nbsp;LS_PO_EKPO-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_PO_EKPO-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-MEINS&nbsp;=&nbsp;LS_PO_EKPO-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-MTART&nbsp;=&nbsp;LS_PO_EKPO-MTART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-MATKL&nbsp;=&nbsp;LS_PO_EKPO-MATKL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_PO_EKPO&nbsp;TO&nbsp;LS_PO_OPEN_QTY.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;EKBE&nbsp;데이터&nbsp;확인<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_PO_EKBE&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;EBELN&nbsp;=&nbsp;LS_PO_EKPO-EBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EBELP&nbsp;=&nbsp;LS_PO_EKPO-EBELP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.&nbsp;"&nbsp;EKBE&nbsp;데이터가&nbsp;있는&nbsp;경우<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;VGABE&nbsp;=&nbsp;'8'인&nbsp;납품&nbsp;수량&nbsp;합산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LV_OPEN_MENGE_TOTAL_8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PO_EKBE&nbsp;INTO&nbsp;LS_PO_EKBE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;EBELN&nbsp;=&nbsp;LS_PO_EKPO-EBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;EBELP&nbsp;=&nbsp;LS_PO_EKPO-EBELP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;VGABE&nbsp;=&nbsp;'8'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_OPEN_MENGE_TOTAL_8&nbsp;=&nbsp;LV_OPEN_MENGE_TOTAL_8&nbsp;+&nbsp;LS_PO_EKBE-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;VGABE&nbsp;=&nbsp;'6'인&nbsp;납품&nbsp;수량&nbsp;합산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LV_OPEN_MENGE_TOTAL_6.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PO_EKBE&nbsp;INTO&nbsp;LS_PO_EKBE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;EBELN&nbsp;=&nbsp;LS_PO_EKPO-EBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;EBELP&nbsp;=&nbsp;LS_PO_EKPO-EBELP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;VGABE&nbsp;=&nbsp;'6'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_OPEN_MENGE_TOTAL_6&nbsp;=&nbsp;LV_OPEN_MENGE_TOTAL_6&nbsp;+&nbsp;LS_PO_EKBE-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;잔여수량&nbsp;계산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LV_OPEN_MENGE_TOTAL_8&nbsp;IS&nbsp;INITIAL&nbsp;AND&nbsp;LV_OPEN_MENGE_TOTAL_6&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_PO_EKPO-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;LV_OPEN_MENGE_TOTAL_6&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_PO_EKPO-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_PO_OPEN_QTY-OPEN_QTY&nbsp;=&nbsp;LS_PO_EKPO-MENGE&nbsp;-&nbsp;LV_OPEN_MENGE_TOTAL_6.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_PO_OPEN_QTY-OPEN_QTY&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_PO_OPEN_QTY&nbsp;TO&nbsp;LT_PO_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    "CALCULATE_PO_OPEN_QTY<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;SUMMARIZE_OPEN_QTY<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SO&nbsp;및&nbsp;PO&nbsp;수주&nbsp;잔량&nbsp;합산&nbsp;(자재,&nbsp;플랜트,&nbsp;저장위치,&nbsp;단위별)<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SUMMARIZE_OPEN_QTY.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;LT_OPEN_QTY_SUM.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;비&nbsp;ZK1,&nbsp;ZFD&nbsp;SO&nbsp;잔량&nbsp;합산<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_OPEN_QTY&nbsp;INTO&nbsp;LS_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_OPEN_QTY_SUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-MATNR&nbsp;=&nbsp;LS_OPEN_QTY-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-WERKS&nbsp;=&nbsp;LS_OPEN_QTY-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-LGORT&nbsp;=&nbsp;LS_OPEN_QTY-LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-MEINS&nbsp;=&nbsp;LS_OPEN_QTY-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-OPEN_QTY&nbsp;=&nbsp;LS_OPEN_QTY-OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;LS_OPEN_QTY_SUM&nbsp;INTO&nbsp;LT_OPEN_QTY_SUM.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;ZK1,&nbsp;ZFD&nbsp;SO&nbsp;잔량&nbsp;합산<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ZK1FD_OPEN_QTY&nbsp;INTO&nbsp;LS_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_OPEN_QTY_SUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-MATNR&nbsp;=&nbsp;LS_ZK1FD_OPEN_QTY-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-WERKS&nbsp;=&nbsp;LS_ZK1FD_OPEN_QTY-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-LGORT&nbsp;=&nbsp;LS_ZK1FD_OPEN_QTY-LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-MEINS&nbsp;=&nbsp;LS_ZK1FD_OPEN_QTY-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-OPEN_QTY&nbsp;=&nbsp;LS_ZK1FD_OPEN_QTY-OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;LS_OPEN_QTY_SUM&nbsp;INTO&nbsp;LT_OPEN_QTY_SUM.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;PO&nbsp;잔량&nbsp;합산<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PO_OPEN_QTY&nbsp;INTO&nbsp;LS_PO_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_OPEN_QTY_SUM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-MATNR&nbsp;=&nbsp;LS_PO_OPEN_QTY-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-WERKS&nbsp;=&nbsp;LS_PO_OPEN_QTY-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-LGORT&nbsp;=&nbsp;LS_PO_OPEN_QTY-LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-MEINS&nbsp;=&nbsp;LS_PO_OPEN_QTY-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_OPEN_QTY_SUM-OPEN_QTY&nbsp;=&nbsp;LS_PO_OPEN_QTY-OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;LS_OPEN_QTY_SUM&nbsp;INTO&nbsp;LT_OPEN_QTY_SUM.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+ENDFORM.                    "SUMMARIZE_OPEN_QTY<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;GET_STOCK_DATA<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;재고&nbsp;데이터&nbsp;조회<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM GET_STOCK_DATA.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;GT_DATA.<br />
+&nbsp;&nbsp;SELECT&nbsp;A~MATNR&nbsp;A~MTART&nbsp;A~MATKL&nbsp;A~MEINS&nbsp;B~MAKTX&nbsp;C~WERKS&nbsp;D~NAME1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C~LGORT&nbsp;E~LGOBE&nbsp;C~LABST&nbsp;C~SPEME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MARA&nbsp;AS&nbsp;A<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MAKT&nbsp;AS&nbsp;B&nbsp;ON&nbsp;A~MATNR&nbsp;=&nbsp;B~MATNR&nbsp;AND&nbsp;B~SPRAS&nbsp;=&nbsp;SY-LANGU<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;MARD&nbsp;AS&nbsp;C&nbsp;ON&nbsp;A~MATNR&nbsp;=&nbsp;C~MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;T001W&nbsp;AS&nbsp;D&nbsp;ON&nbsp;C~WERKS&nbsp;=&nbsp;D~WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LEFT&nbsp;JOIN&nbsp;T001L&nbsp;AS&nbsp;E&nbsp;ON&nbsp;C~WERKS&nbsp;=&nbsp;E~WERKS&nbsp;AND&nbsp;C~LGORT&nbsp;=&nbsp;E~LGORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;A~MATNR&nbsp;IN&nbsp;S_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~MTART&nbsp;IN&nbsp;S_MTART<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;A~MATKL&nbsp;IN&nbsp;S_MATKL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~WERKS&nbsp;IN&nbsp;LT_WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;C~LGORT&nbsp;IN&nbsp;LT_LGORT.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;GT_DATA&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E052(ZMMM).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    "GET_STOCK_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;FINALIZE_DATA.<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;재고&nbsp;데이터&nbsp;,&nbsp;잔량&nbsp;조회<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM FINALIZE_DATA.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_DATA&nbsp;TYPE&nbsp;TY_DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_FILTERED_DATA&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;TY_DATA.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;LT_FILTERED_DATA.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_DATA&nbsp;INTO&nbsp;LS_DATA.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_OPEN_QTY_SUM&nbsp;INTO&nbsp;LS_OPEN_QTY_SUM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;MATNR&nbsp;=&nbsp;LS_DATA-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WERKS&nbsp;=&nbsp;LS_DATA-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;=&nbsp;LS_DATA-LGORT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_DATA-OPEN_QTY&nbsp;=&nbsp;LS_OPEN_QTY_SUM-OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_DATA-OPEN_QTY&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_DATA-LABST&nbsp;&lt&gt&nbsp;0&nbsp;OR&nbsp;LS_DATA-OPEN_QTY&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;출하&nbsp;가용&nbsp;재고&nbsp;계산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_DATA-OUTBOUND_LABST&nbsp;=&nbsp;LS_DATA-LABST&nbsp;-&nbsp;LS_DATA-OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_DATA&nbsp;TO&nbsp;LT_FILTERED_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;GT_DATA.<br />
+&nbsp;&nbsp;GT_DATA&nbsp;=&nbsp;LT_FILTERED_DATA.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;GT_DATA&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E052(ZMMM).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;GT_DATA&nbsp;BY&nbsp;MATNR&nbsp;WERKS&nbsp;LGORT.<br />
+<br />
+<br />
+ENDFORM.                    "FINALIZE_DATA<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;CHECK_ORDER<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;수주잔량&nbsp;오더&nbsp;조회<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHECK_ORDER.<br />
+<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LV_USNAM&nbsp;TYPE&nbsp;ZMMT1001-USNAM.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;본사,&nbsp;공장&nbsp;출하팀만&nbsp;조회&nbsp;가능<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;USNAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;LV_USNAM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZMMT1001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;USNAM&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;'조회&nbsp;권한이&nbsp;없습니다.&nbsp;(출하팀만&nbsp;조회&nbsp;가능)'&nbsp;TYPE&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;GT_CHECK_ORDER.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;LT_OPEN_QTY&nbsp;데이터&nbsp;통합<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_OPEN_QTY&nbsp;INTO&nbsp;LS_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_OPEN_QTY&nbsp;TO&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GS_CHECK_ORDER&nbsp;TO&nbsp;GT_CHECK_ORDER.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;LT_ZK1FD_OPEN_QTY&nbsp;데이터&nbsp;통합<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ZK1FD_OPEN_QTY&nbsp;INTO&nbsp;LS_ZK1FD_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_ZK1FD_OPEN_QTY&nbsp;TO&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GS_CHECK_ORDER&nbsp;TO&nbsp;GT_CHECK_ORDER.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;LT_PO_OPEN_QTY&nbsp;데이터&nbsp;통합<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PO_OPEN_QTY&nbsp;INTO&nbsp;LS_PO_OPEN_QTY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_PO_OPEN_QTY&nbsp;TO&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GS_CHECK_ORDER&nbsp;TO&nbsp;GT_CHECK_ORDER.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;GT_CHECK_ORDER&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;'표시할&nbsp;수주가&nbsp;없습니다'&nbsp;TYPE&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;GT_CHECK_ORDER&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;MATNR&nbsp;MAKTX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_MAKT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MAKT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;GT_CHECK_ORDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;GT_CHECK_ORDER-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;WERKS&nbsp;NAME1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_T001W<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;T001W<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;GT_CHECK_ORDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;GT_CHECK_ORDER-WERKS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;WERKS&nbsp;LGORT&nbsp;LGOBE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_T001L<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;T001L<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;GT_CHECK_ORDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;WERKS&nbsp;=&nbsp;GT_CHECK_ORDER-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;LGORT&nbsp;=&nbsp;GT_CHECK_ORDER-LGORT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;VBELN&nbsp;ERDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;LT_ZSDTDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT1150<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;GT_CHECK_ORDER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;GT_CHECK_ORDER-VBELN.<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_CHECK_ORDER&nbsp;INTO&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_ZSDTDAT&nbsp;INTO&nbsp;LS_ZSDTDAT&nbsp;WITH&nbsp;KEY&nbsp;VBELN&nbsp;=&nbsp;GS_CHECK_ORDER-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_CHECK_ORDER-ERDAT&nbsp;=&nbsp;LS_ZSDTDAT-ERDAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_MAKT&nbsp;INTO&nbsp;LS_MAKT&nbsp;WITH&nbsp;KEY&nbsp;MATNR&nbsp;=&nbsp;GS_CHECK_ORDER-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_CHECK_ORDER-MAKTX&nbsp;=&nbsp;LS_MAKT-MAKTX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_T001W&nbsp;INTO&nbsp;LS_T001W&nbsp;WITH&nbsp;KEY&nbsp;WERKS&nbsp;=&nbsp;GS_CHECK_ORDER-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_CHECK_ORDER-NAME1&nbsp;=&nbsp;LS_T001W-NAME1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_T001L&nbsp;INTO&nbsp;LS_T001L&nbsp;WITH&nbsp;KEY&nbsp;WERKS&nbsp;=&nbsp;GS_CHECK_ORDER-WERKS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LGORT&nbsp;=&nbsp;GS_CHECK_ORDER-LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_CHECK_ORDER-LGOBE&nbsp;=&nbsp;LS_T001L-LGOBE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_CHECK_ORDER&nbsp;FROM&nbsp;GS_CHECK_ORDER.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;GT_CHECK_ORDER&nbsp;&nbsp;BY&nbsp;ERDAT&nbsp;VBELN&nbsp;POSNR.<br />
+<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;0200.<br />
+<br />
+ENDFORM.                    "CHECK_ORDER<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;SET_WERKS_LGORT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;플랜트,&nbsp;저장&nbsp;위치&nbsp;설정<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_WERKS_LGORT CHANGING CT_WERKS TYPE TY_WERKS_RANGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CT_LGORT&nbsp;TYPE&nbsp;TY_LGORT_RANGE.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_WERKS&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;CT_WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_LGORT_LOCAL&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;CT_LGORT.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;ZMMT1000에서&nbsp;LGORT&nbsp;조회<br />
+&nbsp;&nbsp;CLEAR&nbsp;CT_LGORT.<br />
+&nbsp;&nbsp;LS_LGORT_LOCAL-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;LS_LGORT_LOCAL-OPTION&nbsp;=&nbsp;'EQ'.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;LGORT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;LS_LGORT_LOCAL-LOW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZMMT1000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_LGORT_LOCAL&nbsp;TO&nbsp;CT_LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;'No&nbsp;Data:&nbsp;ZMMT1000'&nbsp;TYPE&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDSELECT.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;WERKS&nbsp;조건&nbsp;설정<br />
+&nbsp;&nbsp;CLEAR&nbsp;CT_WERKS.<br />
+&nbsp;&nbsp;IF&nbsp;S_WERKS&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_WERKS-SIGN&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_WERKS-OPTION&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_WERKS-LOW&nbsp;=&nbsp;'1010'.&nbsp;APPEND&nbsp;LS_WERKS&nbsp;TO&nbsp;CT_WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_WERKS-LOW&nbsp;=&nbsp;'1020'.&nbsp;APPEND&nbsp;LS_WERKS&nbsp;TO&nbsp;CT_WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_WERKS-LOW&nbsp;=&nbsp;'1030'.&nbsp;APPEND&nbsp;LS_WERKS&nbsp;TO&nbsp;CT_WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_WERKS-LOW&nbsp;=&nbsp;'2050'.&nbsp;APPEND&nbsp;LS_WERKS&nbsp;TO&nbsp;CT_WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_WERKS-LOW&nbsp;=&nbsp;'3060'.&nbsp;APPEND&nbsp;LS_WERKS&nbsp;TO&nbsp;CT_WERKS.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CT_WERKS[]&nbsp;=&nbsp;S_WERKS[].<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;LGORT&nbsp;조건&nbsp;설정<br />
+&nbsp;&nbsp;IF&nbsp;S_LGORT&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;CT_LGORT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CT_LGORT[]&nbsp;=&nbsp;S_LGORT[].<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " set_werks_lgort<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;HOTSPOT_CLICK<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_E_ROW&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_E_COLUMN&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ES_ROW_NO&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM HOTSPOT_CLICK USING P_E_ROW TYPE LVC_S_ROW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_E_COLUMN&nbsp;TYPE&nbsp;LVC_S_COL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P_ES_ROW_NO&nbsp;TYPE&nbsp;LVC_S_ROID.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_CHECK_ORDER&nbsp;TYPE&nbsp;TY_CHECK.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;P_E_ROW-INDEX&nbsp;GT&nbsp;0.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_CHECK_ORDER&nbsp;INDEX&nbsp;P_E_ROW-INDEX&nbsp;INTO&nbsp;LS_CHECK_ORDER.<br />
+&nbsp;&nbsp;CHECK&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;P_E_COLUMN-FIELDNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'VBELN'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_CHECK_ORDER-AUART&nbsp;=&nbsp;'UB'&nbsp;OR&nbsp;LS_CHECK_ORDER-AUART&nbsp;=&nbsp;'ZUB'&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'BES'&nbsp;FIELD&nbsp;LS_CHECK_ORDER-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'ME23N'&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'AUN'&nbsp;FIELD&nbsp;LS_CHECK_ORDER-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'VA03'&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    " HOTSPOT_CLICK<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

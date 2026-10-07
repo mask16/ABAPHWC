@@ -1,0 +1,494 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LSVIMF1C</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LSVIMF1C</h2>
+<h3> Description: Subroutines for activating profiles</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&--------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;UPGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&--------------------------------------------------------------------*<br />
+*&nbsp;process&nbsp;upgrade&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;U_MODE&nbsp;--&gt&nbsp;'&nbsp;'&nbsp;-&nbsp;client&nbsp;000,&nbsp;'O'&nbsp;-&nbsp;other&nbsp;client,&nbsp;others&nbsp;-&nbsp;remote&nbsp;sys*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM upgrade USING value(u_mode) TYPE c.<br />
+&nbsp;&nbsp;DATA:&nbsp;u_kind,&nbsp;u_update_happened,&nbsp;trans_pattern(8)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hf&nbsp;TYPE&nbsp;i,&nbsp;u_client&nbsp;LIKE&nbsp;sy-mandt,&nbsp;u_tabind&nbsp;LIKE&nbsp;sy-tabix,&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_it000&nbsp;LIKE&nbsp;vim_t000&nbsp;OCCURS&nbsp;10,&nbsp;u_title(40)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_remote_sys&nbsp;LIKE&nbsp;rfcdes-rfcdest,&nbsp;u_t000&nbsp;LIKE&nbsp;vim_t000,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_counter&nbsp;TYPE&nbsp;i,&nbsp;u_del_cnt&nbsp;TYPE&nbsp;i,&nbsp;u_rc&nbsp;TYPE&nbsp;i,&nbsp;hf1&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_funcsafe(4)&nbsp;TYPE&nbsp;c,&nbsp;u_txt_fu_beg&nbsp;TYPE&nbsp;i,&nbsp;u_txt_fu_lg&nbsp;TYPE&nbsp;i,&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_newversion(1)&nbsp;TYPE&nbsp;c&nbsp;VALUE&nbsp;'X',&nbsp;u_mark_entries(1)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_action(1)&nbsp;TYPE&nbsp;c,&nbsp;u_specmode_safe(1)&nbsp;TYPE&nbsp;c,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_called_from(1)&nbsp;TYPE&nbsp;c,&nbsp;u_oc_exst&nbsp;LIKE&nbsp;ntab_cmp-flag,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_sellist&nbsp;TYPE&nbsp;vimsellist_type,&nbsp;sellines&nbsp;TYPE&nbsp;i.<br />
+&nbsp;&nbsp;CONSTANTS:&nbsp;u_text_frm(30)&nbsp;TYPE&nbsp;c&nbsp;VALUE&nbsp;'FILL_TEXTTAB_KEY'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;NEEDED<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltu_f1&gt&nbsp;TYPE&nbsp;x,&nbsp;&ltu_sellist&gt&nbsp;TYPE&nbsp;vimsellist_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltw_sellist&gt&nbsp;TYPE&nbsp;vimsellist.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;data&nbsp;and&nbsp;field&nbsp;symbols&nbsp;for&nbsp;copying&nbsp;the&nbsp;extract&nbsp;to&nbsp;and&nbsp;from<br />
+*&nbsp;the&nbsp;compare&nbsp;tool&nbsp;container:<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;cmp_container_ref&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;cmp_container_wa_ref&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;extract_len&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;subrc_buf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltcmp_cont&gt&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltcmp_cont_wa&gt&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltx_dummy&gt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;x.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;excl_cua_funct&nbsp;WITH&nbsp;KEY&nbsp;function&nbsp;=&nbsp;'CMPR'.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"upgrade&nbsp;is&nbsp;not&nbsp;allowed<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s001(sv).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;upgrade&nbsp;with&nbsp;client&nbsp;0&nbsp;only&nbsp;if&nbsp;current&nbsp;client&nbsp;&lt&gt&nbsp;000<br />
+*&nbsp;upgrade&nbsp;with&nbsp;other&nbsp;clients&nbsp;only&nbsp;if&nbsp;objects&nbsp;are&nbsp;clientdependent<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;u_mode&nbsp;EQ&nbsp;space&nbsp;AND&nbsp;sy-mandt&nbsp;EQ&nbsp;'000'&nbsp;OR&nbsp;&nbsp;"upgrade&nbsp;with&nbsp;client&nbsp;000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;u_mode&nbsp;EQ&nbsp;space&nbsp;OR&nbsp;u_mode&nbsp;EQ&nbsp;'O'&nbsp;)&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_header-clidep&nbsp;EQ&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s001(sv).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;send&nbsp;warning&nbsp;if&nbsp;address&nbsp;number&nbsp;could&nbsp;be&nbsp;changed<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;status-action&nbsp;EQ&nbsp;aendern&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;(&nbsp;x_header-adrnbrflag&nbsp;NE&nbsp;space&nbsp;AND&nbsp;x_header-adrnbrflag&nbsp;&lt&gt&nbsp;'N'&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_pf_status&nbsp;USING&nbsp;'ERROR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i139(sv).&nbsp;"Adreßdaten&nbsp;werden&nbsp;nicht&nbsp;#bernommen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_pf_status&nbsp;USING&nbsp;status.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;u_client,&nbsp;u_remote_sys.<br />
+&nbsp;&nbsp;IF&nbsp;u_mode&nbsp;EQ&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;u_client&nbsp;=&nbsp;'000'.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;u_mode&nbsp;EQ&nbsp;'O'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_default_upgr_clnt-client&nbsp;NE&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_default_upgr_clnt-viewname&nbsp;EQ&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_client&nbsp;=&nbsp;vim_default_upgr_clnt-client.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_default_rfc_dest-rfcdest&nbsp;NE&nbsp;space&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_default_rfc_dest-viewname&nbsp;EQ&nbsp;x_header-viewname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_remote_sys&nbsp;=&nbsp;vim_default_rfc_dest-rfcdest.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;vim_special_mode&nbsp;EQ&nbsp;vim_direct_upgrade.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;function&nbsp;=&nbsp;'ABR'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"avoid&nbsp;processing&nbsp;detail&nbsp;screen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_extract.&nbsp;CLEAR&nbsp;function.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;u_specmode_safe&nbsp;=&nbsp;vim_special_mode.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;dba_sellist[]&nbsp;TO&nbsp;&ltu_sellist&gt.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&ltvim_ck_sellist&gt&nbsp;TO&nbsp;&ltu_sellist&gt.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;vim_special_mode&nbsp;=&nbsp;vim_upgrade.<br />
+&nbsp;&nbsp;MOVE:&nbsp;geloescht&nbsp;TO&nbsp;trans_pattern,&nbsp;aendern&nbsp;TO&nbsp;trans_pattern+1(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neuer_geloescht&nbsp;TO&nbsp;trans_pattern+2(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neuer_eintrag&nbsp;&nbsp;&nbsp;TO&nbsp;trans_pattern+3(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;update_geloescht&nbsp;TO&nbsp;trans_pattern+4(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aendern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;trans_pattern+5(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;original&nbsp;&nbsp;TO&nbsp;trans_pattern+6(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aendern&nbsp;TO&nbsp;trans_pattern+7(1).<br />
+&nbsp;&nbsp;IF&nbsp;x_header-bastab&nbsp;EQ&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"view<br />
+&nbsp;&nbsp;&nbsp;&nbsp;u_kind&nbsp;=&nbsp;'V'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-texttbexst&nbsp;EQ&nbsp;space.&nbsp;&nbsp;&nbsp;"base&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_kind&nbsp;=&nbsp;'T'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"base&nbsp;table&nbsp;with&nbsp;text&nbsp;table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_kind&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Add&nbsp;collapsed&nbsp;or&nbsp;merged&nbsp;timedep.&nbsp;entries<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;x_header-delmdtflag&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;vim_collapsed_mainkeys&nbsp;LINES&nbsp;hf.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;vim_merged_entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-tfill&nbsp;GT&nbsp;0&nbsp;OR&nbsp;hf&nbsp;GT&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_ignore_collapsed_mainkeys&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;vim_ignore_collapsed_mainkeys.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;(&nbsp;vim_system_type&nbsp;NE&nbsp;'SAP'&nbsp;AND&nbsp;sy-mandt&nbsp;EQ&nbsp;'000'&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;OR&nbsp;x_header-importable&nbsp;=&nbsp;vim_not_importable.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;u_action&nbsp;=&nbsp;anzeigen.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;u_action&nbsp;=&nbsp;status-action.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;TRANSLATE&nbsp;u_action&nbsp;USING&nbsp;'SCUA'.<br />
+&nbsp;&nbsp;IF&nbsp;vim_adjust_middle_level_mode&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;u_action&nbsp;USING&nbsp;'Aa'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;u_called_from&nbsp;=&nbsp;vim_special_adjust_mode.<br />
+&nbsp;&nbsp;TRANSLATE&nbsp;u_called_from&nbsp;USING&nbsp;'&nbsp;VSFXF'.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;vim_oc_inst&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;data&nbsp;access&nbsp;restricted?<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;(&nbsp;u_action&nbsp;=&nbsp;'C'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NOT&nbsp;vim_oc_inst-&gtoc_selcrit_read_tab&nbsp;IS&nbsp;INITIAL&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;(&nbsp;'Aa'&nbsp;CS&nbsp;u_action<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;NOT&nbsp;vim_oc_inst-&gtoc_selcrit_maint_tab&nbsp;IS&nbsp;INITIAL&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u_oc_exst&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;APPEND&nbsp;LINES&nbsp;OF&nbsp;&ltu_sellist&gt&nbsp;TO&nbsp;u_sellist.<br />
+&nbsp;&nbsp;DELETE&nbsp;u_sellist&nbsp;WHERE&nbsp;from_auth&nbsp;&lt&gt&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;AND&nbsp;ddic&nbsp;&lt&gt&nbsp;'S'&nbsp;AND&nbsp;ddic&nbsp;&lt&gt&nbsp;'B'.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;u_sellist&nbsp;LINES&nbsp;sellines.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sellines&nbsp;GT&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;u_sellist&nbsp;INDEX&nbsp;sellines&nbsp;ASSIGNING&nbsp;&ltw_sellist&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&ltw_sellist&gt-and_or.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;copy&nbsp;extract&nbsp;to&nbsp;compare&nbsp;tool&nbsp;container<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;FIELD&nbsp;extract&nbsp;LENGTH&nbsp;extract_len&nbsp;IN&nbsp;BYTE&nbsp;MODE.<br />
+&nbsp;&nbsp;IF&nbsp;extract_len&nbsp;&lt=&nbsp;64.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_ref&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;tbl64.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_wa_ref&nbsp;TYPE&nbsp;tbl64.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_wa_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont_wa&gt.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;extract_len&nbsp;&lt=&nbsp;256.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_ref&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;tbl256.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_wa_ref&nbsp;TYPE&nbsp;tbl256.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_wa_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont_wa&gt.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;extract_len&nbsp;&lt=&nbsp;1024.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_ref&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;tbl1024.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_wa_ref&nbsp;TYPE&nbsp;tbl1024.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_wa_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont_wa&gt.<br />
+&nbsp;&nbsp;ELSEIF&nbsp;extract_len&nbsp;&lt=&nbsp;4096.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_ref&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;tbl4096.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_wa_ref&nbsp;TYPE&nbsp;tbl4096.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_wa_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont_wa&gt.<br />
+&nbsp;&nbsp;ELSEif&nbsp;extract_len&nbsp;&lt=&nbsp;8192.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_ref&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;tbl8192.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_wa_ref&nbsp;TYPE&nbsp;tbl8192.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_wa_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont_wa&gt.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_ref&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;tbl32000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;cmp_container_wa_ref&nbsp;TYPE&nbsp;tbl32000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;cmp_container_wa_ref-&gt*&nbsp;TO&nbsp;&ltcmp_cont_wa&gt.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;&ltcmp_cont_wa&gt&nbsp;TO&nbsp;&ltx_dummy&gt&nbsp;CASTING.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;&ltx_dummy&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltx_dummy&gt&nbsp;=&nbsp;&ltvim_xextract&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&ltcmp_cont_wa&gt&nbsp;TO&nbsp;&ltcmp_cont&gt.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'SCT1_VIEW_COMPARE_AND_ADJUST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_view_name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;x_header-maintview&nbsp;&nbsp;"VIEWNAME<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IV_VIEW_VARIANT&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_kind&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;u_kind<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;u_action<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IV_LANGUAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IV_CLIENT_REMOTE&nbsp;&nbsp;&nbsp;=&nbsp;U_CLIENT<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_rfc_destination&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;u_remote_sys<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_called_from&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;u_called_from<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv_data_access_restricted&nbsp;=&nbsp;u_oc_exst<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev_update&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;u_update_happened<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev_mark_entries&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;u_mark_entries<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_header&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;x_header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_namtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;x_namtab<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_sellist&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;u_sellist<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ct_box&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&ltcmp_cont&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;canceled&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wrong_parameter&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;subrc_buf&nbsp;=&nbsp;sy-subrc.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;copy&nbsp;compare&nbsp;tool&nbsp;container&nbsp;back&nbsp;to&nbsp;extract<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;extract.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltcmp_cont&gt&nbsp;ASSIGNING&nbsp;&ltcmp_cont_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&ltcmp_cont_wa&gt&nbsp;TO&nbsp;&ltx_dummy&gt&nbsp;CASTING.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltvim_xextract&gt&nbsp;=&nbsp;&ltx_dummy&gt(extract_len).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;extract.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;sy-subrc&nbsp;=&nbsp;subrc_buf.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;GT&nbsp;01.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;sy-msgid&nbsp;TYPE&nbsp;'I'&nbsp;NUMBER&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s135(sv).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n1528173<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;sy-subrc&nbsp;=&nbsp;01.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;status-action&nbsp;EQ&nbsp;anzeigen&nbsp;AND&nbsp;u_update_happened&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sy-subrc&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CASE&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;u_update_happened&nbsp;NE&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;transfer&nbsp;changed&nbsp;entries&nbsp;from&nbsp;EXTRACT&nbsp;into&nbsp;TOTAL<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;u_counter,&nbsp;u_del_cnt.&nbsp;replace_mode&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;extract&nbsp;LINES&nbsp;maxlines.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;1st:&nbsp;handle&nbsp;deleted&nbsp;entries<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltxact&gt&nbsp;EQ&nbsp;original.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;extract.&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;&ltxact&gt&nbsp;EQ&nbsp;geloescht&nbsp;OR&nbsp;&ltxact&gt&nbsp;EQ&nbsp;neuer_geloescht&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltxact&gt&nbsp;EQ&nbsp;update_geloescht.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hf&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;total&nbsp;WITH&nbsp;KEY&nbsp;&ltvim_xextract_key&gt&nbsp;BINARY&nbsp;SEARCH."#EC&nbsp;WARNOK<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Condition&nbsp;Redundant&nbsp;-&nbsp;Internal&nbsp;Message&nbsp;&nbsp;0001699060&nbsp;-&nbsp;ACHACHADI<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;NE&nbsp;0&nbsp;OR&nbsp;(&nbsp;sy-subrc&nbsp;EQ&nbsp;0&nbsp;AND&nbsp;&nbsp;"#EC&nbsp;BOOL_OK<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltaction&gt&nbsp;EQ&nbsp;&ltxact&gt&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;extract.&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltmark&gt&nbsp;=&nbsp;markiert.&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;mark_total.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;total&nbsp;INDEX&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltxmark&gt&nbsp;=&nbsp;markiert.&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;mark_extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_special_adjust_mode&nbsp;EQ&nbsp;subset.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_restore_subset_conds.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_process_view_entry&nbsp;USING&nbsp;hf&nbsp;'DELE'&nbsp;u_rc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;u_rc&nbsp;NE&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;u_rc&nbsp;EQ&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD:&nbsp;counter&nbsp;TO&nbsp;u_del_cnt,&nbsp;1&nbsp;TO&nbsp;u_counter.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;u_counter&nbsp;GT&nbsp;u_del_cnt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;u_del_cnt&nbsp;FROM&nbsp;u_counter.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i116(sv)&nbsp;WITH&nbsp;u_counter.&nbsp;"&&nbsp;Eintr#ge&nbsp;konnten&nbsp;nicht&nbsp;g<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;u_counter.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;status-type&nbsp;EQ&nbsp;einstufig.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ok_code,&nbsp;function.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;function&nbsp;=&nbsp;ok_code&nbsp;=&nbsp;'COMP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;2nd:&nbsp;handle&nbsp;changed&nbsp;entries<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;&ltvim_xtotal&gt(x_header-tablen)&nbsp;TO&nbsp;&ltu_f1&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltxact&gt&nbsp;NE&nbsp;aendern&nbsp;AND&nbsp;&ltxact&gt&nbsp;NE&nbsp;neuer_eintrag.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;extract.&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hf&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;total&nbsp;WITH&nbsp;KEY&nbsp;&ltvim_xextract_key&gt&nbsp;BINARY&nbsp;SEARCH."#EC&nbsp;WARNOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"entry&nbsp;exists&nbsp;in&nbsp;current&nbsp;client<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;extract&nbsp;EQ&nbsp;total.&nbsp;"no&nbsp;changes&nbsp;-&gt&nbsp;delete&nbsp;and&nbsp;continue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;extract.&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;&ltxact&gt&nbsp;EQ&nbsp;neuer_eintrag&nbsp;AND&nbsp;"new&nbsp;entry&nbsp;exists&nbsp;and<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltaction&gt&nbsp;EQ&nbsp;geloescht&nbsp;OR&nbsp;&ltaction&gt&nbsp;EQ&nbsp;neuer_geloescht&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltaction&gt&nbsp;EQ&nbsp;update_geloescht."entry&nbsp;deleted&nbsp;in&nbsp;cur&nbsp;clnt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status-delete&nbsp;=&nbsp;geloescht.&nbsp;"&nbsp;-&gt&nbsp;first&nbsp;undelete&nbsp;it<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltxact&gt&nbsp;=&nbsp;&ltaction&gt.&nbsp;MODIFY&nbsp;extract.&nbsp;u_funcsafe&nbsp;=&nbsp;function.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_special_adjust_mode&nbsp;EQ&nbsp;subset.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_restore_subset_conds.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_mark_and_process&nbsp;USING&nbsp;hf&nbsp;'UNDO'&nbsp;hf1&nbsp;u_rc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;status-delete.&nbsp;function&nbsp;=&nbsp;u_funcsafe.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_special_mode&nbsp;=&nbsp;vim_upgrade.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;u_rc&nbsp;NE&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;u_rc&nbsp;EQ&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;extract&nbsp;INDEX&nbsp;hf.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;total&nbsp;WITH&nbsp;KEY&nbsp;&ltvim_xextract_key&gt&nbsp;&nbsp;"#EC&nbsp;WARNOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltu_f1&gt&nbsp;EQ&nbsp;&lttable2_x&gt.&nbsp;&nbsp;&nbsp;"no&nbsp;changes&nbsp;after&nbsp;undo<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;extract.&nbsp;CONTINUE."delete&nbsp;&&nbsp;continue<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltxact&gt&nbsp;=&nbsp;aendern.&nbsp;MODIFY&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;&ltu_f1&gt&nbsp;EQ&nbsp;&lttable2_x&gt.&nbsp;"no&nbsp;changes&nbsp;-&gt&nbsp;delete&nbsp;and&nbsp;cont<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;extract.&nbsp;CONTINUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;&ltxact&gt&nbsp;EQ&nbsp;neuer_eintrag&nbsp;AND&nbsp;&ltaction&gt&nbsp;EQ&nbsp;original.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltxact&gt&nbsp;=&nbsp;aendern.&nbsp;MODIFY&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"sy-subrc&nbsp;eq&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_special_adjust_mode&nbsp;EQ&nbsp;subset.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_restore_subset_conds.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;vim_modify_view_entry&nbsp;USING&nbsp;hf&nbsp;u_rc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;u_rc&nbsp;NE&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;u_rc&nbsp;EQ&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;u_mark_entries&nbsp;NE&nbsp;space.&nbsp;&nbsp;"mark&nbsp;ajusted&nbsp;entries<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;total&nbsp;WITH&nbsp;KEY&nbsp;&ltvim_xtotal_key&gt&nbsp;BINARY&nbsp;SEARCH&nbsp;&nbsp;"#EC&nbsp;WARNOK<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltmark&gt&nbsp;EQ&nbsp;nicht_markiert.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltmark&gt&nbsp;=&nbsp;markiert.&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;mark_total.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;total&nbsp;INDEX&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;mark_extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extract&nbsp;=&nbsp;total.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;u_counter.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;temporal_delimitation_happened&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;vim_delim_entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;temporal_delimitation_happened.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status-data&nbsp;=&nbsp;title-data&nbsp;=&nbsp;auswahldaten.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nextline&nbsp;=&nbsp;l&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;u_del_cnt&nbsp;NE&nbsp;0&nbsp;AND&nbsp;u_counter&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s140(sv)&nbsp;"&1&nbsp;Eintr#ge&nbsp;geloescht,&nbsp;&2&nbsp;Eintr#ge&nbsp;#bernom<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;u_del_cnt&nbsp;u_counter.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;u_del_cnt&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s011(sv)&nbsp;WITH&nbsp;u_del_cnt.&nbsp;"Anzahl&nbsp;gel#schter&nbsp;Eintr#ge<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s012(sv)&nbsp;WITH&nbsp;u_counter.&nbsp;"Anzahl&nbsp;ver#nderter&nbsp;Eintr#g<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;replace_mode.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"no&nbsp;update&nbsp;happened<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;x_header-delmdtflag&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_extract.&nbsp;"consider&nbsp;collapsed&nbsp;or&nbsp;merged&nbsp;entries<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"u_update_happend&nbsp;ne&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;extract&nbsp;LINES&nbsp;maxlines.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nextline&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_special_adjust_mode&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;vim_special_mode,&nbsp;vim_special_adjust_mode,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltstatus&gt-upd_flag,&nbsp;maxlines,&nbsp;&ltstatus&gt-maxlines.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_next_screen&nbsp;=&nbsp;0.&nbsp;vim_leave_screen&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_adjust_middle_level_mode&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;function&nbsp;=&nbsp;'SAVE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;1.&nbsp;"ignore&nbsp;changes&nbsp;in&nbsp;EXTRACT&nbsp;--&gt&nbsp;restore&nbsp;EXTRACT&nbsp;from&nbsp;TOTAL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_special_adjust_mode&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;vim_special_mode,&nbsp;vim_special_adjust_mode,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltstatus&gt-upd_flag,&nbsp;maxlines,&nbsp;&ltstatus&gt-maxlines.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vim_next_screen&nbsp;=&nbsp;0.&nbsp;vim_leave_screen&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;vim_adjust_middle_level_mode&nbsp;NE&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;function&nbsp;=&nbsp;'SAVE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;fill_extract.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.&nbsp;RAISE&nbsp;upgrade_view_failed.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"#EC&nbsp;FB_RAIS_EX<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;CLEAR&nbsp;vim_special_mode.<br />
+ENDFORM.                               " UPGRADE<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

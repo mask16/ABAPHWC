@@ -1,0 +1,690 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHR_GW_INTERFACE</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZHR_GW_INTERFACE</h2>
+<h3> Description: [HR] 그룹웨어 I/F ( 사원 정보 / 조직 정보 )</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZHR_GW_INTERFACE.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_PERNR) TYPE  PERSNO OPTIONAL<br />
+*"     VALUE(I_DATE) TYPE  BEGDA DEFAULT SY-DATUM<br />
+*"     VALUE(I_FALL) TYPE  CHAR01 OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_RETURN) TYPE  BAPIRETURN<br />
+*"  TABLES<br />
+*"      T_INSA STRUCTURE  ZHR_INSA OPTIONAL<br />
+*"      T_ORG STRUCTURE  ZHR_ORG OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zhr_gw_interface.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_NOD&nbsp;&nbsp;&nbsp;LIKE&nbsp;SNODETEXT&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_NOD2&nbsp;&nbsp;LIKE&nbsp;SNODETEXT&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_STRUC&nbsp;LIKE&nbsp;QCAT_STRU&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;LT_PERNR&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;LIKE&nbsp;PA0001-PERNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LT_PERNR.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_PER&nbsp;LIKE&nbsp;LT_PERNR&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;LT_OBJ&nbsp;OCCURS&nbsp;100,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJID&nbsp;LIKE&nbsp;HRP1000-OBJID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LT_OBJ.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_DATE&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;SY-DATUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FIRST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_SIGN(2)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_OBJID&nbsp;&nbsp;&nbsp;TYPE&nbsp;HROBJID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_CNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_PERNR&nbsp;&nbsp;&nbsp;TYPE&nbsp;PERSNO.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_PA0001&nbsp;LIKE&nbsp;PA0001&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_ZHRTGWINSA&nbsp;LIKE&nbsp;ZHRTGWINSA&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.&nbsp;&nbsp;"사원정보<br />
+   </div>
+   <div class="codeComment">
+*         LT_ZHRT0058 LIKE ZHRT0058 OCCURS 0 WITH HEADER LINE,  "조직정보<br />
+*         LT_ZHRT0066 LIKE ZHRT0066 OCCURS 0 WITH HEADER LINE.  "동명이인<br />
+*<br />
+*  DATA : LT_DEL LIKE ZHRT9999 OCCURS 0 WITH HEADER LINE.  "동기화제외<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;"고용상태<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;T529U<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_STAT2<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STATN&nbsp;=&nbsp;'2'.<br />
+<br />
+&nbsp;&nbsp;"사원하위그룹<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;T503T<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;GT_PERSK<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;SPRSL&nbsp;=&nbsp;'3'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  "기준일 -1 일로 조회일 세팅<br />
+*  CALL FUNCTION 'RP_CALC_DATE_IN_INTERVAL'<br />
+*    EXPORTING<br />
+*      DATE      = SY-DATUM  "기준일<br />
+*      DAYS      = '1'<br />
+*      MONTHS    = '00'<br />
+*      SIGNUM    = '-'<br />
+*      YEARS     = '00'<br />
+*    IMPORTING<br />
+*      CALC_DATE = L_DATE.<br />
+*<br />
+*  IF I_DATE IS INITIAL.<br />
+*    I_DATE = L_DATE.<br />
+*  ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_PA0001<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;PERSK&nbsp;IN&nbsp;('10',&nbsp;'20')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BUKRS&nbsp;=&nbsp;'1000'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;WERKS&nbsp;=&nbsp;'1000'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PLANS&nbsp;&lt&gt&nbsp;'99999999'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_FALL&nbsp;=&nbsp;'X'.&nbsp;&nbsp;"현재&nbsp;재직&nbsp;전체사원('X')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&gt&gt&gt&nbsp;휴직자&nbsp;처리&nbsp;?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_PER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;LT_PA0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PERNR&nbsp;=&nbsp;LT_PA0001-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STAT2&nbsp;IN&nbsp;('1',&nbsp;'3')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;ELSE.&nbsp;&nbsp;"DATA&nbsp;변경일에&nbsp;유효한&nbsp;DATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_PER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_PER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_PER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0105<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_PER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;LT_PER&nbsp;BY&nbsp;PERNR.<br />
+&nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;LT_PER&nbsp;COMPARING&nbsp;PERNR.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;IT_0000,&nbsp;IT_0000[],&nbsp;IT_0001,&nbsp;IT_0001[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IT_0002,&nbsp;IT_0002[],&nbsp;IT_0105,&nbsp;IT_0105[].<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_0000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_0002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;I_DATE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;FROM&nbsp;PA0105<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_0105<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BEGDA&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;&gt=&nbsp;I_DATE.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_PERNR&nbsp;IS&nbsp;NOT&nbsp;INITIAL.&nbsp;&nbsp;"단일사번&nbsp;인사정보<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-PERNR&nbsp;=&nbsp;I_PERNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'C'.&nbsp;&nbsp;"변경<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;PERNR&nbsp;FROM&nbsp;PA0302<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;PERNR&nbsp;=&nbsp;I_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MASSN&nbsp;=&nbsp;'A0'.&nbsp;&nbsp;"입사<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'N'.&nbsp;&nbsp;"신규<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;PERNR&nbsp;FROM&nbsp;PA0302<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;PERNR&nbsp;=&nbsp;I_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MASSN&nbsp;=&nbsp;'AA'.&nbsp;&nbsp;"퇴직<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'R'.&nbsp;&nbsp;"퇴직<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*    SELECT SINGLE PERNR FROM PA0302<br />
+*      INTO L_PERNR<br />
+*     WHERE PERNR = PERNR<br />
+*       AND SUBTY = SPACE<br />
+*       AND OBJPS = SPACE<br />
+*       AND SPRPS = SPACE<br />
+*       AND ENDDA &gt= I_DATE<br />
+*       AND BEGDA &lt= I_DATE<br />
+*       AND MASSN = 'DC'.  "휴직<br />
+*    IF SY-SUBRC = 0.<br />
+*      T_INSA-FLAG = 'C'.  "변경<br />
+*    ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_PERNR_INFO&nbsp;USING&nbsp;L_PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_INSA.&nbsp;CLEAR&nbsp;T_INSA.<br />
+<br />
+&nbsp;&nbsp;ELSE.&nbsp;&nbsp;"모든&nbsp;부서원&nbsp;인사&nbsp;/&nbsp;조직&nbsp;정보<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_PER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;T_INSA&nbsp;WITH&nbsp;KEY&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_0000&nbsp;WHERE&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'C'.&nbsp;&nbsp;"변경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_0001&nbsp;WHERE&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'C'.&nbsp;&nbsp;"변경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_0002&nbsp;WHERE&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'C'.&nbsp;&nbsp;"변경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_0105&nbsp;WHERE&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'C'.&nbsp;&nbsp;"변경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"퇴사자&nbsp;정보를&nbsp;수정했을&nbsp;때에는<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Flag&nbsp;를&nbsp;변경하여&nbsp;전송하지&nbsp;않는다<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_MASSN&nbsp;TYPE&nbsp;MASSN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MASSN&nbsp;FROM&nbsp;PA0000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;L_MASSN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;PERNR&nbsp;=&nbsp;LT_PER-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ENDDA&nbsp;=&nbsp;'99991231'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MASSN&nbsp;=&nbsp;'AA'.&nbsp;&nbsp;"퇴직<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'R'.&nbsp;&nbsp;"퇴직<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_FALL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'C'.&nbsp;&nbsp;"변경<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-PERNR&nbsp;=&nbsp;LT_PER-PERNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_INSA.&nbsp;CLEAR&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;"전송안함<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;"현재&nbsp;재직&nbsp;전체사원('X')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'A'.&nbsp;&nbsp;"전체전송시<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-PERNR&nbsp;=&nbsp;LT_PER-PERNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_INSA.&nbsp;CLEAR&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"사원&nbsp;정보<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_P0302&nbsp;LIKE&nbsp;LT_PERNR&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_P2001&nbsp;LIKE&nbsp;LT_PERNR&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"기간내&nbsp;입사자<br />
+   </div>
+   <div class="codeComment">
+*    IF L_DATE IS INITIAL.<br />
+*      SELECT PERNR FROM PA0302<br />
+*        INTO CORRESPONDING FIELDS OF TABLE LT_P0302<br />
+*       WHERE SUBTY = SPACE<br />
+*         AND OBJPS = SPACE<br />
+*         AND SPRPS = SPACE<br />
+*         AND AEDTM &gt= I_DATE<br />
+*         AND AEDTM &lt= I_DATE<br />
+**          AND endda &gt= I_DATE<br />
+**          AND begda &lt= I_DATE<br />
+*         AND MASSN = 'A0'.  "입사<br />
+*    ELSE.  "기준일 -1 일 입사자<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;PERNR&nbsp;FROM&nbsp;PA0302<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_P0302<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MASSN&nbsp;=&nbsp;'A0'.&nbsp;&nbsp;"입사<br />
+   </div>
+   <div class="codeComment">
+*    ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_P0302.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;T_INSA&nbsp;WITH&nbsp;KEY&nbsp;PERNR&nbsp;=&nbsp;LT_P0302-PERNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;T_INSA&nbsp;INDEX&nbsp;SY-TABIX.&nbsp;CLEAR&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-PERNR&nbsp;=&nbsp;LT_P0302-PERNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_FALL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'N'.&nbsp;&nbsp;"신규<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;&nbsp;"현재&nbsp;재직&nbsp;전체사원('X')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'A'.&nbsp;&nbsp;"전체전송시<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_INSA.&nbsp;CLEAR&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*    "휴직자 (전체 전송시는 제외함)<br />
+*    IF FALL IS INITIAL.<br />
+*      SELECT PERNR FROM PA2001<br />
+*        INTO CORRESPONDING FIELDS OF TABLE LT_P2001<br />
+*       WHERE AWART IN R_AWART<br />
+*         AND BEGDA &lt= I_DATE<br />
+*         AND ENDDA &gt= I_DATE.<br />
+*      IF SY-SUBRC = 0.<br />
+*        LOOP AT LT_P2001.<br />
+*          READ TABLE T_INSA WITH KEY PERNR = LT_P2001-PERNR.<br />
+*          IF SY-SUBRC = 0.<br />
+*            DELETE T_INSA INDEX SY-TABIX.<br />
+*          ENDIF.<br />
+*<br />
+*          T_INSA-PERNR = LT_P2001-PERNR.<br />
+*          T_INSA-FLAG = 'C'.  "변경<br />
+*          APPEND T_INSA. CLEAR T_INSA.<br />
+*        ENDLOOP.<br />
+*      ENDIF.<br />
+*    ENDIF.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;"기간내&nbsp;퇴사자&nbsp;(전체&nbsp;전송시는&nbsp;제외함)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_FALL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;PERNR&nbsp;FROM&nbsp;PA0302<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_P0302<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SUBTY&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;OBJPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SPRPS&nbsp;=&nbsp;SPACE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&gt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AEDTM&nbsp;&lt=&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MASSN&nbsp;=&nbsp;'AA'.&nbsp;&nbsp;"퇴직<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_P0302.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;T_INSA&nbsp;WITH&nbsp;KEY&nbsp;PERNR&nbsp;=&nbsp;LT_P0302-PERNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;T_INSA&nbsp;INDEX&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-PERNR&nbsp;=&nbsp;LT_P0302-PERNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_INSA-FLAG&nbsp;=&nbsp;'R'.&nbsp;&nbsp;"퇴직<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_INSA.&nbsp;CLEAR&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*    "복직발령 없이 퇴사한 경우 IT2001 휴직 DATA 종료일이<br />
+*    "퇴직일 이후여서 동기화시 FLAG = 'C' 로 처리되는 문제 발생<br />
+*    "어떤 경우라도 퇴직상태이면 동기화 제외<br />
+*    DATA : L_STAT2 TYPE STAT2.<br />
+*<br />
+*    LOOP AT T_INSA WHERE FLAG &lt&gt 'R'.<br />
+*      CLEAR : L_STAT2.<br />
+*      SELECT SINGLE STAT2 FROM PA0000<br />
+*        INTO L_STAT2<br />
+*       WHERE PERNR = T_INSA-PERNR<br />
+*         AND AEDTM &gt= I_DATE<br />
+*         AND AEDTM &lt= I_DATE.<br />
+*      IF L_STAT2 = '0'.  "퇴직자<br />
+*        DELETE T_INSA INDEX SY-TABIX.<br />
+*        CLEAR T_INSA.<br />
+*      ENDIF.<br />
+*    ENDLOOP.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_PERNR_INFO&nbsp;USING&nbsp;T_INSA-PERNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;T_INSA.&nbsp;CLEAR&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;T_INSA&nbsp;BY&nbsp;FLAG.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"조직&nbsp;정보<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_OBJ-OBJID&nbsp;=&nbsp;'00100000'.&nbsp;&nbsp;&nbsp;"현대종합금속<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LT_OBJ.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;L_FIRST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_OBJ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LT_NOD,&nbsp;LT_NOD[].<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_FIRST&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-UPORGEH&nbsp;=&nbsp;'00000000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-ORGEH&nbsp;=&nbsp;'00000000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-LEVEL&nbsp;=&nbsp;'00'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-ORGTX&nbsp;=&nbsp;'조직구조'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_ORG.&nbsp;&nbsp;CLEAR&nbsp;T_ORG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_FIRST&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SETUP_TREE_TABLE&nbsp;TABLES&nbsp;LT_NOD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;'O'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_OBJ-OBJID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'ORGEH'.&nbsp;&nbsp;"평가경로<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;LT_NOD2,&nbsp;LT_NOD2[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_NOD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LT_NOD&nbsp;TO&nbsp;LT_NOD2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LT_NOD2.&nbsp;&nbsp;CLEAR&nbsp;LT_NOD2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_NOD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LT_NOD-TLEVEL&nbsp;=&nbsp;'01'.<br />
+   </div>
+   <div class="codeComment">
+*            READ TABLE IT_0003T WITH KEY CODE_TEXT = '00001000'.  "대웅<br />
+*            IF SY-SUBRC = 0.<br />
+*              MOVE IT_0003T-COMM_CODE TO T_ORG-UPORGEH.<br />
+*            ENDIF.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_NOD2&nbsp;WITH&nbsp;KEY&nbsp;ID&nbsp;=&nbsp;LT_NOD-PARENT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-ORGEH&nbsp;=&nbsp;LT_NOD2-NAME+3(8).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;T_ORG-UPORGEH&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;L_OBJID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;LT_NOD-NAME+3(8)&nbsp;TO&nbsp;L_OBJID.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;RHPH_STRUCTURE_READ&nbsp;TABLES&nbsp;LT_STRUC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;'O'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_OBJID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'A002'.&nbsp;&nbsp;"평가경로<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_STRUC&nbsp;WHERE&nbsp;LEVEL&nbsp;=&nbsp;'2'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-UPORGEH&nbsp;=&nbsp;LT_STRUC-OBJID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-ORGEH&nbsp;=&nbsp;LT_NOD-NAME+3(8).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-ORGTX&nbsp;=&nbsp;LT_NOD-TEXT2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-LEVEL&nbsp;=&nbsp;LT_NOD-TLEVEL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ORG-BUKRS&nbsp;=&nbsp;'1000'.&nbsp;&nbsp;"현대종합금속주식회사<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_ORG.&nbsp;CLEAR&nbsp;T_ORG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;T_ORG[]&nbsp;IS&nbsp;INITIAL&nbsp;AND&nbsp;T_INSA[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN-TYPE&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN-MESSAGE&nbsp;=&nbsp;'오류&nbsp;:&nbsp;인사정보/조직정보&nbsp;조회'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN-TYPE&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN-MESSAGE&nbsp;=&nbsp;'성공&nbsp;:&nbsp;인사정보/조직정보&nbsp;조회'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**&gt&gt&gt&gt&gt 동기화 제외<br />
+*  PERFORM RE_ZHRT9999(ZHRCOM_F01)    TABLES LT_DEL<br />
+*                                      USING I_DATE.<br />
+*  LOOP AT T_INSA.<br />
+*    READ TABLE LT_DEL WITH KEY PERNR = T_INSA-PERNR<br />
+*                               EXCGB = 'X'.  "동기화제외<br />
+*    IF SY-SUBRC = 0.<br />
+*      DELETE T_INSA INDEX SY-TABIX.<br />
+*      CLEAR T_INSA.<br />
+*    ENDIF.<br />
+*  ENDLOOP.<br />
+<br />
+* 고객지원 요청 : 사원의 부서코드가 '00000000' 경우 퇴사자 처리되므로<br />
+*                 베어월드 조직도 동기화시 상태값이 'R'이 아니면<br />
+*                 무조건 insert 작업으로  처리하고 있습니다.<br />
+*                 퇴사자 상태값은 'R'로 전달 부탁드립니다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;T_INSA-ORGEH&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;T_INSA&nbsp;INDEX&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;"모니터링&nbsp;TABLE&nbsp;SAVE&nbsp;:&nbsp;사원&nbsp;정보<br />
+&nbsp;&nbsp;SORT&nbsp;T_INSA&nbsp;BY&nbsp;PERNR.<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;L_CNT.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_INSA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;T_INSA&nbsp;TO&nbsp;LT_ZHRTGWINSA.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L_CNT&nbsp;=&nbsp;L_CNT&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_ZHRTGWINSA-SEQNR&nbsp;=&nbsp;L_CNT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_ZHRTGWINSA-AEDTM&nbsp;=&nbsp;SY-DATUM.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"날짜<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_ZHRTGWINSA-AEZET&nbsp;=&nbsp;SY-UZEIT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"시간<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_ZHRTGWINSA-ZUSER&nbsp;=&nbsp;SY-UNAME.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"USER&nbsp;ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LT_ZHRTGWINSA-ZPART&nbsp;=&nbsp;'BEARWORLD'.&nbsp;&nbsp;&nbsp;"시스템구분<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LT_ZHRTGWINSA.&nbsp;CLEAR&nbsp;LT_ZHRTGWINSA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;L_CNT&nbsp;=&nbsp;LINES(&nbsp;LT_ZHRTGWINSA&nbsp;).<br />
+&nbsp;&nbsp;IF&nbsp;L_CNT&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;ZHRTGWINSA&nbsp;FROM&nbsp;TABLE&nbsp;LT_ZHRTGWINSA&nbsp;ACCEPTING&nbsp;DUPLICATE&nbsp;KEYS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S016(PG)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;'▶&nbsp;사원정보&nbsp;:&nbsp;모니터링&nbsp;Table&nbsp;에&nbsp;저장&nbsp;성공'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E016(PG)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;'▶&nbsp;사원정보&nbsp;:&nbsp;모니터링&nbsp;Table&nbsp;에&nbsp;저장&nbsp;실패'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'▶&nbsp;시스템&nbsp;담당자에게&nbsp;문의&nbsp;하십시오~!'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*<br />
+*  "조직 정보<br />
+*  LOOP AT T_ORG.<br />
+*    "요녕대웅제약(00004156) 동기화 제외<br />
+*    IF T_ORG-ORGEH = '00004156'.<br />
+*      DELETE T_ORG INDEX SY-TABIX.<br />
+*      CLEAR T_ORG.<br />
+*    ENDIF.<br />
+*  ENDLOOP.<br />
+*<br />
+*  CLEAR : L_CNT.<br />
+*  LOOP AT T_ORG.<br />
+*    MOVE-CORRESPONDING T_ORG TO LT_ZHRT0058.<br />
+*<br />
+*    L_CNT = L_CNT + 1.<br />
+*    LT_ZHRT0058-SEQNR = L_CNT.<br />
+*    LT_ZHRT0058-AEDTM = SY-DATUM.       "날짜<br />
+*    LT_ZHRT0058-AEZET = SY-UZEIT.       "시간<br />
+*    LT_ZHRT0058-ZUSER = SY-UNAME.       "유저<br />
+*    LT_ZHRT0058-ZPART = PART.           "시스템구분<br />
+*    LT_ZHRT0058-CLIENTIPADDR = IPADDR.  "IP<br />
+*<br />
+*    APPEND LT_ZHRT0058. CLEAR LT_ZHRT0058.<br />
+*  ENDLOOP.<br />
+*<br />
+*  L_CNT = LINES( LT_ZHRT0058 ).<br />
+*  IF L_CNT &gt 0.<br />
+*    INSERT ZHRT0058 FROM TABLE LT_ZHRT0058 ACCEPTING DUPLICATE KEYS.<br />
+*    IF SY-SUBRC = 0.<br />
+*      COMMIT WORK.<br />
+*      MESSAGE S016(PG)<br />
+*         WITH '▶ 조직정보 : 모니터링 Table 에 저장 성공'.<br />
+*    ELSE.<br />
+*      ROLLBACK WORK.<br />
+*      MESSAGE E016(PG)<br />
+*         WITH '▶ 조직정보 : 모니터링 Table 에 저장 실패'<br />
+*              '▶ 시스템 담당자에게 문의 하십시오~!'.<br />
+*    ENDIF.<br />
+*  ENDIF.<br />
+*<br />
+**  ELSE.<br />
+**    RETURN-TYPE = 'E'.<br />
+**    RETURN-MESSAGE = '▶ PARAMETER(PART, IP) 를 입력해주세요~!'.<br />
+**  ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: PG<br />
+*016   &1 &2 &3 &4<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

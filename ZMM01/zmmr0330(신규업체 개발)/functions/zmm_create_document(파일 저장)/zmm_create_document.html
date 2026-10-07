@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZMM_CREATE_DOCUMENT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZMM_CREATE_DOCUMENT</h2>
+<h3> Description: 파일 저장</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZMM_CREATE_DOCUMENT.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_DOKAR) LIKE  DRAW-DOKAR<br />
+*"     VALUE(I_DOKNR) LIKE  DRAW-DOKNR OPTIONAL<br />
+*"     REFERENCE(I_DOKVR) LIKE  DRAW-DOKVR<br />
+*"     REFERENCE(I_DOKTL) LIKE  DRAW-DOKTL<br />
+*"  EXPORTING<br />
+*"     REFERENCE(E_RETURN) LIKE  ZMMS0160 STRUCTURE  ZMMS0160<br />
+*"     REFERENCE(E_DOKNR) LIKE  DRAW-DOKNR<br />
+*"  TABLES<br />
+*"      T_FILES STRUCTURE  BAPI_DOC_FILES2<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zmm_create_document.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+DATA: LS_DOCUMENTDATA TYPE BAPI_DOC_DRAW2.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_DOCUMENTFILES&nbsp;TYPE&nbsp;BAPI_DOC_FILES2&nbsp;OCCURS&nbsp;10&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_BAPI_RETURN&nbsp;LIKE&nbsp;BAPIRET2.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_FRONTEND&nbsp;LIKE&nbsp;DMS_FRONTEND_DATA.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DTTRG&nbsp;LIKE&nbsp;DRAW-DTTRG.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_LAST_DIRECTORY&nbsp;LIKE&nbsp;DRAW-FILEP.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DAPPL&nbsp;LIKE&nbsp;DRAW-DAPPL.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_FILE&nbsp;LIKE&nbsp;DRAW-FILEP.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DUMMY&nbsp;LIKE&nbsp;DRAW-FILEP.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_FLAG&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA:&nbsp;L_DOCUMENTNUMBER&nbsp;LIKE&nbsp;BAPI_DOC_AUX-DOCNUMBER.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+**로컬파일 받기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LS_FRONTEND-HOSTNAME&nbsp;=&nbsp;'DEFAULT'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  ls_frontend-hostname = 'ERPDB'.<br />
+*  ls_frontend-hostname = 'ERPCS'.<br />
+*  ls_frontend-hostname = '192.168.30.47'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'CV120_DOC_GET_FILE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_HOSTNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_FRONTEND-HOSTNAME<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_DTTRG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_DTTRG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_PATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_LAST_DIRECTORY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_DAPPL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_DAPPL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_MODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'O'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_TITLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_FILE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_FILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_MASK_CHANGE&nbsp;=&nbsp;L_FLAG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRONG_APPL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;L_FILE&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN-TYPE&nbsp;=&nbsp;'N'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RETURN-MESSAGE&nbsp;=&nbsp;'사용자에의해&nbsp;취소&nbsp;되었습니다'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**경로와 파일명 분리<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'CV120_SPLIT_PATH'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_PATH&nbsp;&nbsp;=&nbsp;L_FILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_PATH&nbsp;=&nbsp;L_LAST_DIRECTORY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_FILE&nbsp;=&nbsp;L_DUMMY.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**어플리케이션 유형 구하기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'CV120_DOC_GET_APPL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_DIALOG&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_TYPDT&nbsp;&nbsp;=&nbsp;LS_FRONTEND-FRONTEND_TYPE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PF_FILE&nbsp;&nbsp;&nbsp;=&nbsp;L_DUMMY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PFX_DAPPL&nbsp;=&nbsp;L_DAPPL.<br />
+<br />
+&nbsp;&nbsp;"*&nbsp;문서내역&nbsp;받기<br />
+   </div>
+   <div class="codeComment">
+*  CLEAR drat.<br />
+*  CALL SCREEN 30 STARTING AT 1 1 ENDING AT 57 1.<br />
+*  CHECK g_old_okcode EQ 'OKAY'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTTYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKAR.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTNUMBER&nbsp;&nbsp;=&nbsp;I_DOKNR.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTVERSION&nbsp;=&nbsp;I_DOKVR.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DOCUMENTPART&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKTL.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-DESCRIPTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_DUMMY.<br />
+&nbsp;&nbsp;LS_DOCUMENTDATA-USERNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTTYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKAR.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTNUMBER&nbsp;&nbsp;=&nbsp;I_DOKNR.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTPART&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_DOKTL.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCUMENTVERSION&nbsp;=&nbsp;I_DOKVR.<br />
+   </div>
+   <div class="codeComment">
+*  LT_DOCUMENTFILES-STORAGECATEGORY = 'ZDMS_400'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LT_DOCUMENTFILES-STORAGECATEGORY&nbsp;=&nbsp;'DMS_C1_ST'.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCPATH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_LAST_DIRECTORY.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-DOCFILE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;L_DUMMY.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-WSAPPLICATION&nbsp;&nbsp;&nbsp;=&nbsp;L_DAPPL.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-LANGUAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-CHECKEDIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-CREATED_AT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-DATUM.<br />
+&nbsp;&nbsp;LT_DOCUMENTFILES-CREATED_BY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;APPEND&nbsp;LT_DOCUMENTFILES.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'BAPI_DOCUMENT_CREATE2'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENTDATA&nbsp;&nbsp;&nbsp;=&nbsp;LS_DOCUMENTDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENTNUMBER&nbsp;=&nbsp;L_DOCUMENTNUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LS_BAPI_RETURN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENTFILES&nbsp;&nbsp;=&nbsp;LT_DOCUMENTFILES.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  WAIT UP TO 1 SECONDS.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;L_DOCUMENTNUMBER&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_ROLLBACK'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_BAPI_RETURN&nbsp;TO&nbsp;E_RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_DOKNR&nbsp;=&nbsp;L_DOCUMENTNUMBER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;T_FILES[]&nbsp;=&nbsp;LT_DOCUMENTFILES[].<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  E_RETURN-TYPE = 'S'.<br />
+*  e_return-message = drat-dktxt.<br />
+<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZMMM<br />
+*001   &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

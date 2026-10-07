@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3SAP_CHK_BC_CONNECT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3SAP_CHK_BC_CONNECT</h2>
+<h3> Description: BC 서버 연결확인</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3SAP_CHK_BC_CONNECT.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(BUKRS) TYPE  BUKRS<br />
+*"  EXPORTING<br />
+*"     VALUE(RETURN) LIKE  ZDTV3S_RETURN STRUCTURE  ZDTV3S_RETURN<br />
+*"     REFERENCE(COMPANY) LIKE  ZDTV3T_COMPANY STRUCTURE<br />
+*"        ZDTV3T_COMPANY<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3sap_chk_bc_connect.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LO_CLIENT&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;IF_HTTP_CLIENT&nbsp;.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_MESSAGE&nbsp;TYPE&nbsp;STRING.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 회사정보읽기.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zdtv3sap_chk_company(전자세금계산서 회사 정의 확인)/zdtv3sap_chk_company.html">'ZDTV3SAP_CHK_COMPANY'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;=&nbsp;BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;=&nbsp;RETURN.<br />
+&nbsp;&nbsp;IF&nbsp;RETURN-TYPE&nbsp;EQ&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* BC Check.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MANDT&nbsp;INTO&nbsp;SY-MANDT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_HOST<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;SYSID&nbsp;EQ&nbsp;SY-SYSID.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;G_NBC&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+** S) 2021.07.19 - #24395 UniTAX 4.0 로직 수정<br />
+* 논리목적지 존재확인.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;G_NBC&nbsp;EQ&nbsp;''.<br />
+   </div>
+   <div class="codeComment">
+** UNITAX 2.5(BC사용버전)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_ZDTV3T_COMPANY-RFCDEST&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'10002'&nbsp;''&nbsp;BUKRS&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'RFC_PING' DESTINATION GS_ZDTV3T_COMPANY-RFCDEST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'10004'&nbsp;''&nbsp;GS_ZDTV3T_COMPANY-RFCDEST&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPANY&nbsp;=&nbsp;GS_ZDTV3T_COMPANY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'S'&nbsp;'10005'&nbsp;''&nbsp;GS_ZDTV3T_COMPANY-RFCDEST&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+** UNITAX 4.0(JCO사용버전)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;"SM59&nbsp;-&nbsp;DESTINATION&nbsp;SETTING&nbsp;CHECL<br />
+   </div>
+   <div class="codeComment">
+*    CALL METHOD CL_HTTP_CLIENT=&gtCREATE_BY_DESTINATION<br />
+*     EXPORTING<br />
+*       DESTINATION              = GS_ZDTV3T_COMPANY-RFCDEST<br />
+*     IMPORTING<br />
+*       CLIENT                   = LO_CLIENT<br />
+*     EXCEPTIONS<br />
+*       ARGUMENT_NOT_FOUND       = 1<br />
+*       DESTINATION_NOT_FOUND    = 2<br />
+*       DESTINATION_NO_AUTHORITY = 3<br />
+*       PLUGIN_NOT_ACTIVE        = 4<br />
+*       INTERNAL_ERROR           = 5<br />
+*       OTHERS                   = 6.<br />
+*<br />
+*    IF SY-SUBRC &lt&gt 0.<br />
+*     DS_RETURN RETURN 'E' '10004' '' GS_ZDTV3T_COMPANY-RFCDEST '' '' ''.<br />
+*      EXIT.<br />
+*    ENDIF.<br />
+*<br />
+*    "CONNECTION TEST(SEND)<br />
+*    LO_CLIENT-&gtSEND(<br />
+*      EXCEPTIONS<br />
+*        HTTP_COMMUNICATION_FAILURE = 1<br />
+*        HTTP_INVALID_STATE         = 2<br />
+*        HTTP_PROCESSING_FAILED     = 3<br />
+*        HTTP_INVALID_TIMEOUT       = 4<br />
+*        OTHERS                     = 5<br />
+*).<br />
+*    IF SY-SUBRC &lt&gt 0.<br />
+*     DS_RETURN RETURN 'E' '10004' '' GS_ZDTV3T_COMPANY-RFCDEST '' '' ''.<br />
+*      EXIT.<br />
+*    ENDIF.<br />
+*<br />
+*    "CONNECTION TEST(RECEIVE)<br />
+*    LO_CLIENT-&gtRECEIVE(<br />
+*      EXCEPTIONS<br />
+*        HTTP_COMMUNICATION_FAILURE = 1<br />
+*        HTTP_INVALID_STATE         = 2<br />
+*        HTTP_PROCESSING_FAILED     = 3<br />
+*        OTHERS                     = 4<br />
+*).<br />
+*    IF SY-SUBRC &lt&gt 0.<br />
+*     DS_RETURN RETURN 'E' '10004' '' GS_ZDTV3T_COMPANY-RFCDEST '' '' ''.<br />
+*      EXIT.<br />
+*    ELSE.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPANY&nbsp;=&nbsp;GS_ZDTV3T_COMPANY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'S'&nbsp;'10005'&nbsp;''&nbsp;GS_ZDTV3T_COMPANY-RFCDEST&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+**&lt&lt&lt.<br />
+*  LO_CLIENT-&gtCLOSE( ).<br />
+**&gt&gt&gt<br />
+* ENDIF.<br />
+*** E) 2021.07.19 - #24395 UniTAX 4.0 로직 수정<br />
+<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

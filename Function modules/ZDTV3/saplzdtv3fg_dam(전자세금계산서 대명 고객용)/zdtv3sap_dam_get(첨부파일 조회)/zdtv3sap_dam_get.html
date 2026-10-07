@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3SAP_DAM_GET</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3SAP_DAM_GET</h2>
+<h3> Description: 첨부파일 조회</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3SAP_DAM_GET.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(BUKRS) TYPE  BUKRS OPTIONAL<br />
+*"     VALUE(INV_SEQ) TYPE  ZDTV3E_INV_SEQ<br />
+*"     VALUE(ATTACH_PATH) TYPE  ZDTV3E_ATTACH_PATH OPTIONAL<br />
+*"     VALUE(ATTACH_LOCAL) TYPE  ZDTV3E_ATTACH_PATH OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(RETURN) LIKE  ZDTV3S_RETURN STRUCTURE  ZDTV3S_RETURN<br />
+*"     VALUE(ATTACH_LOCAL_NEW) TYPE  ZDTV3E_ATTACH_LOCAL<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3sap_dam_get.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;SIZE&nbsp;TYPE&nbsp;I,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEN&nbsp;&nbsp;TYPE&nbsp;I.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;OK&nbsp;.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;HDL&nbsp;TYPE&nbsp;I&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;TYPE&nbsp;I&nbsp;VALUE&nbsp;26101957,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SLEN&nbsp;TYPE&nbsp;I.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;CMD(1000)&nbsp;TYPE&nbsp;C.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;RESULT&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LINE(100)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;RESULT.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;PATH(128),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME(128),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_SER_FILE&nbsp;TYPE&nbsp;RCGFILETR-FTAPPL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RFCREGID&nbsp;TYPE&nbsp;RFCREGID.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 회사정보읽기.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;GS_ZDTV3T_COMPANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_COMPANY<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;EQ&nbsp;BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;AR_ATTACH&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19002'&nbsp;''&nbsp;BUKRS&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 논리목적지 (기능 호출시 지정) 지정확인.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GS_ZDTV3T_COMPANY-FTP_RFCDEST&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19003'&nbsp;''&nbsp;BUKRS&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 존재확인.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'RFC_PING' DESTINATION GS_ZDTV3T_COMPANY-FTP_RFCDEST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19004'&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_ZDTV3T_COMPANY-FTP_RFCDEST&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* RFCREGID : A: SERVER F: LOCAL R:REGIST<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'RFC_READ_TCPIP_DESTINATION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESTINATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_RFCDEST<br />
+   </div>
+   <div class="codeComment">
+*      BYPASS_BUF              = 'X'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;METHOD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RFCREGID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AUTHORITY_NOT_AVAILABLE&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19004'&nbsp;''<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_ZDTV3T_COMPANY-FTP_RFCDEST&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SET&nbsp;EXTENDED&nbsp;CHECK&nbsp;OFF.<br />
+&nbsp;&nbsp;SLEN&nbsp;=&nbsp;STRLEN(&nbsp;GS_ZDTV3T_COMPANY-FTP_PW&nbsp;).<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'HTTP_SCRAMBLE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_PW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SOURCELEN&nbsp;&nbsp;&nbsp;=&nbsp;SLEN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;KEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESTINATION&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_PW.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'FTP_CONNECT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PASSWORD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_PW<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HOST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_IP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RFC_DESTINATION&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_RFCDEST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HANDLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;HDL.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*파일 검색하여 다운로드<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;CMD.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*NAME = ATTACH_LOCAL.<br />
+*  DO.<br />
+*    SPLIT NAME AT '\' INTO PATH NAME.<br />
+*    FIND '\' IN NAME.<br />
+*    IF SY-SUBRC NE 0.<br />
+*      EXIT.<br />
+*    ENDIF.<br />
+*  ENDDO.<br />
+*<br />
+*ATTACH_LOCAL = NAME.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CONCATENATE&nbsp;'get'ATTACH_PATH&nbsp;ATTACH_LOCAL<br />
+&nbsp;&nbsp;INTO&nbsp;CMD&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;RESULT[].<br />
+&nbsp;&nbsp;CALL FUNCTION 'FTP_COMMAND'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HANDLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;HDL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMAND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;CMD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RESULT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMAND_ERROR&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCPIP_ERROR&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+   </div>
+   <div class="codeComment">
+** RFC DEST 가 서버이면 서버에서 DOWNLOAD 함.<br />
+*  IF RFCREGID EQ 'A' .<br />
+*    CONCATENATE GS_ZDTV3T_COMPANY-FTP_PATH NAME INTO L_SER_FILE.<br />
+*    IF NOT ATTACH_PATH IS INITIAL.<br />
+*      CALL FUNCTION 'C13Z_FILE_DOWNLOAD_BINARY'<br />
+*        EXPORTING<br />
+*          I_FILE_FRONT_END = ATTACH_PATH<br />
+*          I_FILE_APPL      = L_SER_FILE.<br />
+*    ENDIF.<br />
+*    IF SY-SUBRC NE 0.<br />
+*      DS_RETURN RETURN 'E' '19010' INV_SEQ<br />
+*                L_SER_FILE '' '' ''.<br />
+**<br />
+*      CALL FUNCTION 'FTP_DISCONNECT'<br />
+*        EXPORTING<br />
+*          HANDLE = HDL.<br />
+*      CALL FUNCTION 'RFC_CONNECTION_CLOSE'<br />
+*        EXPORTING<br />
+*          DESTINATION = GS_ZDTV3T_COMPANY-FTP_RFCDEST<br />
+*        EXCEPTIONS<br />
+*          OTHERS      = 1.<br />
+*      EXIT.<br />
+*    ELSE.<br />
+**      ATTACH_LOCAL = L_SER_FILE.<br />
+*    ENDIF.<br />
+*  ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'19008'&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'S'&nbsp;'19009'&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 종료.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'FTP_DISCONNECT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HANDLE&nbsp;=&nbsp;HDL.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'RFC_CONNECTION_CLOSE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESTINATION&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-FTP_RFCDEST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+<br />
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

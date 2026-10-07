@@ -1,0 +1,1703 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSDR0900</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZSDR0900</h2>
+<h3> Description: 생산년월별 재고 조회</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;Program&nbsp;ID&nbsp;&nbsp;:&nbsp;ZSDR0900.<br />
+*&nbsp;Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;생산년월별&nbsp;재고&nbsp;조회.<br />
+*&nbsp;Created&nbsp;By&nbsp;&nbsp;:&nbsp;AB02.<br />
+*&nbsp;Created&nbsp;On&nbsp;&nbsp;:&nbsp;2013.02.13.<br />
+*&nbsp;Frequency&nbsp;&nbsp;&nbsp;:&nbsp;수시.<br />
+*&nbsp;Category&nbsp;&nbsp;&nbsp;&nbsp;:<br />
+*&nbsp;Description&nbsp;:&nbsp;생산년월별&nbsp;재고&nbsp;조회.<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;Change&nbsp;History<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;Mod.&nbsp;#&nbsp;|Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Developer&nbsp;|Description(Reason)<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|2013.02.13.&nbsp;|AB02&nbsp;.&nbsp;&nbsp;&nbsp;&nbsp;|<br />
+*---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zsdr0900 MESSAGE-ID zsdm.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--&nbsp;Setting&nbsp;Range&nbsp;Variables--<br />
+   </div>
+   <div class="code">
+DEFINE _set_ranges.<br />
+&nbsp;&nbsp;&2-sign&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;&2-option&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&2-low&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;&2-high&nbsp;&nbsp;&nbsp;=&nbsp;&6.<br />
+&nbsp;&nbsp;append&nbsp;&2&nbsp;to&nbsp;&1.<br />
+END-OF-DEFINITION.<br />
+<br />
+TABLES: zsdt0900.<br />
+<br />
+"-- List Screen. 100 ---<br />
+DATA: dyn_table TYPE REF TO data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dyn_wa&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;data.<br />
+<br />
+FIELD-SYMBOLS: &ltdyn_table&gt  TYPE STANDARD TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltdyn_wa&gt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;any,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfm&gt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;any.<br />
+<br />
+"-- Adjust Screen 200 ---<br />
+DATA: BEGIN OF gs_200,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matnr&nbsp;&nbsp;&nbsp;TYPE&nbsp;matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maktx&nbsp;&nbsp;&nbsp;TYPE&nbsp;maktx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;period(6),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qty_n&nbsp;&nbsp;&nbsp;TYPE&nbsp;mengv13,&nbsp;"최종수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qty_o&nbsp;&nbsp;&nbsp;TYPE&nbsp;mengv13,&nbsp;"기존수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qty_a&nbsp;&nbsp;&nbsp;TYPE&nbsp;mengv13,&nbsp;"조정수량.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;meins&nbsp;&nbsp;&nbsp;TYPE&nbsp;meins,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_200,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_200&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_200.<br />
+<br />
+DATA: BEGIN OF gs_header,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lgort&nbsp;&nbsp;&nbsp;TYPE&nbsp;lgort_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lgobe&nbsp;&nbsp;&nbsp;TYPE&nbsp;lgobe,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;werks&nbsp;&nbsp;&nbsp;TYPE&nbsp;werks_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name2&nbsp;&nbsp;&nbsp;TYPE&nbsp;name2,&nbsp;&nbsp;&nbsp;"T001W.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;desc&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;char34,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;labst&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"labst,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;insme&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"insme,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;speme&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"speme,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;st_tot&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"합계.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"mengv13,&nbsp;"월별합계.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qty_m&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"mengv13,&nbsp;"월별&nbsp;합계.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diff&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"mengv13,&nbsp;"차이.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_header.<br />
+<br />
+DATA:   g_total   TYPE i, "mengv13, "월별 합계.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_diff&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,&nbsp;"mengv13,&nbsp;"차이.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_index&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_answer(1).<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--&nbsp;Grid&nbsp;Varialbe&nbsp;Setting&nbsp;----<br />
+   </div>
+   <div class="code">
+DATA: g_docking_container TYPE REF TO cl_gui_docking_container,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_custom_container&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_gui_custom_container,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_grid1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_gui_alv_grid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_grid2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_gui_alv_grid.<br />
+<br />
+DATA: gt_fcat1      TYPE lvc_t_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_fcat2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_t_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_fcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_fcat,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_layout1&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_layo,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_layout2&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_layo,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_t_sort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_sort&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_sort,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_exclude1&nbsp;&nbsp;&nbsp;TYPE&nbsp;ui_functions,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_exclude2&nbsp;&nbsp;&nbsp;TYPE&nbsp;ui_functions,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_exclude&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;stb_button,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll1&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_stbl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll2&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_stbl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_variant1&nbsp;&nbsp;&nbsp;TYPE&nbsp;disvariant,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_variant2&nbsp;&nbsp;&nbsp;TYPE&nbsp;disvariant.<br />
+<br />
+DATA: ok_code TYPE syucomm.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;---------------------------------------------------------<br />
+<br />
+   </div>
+   <div class="code">
+DATA: gt_t001l TYPE TABLE OF t001l, "저장위치내역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_t001l&nbsp;TYPE&nbsp;t001l,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_makt&nbsp;&nbsp;TYPE&nbsp;tihttpnvp,&nbsp;&nbsp;"자재명<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_makt&nbsp;&nbsp;TYPE&nbsp;ihttpnvp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mara&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;mara,&nbsp;&nbsp;"모델,&nbsp;규격명.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_mara&nbsp;&nbsp;TYPE&nbsp;mara,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_t023t&nbsp;TYPE&nbsp;tihttpnvp,&nbsp;"자재그룹명.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_t023t&nbsp;TYPE&nbsp;ihttpnvp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mard&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;mard,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_mard&nbsp;&nbsp;TYPE&nbsp;mard,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_t001w&nbsp;TYPE&nbsp;tihttpnvp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_t001w&nbsp;TYPE&nbsp;ihttpnvp.<br />
+<br />
+DATA: BEGIN OF gs_lgort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lgort&nbsp;TYPE&nbsp;lgort_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lgobe&nbsp;TYPE&nbsp;lgobe,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;gs_lgort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_lgort&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;gs_lgort.<br />
+<br />
+DATA: gr_perio TYPE RANGE OF zesdperiod,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_perio&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;gr_perio.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--&nbsp;ALV&nbsp;Grid&nbsp;Event&nbsp;Handler.<br />
+   </div>
+   <div class="code">
+include <a href ="zsdr0900_c01.html">zsdr0900_c01</a>.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&nbsp;SELECTION-SCREEN<br />
+*&---------------------------------------------------------------------*<br />
+*SELECTION-SCREEN&nbsp;FUNCTION&nbsp;KEY&nbsp;1.<br />
+<br />
+   </div>
+   <div class="code">
+SELECTION-SCREEN BEGIN OF BLOCK blk1 WITH FRAME TITLE text-t01.<br />
+SELECT-OPTIONS: s_matkl FOR zsdt0900-matkl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_matnr	FOR&nbsp;zsdt0900-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_werks&nbsp;FOR&nbsp;zsdt0900-werks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s_lgort&nbsp;FOR&nbsp;zsdt0900-lgort.<br />
+<br />
+SELECTION-SCREEN SKIP.<br />
+PARAMETERS p_vari LIKE disvariant-variant.<br />
+SELECTION-SCREEN END OF BLOCK blk1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+INITIALIZATION.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;ALV&nbsp;Variant<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;get_alv_variant.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_lgort-low.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;f4_get_lgort&nbsp;USING&nbsp;'S_LGORT-LOW'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_lgort-high.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;f4_get_lgort&nbsp;USING&nbsp;'S_LGORT-HIGH'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;LAY&nbsp;OUT&nbsp;변형&nbsp;설정<br />
+   </div>
+   <div class="code">
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_vari.<br />
+&nbsp;&nbsp;PERFORM&nbsp;f4_alv_variant.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**----------------------------------------------------------------------*<br />
+*AT&nbsp;SELECTION-SCREEN.<br />
+**----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;PERFORM&nbsp;at_selection_screen.<br />
+<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+START-OF-SELECTION.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;get_base_data.<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_dyn_table.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;&ltdyn_table&gt&nbsp;IS&nbsp;ASSIGNED.<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_data.<br />
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;100.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_BASE_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_base_data .<br />
+&nbsp;&nbsp;IF&nbsp;gt_t001l[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;werks&nbsp;lgort&nbsp;lgobe<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_t001l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t001l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;werks&nbsp;&nbsp;IN&nbsp;s_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;&nbsp;IN&nbsp;s_lgort.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gt_makt[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;matnr&nbsp;AS&nbsp;name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maktx&nbsp;AS&nbsp;value<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_makt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;makt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;matnr&nbsp;&nbsp;IN&nbsp;s_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;spras&nbsp;&nbsp;EQ&nbsp;sy-langu.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gt_mara[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;matnr&nbsp;groes&nbsp;zmaktx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_mara<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;mara<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;matnr&nbsp;&nbsp;IN&nbsp;s_matnr.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gt_t023t[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;matkl&nbsp;AS&nbsp;name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wgbez&nbsp;AS&nbsp;value<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_t023t<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t023t<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;spras&nbsp;=&nbsp;sy-langu.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gt_mard[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;labst&nbsp;insme&nbsp;speme<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_mard<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;mard<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;matnr&nbsp;&nbsp;IN&nbsp;s_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;&nbsp;IN&nbsp;s_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;&nbsp;IN&nbsp;s_lgort.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gt_t001w[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;werks&nbsp;AS&nbsp;name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name2&nbsp;AS&nbsp;value<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_t001w<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t001w.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " GET_BASE_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_data .<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_zsdt0900&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zsdt0900,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_zsdt0900&nbsp;TYPE&nbsp;zsdt0900,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_temp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zsdt0900,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_temp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;zsdt0900.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_total&nbsp;TYPE&nbsp;zesdqty,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;TYPE&nbsp;fieldname.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;lt_zsdt0900<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zsdt0900<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;matkl&nbsp;&nbsp;IN&nbsp;s_matkl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;&nbsp;IN&nbsp;s_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;&nbsp;IN&nbsp;s_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;&nbsp;IN&nbsp;s_lgort.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;lt_zsdt0900[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;SORT&nbsp;lt_zsdt0900&nbsp;BY&nbsp;matkl&nbsp;matnr&nbsp;werks&nbsp;lgort&nbsp;period.<br />
+&nbsp;&nbsp;lt_temp[]&nbsp;=&nbsp;lt_zsdt0900[].<br />
+&nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;lt_temp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPARING&nbsp;matkl&nbsp;matnr&nbsp;werks&nbsp;lgort.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_temp&nbsp;INTO&nbsp;ls_temp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_data_to_dyn_wa&nbsp;USING:&nbsp;'&ltDYN_WA&gt'&nbsp;'MATNR'&nbsp;ls_temp-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'MATKL'&nbsp;ls_temp-matkl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'LGORT'&nbsp;ls_temp-lgort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'WERKS'&nbsp;ls_temp-werks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'MEINS'&nbsp;ls_temp-meins.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE:&nbsp;gt_t001l&nbsp;INTO&nbsp;gs_t001l&nbsp;WITH&nbsp;KEY&nbsp;werks&nbsp;=&nbsp;ls_temp-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lgort&nbsp;=&nbsp;ls_temp-lgort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_makt&nbsp;&nbsp;INTO&nbsp;gs_makt&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;ls_temp-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mara&nbsp;&nbsp;INTO&nbsp;gs_mara&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;matnr&nbsp;=&nbsp;ls_temp-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_t023t&nbsp;INTO&nbsp;gs_t023t&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;ls_temp-matkl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_mard&nbsp;&nbsp;INTO&nbsp;gs_mard&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;matnr&nbsp;=&nbsp;ls_temp-matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;werks&nbsp;=&nbsp;ls_temp-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lgort&nbsp;=&nbsp;ls_temp-lgort.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_data_to_dyn_wa&nbsp;USING:&nbsp;'&ltDYN_WA&gt'&nbsp;'LGOBE'&nbsp;gs_t001l-lgobe,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'MAKTX'&nbsp;gs_makt-value,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'ZMAKTX'&nbsp;gs_mara-zmaktx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'GROES'&nbsp;gs_mara-groes,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'WGBEZ'&nbsp;gs_t023t-value,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'LABST'&nbsp;gs_mard-labst,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'INSME'&nbsp;gs_mard-insme,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'SPEME'&nbsp;gs_mard-speme.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_zsdt0900&nbsp;INTO&nbsp;ls_zsdt0900&nbsp;WHERE&nbsp;matkl&nbsp;=&nbsp;ls_temp-matkl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;=&nbsp;ls_temp-matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;=&nbsp;ls_temp-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;=&nbsp;ls_temp-lgort.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;=&nbsp;ls_zsdt0900-period.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;l_fname.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;l_fname&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltfm&gt&nbsp;IS&nbsp;ASSIGNED.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfm&gt&nbsp;=&nbsp;ls_zsdt0900-qty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'PREV'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;ls_zsdt0900-qty&nbsp;TO&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;ls_zsdt0900-qty&nbsp;TO&nbsp;l_total.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_zsdt0900,&nbsp;l_fname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNASSIGN&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'TOTAL'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltfm&gt&nbsp;=&nbsp;l_total.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'DIFF'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltfm&gt&nbsp;=&nbsp;l_total&nbsp;-&nbsp;gs_mard-labst&nbsp;+&nbsp;gs_mard-insme&nbsp;+&nbsp;gs_mard-speme.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltdyn_table&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_temp,&nbsp;l_total.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    " GET_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_DYN_FIELDCAT<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM get_dyn_fieldcat  TABLES   pt_fcat1 TYPE lvc_t_fcat.<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_fcat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_perio(6)&nbsp;&nbsp;TYPE&nbsp;n,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_datum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;dats,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_new_datum&nbsp;TYPE&nbsp;dats,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_index&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_num&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_coltxt&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;pt_fcat1[],&nbsp;gr_perio.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;build_fieldcatalog&nbsp;TABLES&nbsp;pt_fcat1&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'LGOBE',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'20',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'저장위치명',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MATNR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'18',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CONVEXIT'&nbsp;'MATN1',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'자재코드',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MAKTX',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'40',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'자재명',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'WERKS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'플랜트',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'PREV',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;17,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'1년이전',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'TOTAL',&nbsp;&nbsp;"월별합계.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;18,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'합계',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'LABST',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;19,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'가용재고',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'SPEME',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;20,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'보류재고',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'INSME',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;21,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'검사중재고',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'DIFF',&nbsp;"월별합계&nbsp;-&nbsp;재고전체.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;22,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'차이',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;23,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'DOMNAME'&nbsp;&nbsp;&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'CONVEXIT'&nbsp;&nbsp;'CUNIT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'단위',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'ZMAKTX',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'20',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;24,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'모델명',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'GROES',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;25,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'규격',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MATKL',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;26,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'자재그룹',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'WGBEZ',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'20',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;27,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'자재그룹명',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'LGORT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'6',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;28,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'저장위치'.<br />
+<br />
+&nbsp;&nbsp;l_perio&nbsp;=&nbsp;sy-datum(6).<br />
+&nbsp;&nbsp;l_datum&nbsp;=&nbsp;sy-datum.<br />
+<br />
+&nbsp;&nbsp;DO&nbsp;12&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_num&nbsp;=&nbsp;(&nbsp;sy-index&nbsp;-&nbsp;1&nbsp;)&nbsp;*&nbsp;(&nbsp;-1&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_index&nbsp;=&nbsp;sy-index&nbsp;+&nbsp;4.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'RE_ADD_MONTH_TO_DATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;months&nbsp;&nbsp;=&nbsp;l_num<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;olddate&nbsp;=&nbsp;l_datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;newdate&nbsp;=&nbsp;l_new_datum.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;l_new_datum(4)&nbsp;'.'&nbsp;l_new_datum+4(2)&nbsp;INTO&nbsp;l_coltxt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;l_perio&nbsp;=&nbsp;l_new_datum(6).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;build_fieldcatalog&nbsp;TABLES&nbsp;pt_fcat1&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;l_perio,"l_fname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'COL_POS'&nbsp;&nbsp;&nbsp;l_index,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;l_coltxt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;gr_perio&nbsp;gs_perio&nbsp;'I'&nbsp;'EQ'&nbsp;l_perio&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;l_fname,&nbsp;l_new_datum,&nbsp;l_index.<br />
+&nbsp;&nbsp;ENDDO.<br />
+<br />
+&nbsp;&nbsp;"Cell&nbsp;Color&nbsp;Field.<br />
+&nbsp;&nbsp;PERFORM&nbsp;build_fieldcatalog&nbsp;TABLES&nbsp;pt_fcat1&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'CELLCOLOR',"l_fname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'NO_OUT'&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'CALENDAR_TYPE',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;'E'&nbsp;'REF_FIELD'&nbsp;'COLTAB'&nbsp;.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+ENDFORM.                    " GET_DYN_FIELDCAT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_FIELDCATALOG<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_fieldcatalog TABLES pt_fieldcat TYPE lvc_t_fcat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;ps_fieldcat&nbsp;TYPE&nbsp;lvc_s_fcat<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_gub<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_fname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_value.<br />
+&nbsp;&nbsp;DATA:&nbsp;l_name(40).<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs&gt&nbsp;TYPE&nbsp;any.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;p_gub&nbsp;EQ&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;ps_fieldcat.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'PS_FIELDCAT-'&nbsp;p_fname&nbsp;INTO&nbsp;l_name.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;(l_name)&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&ltfs&gt&nbsp;=&nbsp;p_value.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;p_gub&nbsp;EQ&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ps_fieldcat&nbsp;TO&nbsp;pt_fieldcat.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    "build_fieldcatalog<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_DYN_TABLE<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_GT_FCAT1&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_dyn_table.<br />
+&nbsp;&nbsp;FREE:&nbsp;dyn_table,&nbsp;dyn_wa.<br />
+&nbsp;&nbsp;UNASSIGN:&nbsp;&ltdyn_table&gt,&nbsp;&ltdyn_wa&gt.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_dyn_fieldcat&nbsp;TABLES&nbsp;gt_fcat1.<br />
+&nbsp;&nbsp;CHECK&nbsp;gt_fcat1[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_alv_table_create=&gtcreate_dynamic_table<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;=&nbsp;gt_fcat1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ep_table&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;dyn_table.<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;dyn_table-&gt*&nbsp;TO&nbsp;&ltdyn_table&gt.<br />
+&nbsp;&nbsp;CREATE&nbsp;DATA&nbsp;dyn_wa&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;&ltdyn_table&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;dyn_wa-&gt*&nbsp;TO&nbsp;&ltdyn_wa&gt.<br />
+ENDFORM.                    " GET_DYN_TABLE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;PBO&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE pbo OUTPUT.<br />
+&nbsp;&nbsp;SET:&nbsp;&nbsp;PF-STATUS&nbsp;'MAIN100'&nbsp;EXCLUDING&nbsp;'SAVE',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLEBAR&nbsp;'MAIN100'&nbsp;WITH&nbsp;text-t01.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;display_grid_100.<br />
+ENDMODULE.                 " PBO  OUTPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;PAI&nbsp;&nbsp;INPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE pai INPUT.<br />
+&nbsp;&nbsp;CLEAR&nbsp;g_answer.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;ok_code.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'BACK'&nbsp;OR&nbsp;'EXIT'&nbsp;OR&nbsp;'CANC'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_grid-&gtfree(&nbsp;).<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_docking_container-&gtfree(&nbsp;).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;SCREEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'CONT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;stock_adjustment.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'SAVE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;check_confirm&nbsp;USING&nbsp;g_answer.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;g_answer&nbsp;EQ&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_grid2-&gtcheck_changed_data(&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;stock_adjustment_process.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;SCREEN&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LEAVE&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'DUMMY'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;g_total&nbsp;TO&nbsp;gs_header-total,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_diff&nbsp;&nbsp;TO&nbsp;gs_header-diff.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_cfw=&gtdispatch.<br />
+&nbsp;&nbsp;CLEAR&nbsp;ok_code.<br />
+ENDMODULE.                 " PAI  INPUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DISPLAY_GRID_100<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM display_grid_100 .<br />
+&nbsp;&nbsp;PERFORM&nbsp;build_color_100.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;g_docking_container&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_docking_container<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-repid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dynnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;sy-dynnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;side&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;g_docking_container-&gtdock_at_top<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extension&nbsp;=&nbsp;'1500'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_grid1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_parent&nbsp;=&nbsp;g_docking_container.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM:&nbsp;&nbsp;"build_fieldcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_layout_100,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_color,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_exclude_toolbar_100,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_style,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_event_100.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_variant1-report&nbsp;=&nbsp;sy-repid.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_variant1-handle&nbsp;=&nbsp;'100'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid1-&gtset_table_for_first_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_layout1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_variant1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_toolbar_excluding&nbsp;=&nbsp;gt_exclude1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&ltdyn_table&gt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_fcat1.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll1-row&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll1-col&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid1-&gtrefresh_table_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_stable&nbsp;=&nbsp;gs_scroll1.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " DISPLAY_GRID_100<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_COLOR<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_color_100 .<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;&ltdyn_table&gt[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_index&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fcat&nbsp;&nbsp;&nbsp;TYPE&nbsp;lvc_s_fcat,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_color&nbsp;&nbsp;TYPE&nbsp;lvc_t_scol,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_color&nbsp;&nbsp;TYPE&nbsp;lvc_s_scol.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltft_color&gt&nbsp;TYPE&nbsp;lvc_t_scol.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltdyn_table&gt&nbsp;ASSIGNING&nbsp;&ltdyn_wa&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_fcat1&nbsp;INTO&nbsp;ls_fcat&nbsp;WHERE&nbsp;col_pos&nbsp;BETWEEN&nbsp;5&nbsp;AND&nbsp;22.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;ls_fcat-fieldname&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;&ltfm&gt&nbsp;&lt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;ls_fcat-fieldname&nbsp;TO&nbsp;ls_color-fname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'6'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_color-color-col,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_color-color-int,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_color-color-inv.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_color&nbsp;TO&nbsp;lt_color.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_fcat,&nbsp;ls_color.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'CELLCOLOR'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltft_color&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltft_color&gt&nbsp;=&nbsp;lt_color.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;lt_color[].<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    " BUILD_COLOR<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_LAYOUT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_layout_100 .<br />
+&nbsp;&nbsp;CLEAR&nbsp;gs_layout1.<br />
+&nbsp;&nbsp;gs_layout1-zebra&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout1-cwidth_opt&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;gs_layout-no_toolbar&nbsp;&nbsp;=&nbsp;'X'.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;gs_layout1-sel_mode&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;gs_layout1-ctab_fname&nbsp;&nbsp;=&nbsp;'CELLCOLOR'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;gs_layout-stylefname&nbsp;&nbsp;=&nbsp;'CELLTAB'.<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " BUILD_LAYOUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_EVENT_100<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_event_100 .<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_alv_event1.<br />
+&nbsp;&nbsp;SET&nbsp;HANDLER:&nbsp;g_alv_event1-&gthandle_double_click&nbsp;FOR&nbsp;g_grid1.<br />
+ENDFORM.                    " BUILD_EVENT_100<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_EXCLUDE_TOOLBAR<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_exclude_toolbar_100 .<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_exclude1[].<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;append_exclude_functions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES&nbsp;&nbsp;gt_exclude1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_undo,&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_auf,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;소계확장&nbsp;&AUF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_average,&nbsp;&nbsp;"&nbsp;&AVERAGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_back_classic,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_abc,&nbsp;"&nbsp;&ABC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_chain,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_crbatch,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_crweb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_lineitems,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_master_data,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_more,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_report,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_xint,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_call_xxl,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_col_invisible,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_col_optimize,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_current_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_data_save,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_delete_filter,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_deselect_all,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_detail,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrdesig,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expcrtempl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_expmdb,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_extend,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_f4,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_filter,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_find,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_fix_columns,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_graph,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_help,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_info,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_load_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_copy,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행&nbsp;카피<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_html,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_copy_row,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행&nbsp;카피<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_cut,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;가위<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_delete_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행삭제<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_insert_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;행삽입<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_move_row,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_append_row,&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;라인생성<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_paste,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;겹쳐쓰기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_loc_paste_new_row,&nbsp;"&nbsp;겹쳐쓰기<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_maintain_variant,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_maximum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_minimum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_pc_file,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print_back,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_print_prev,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_reprep,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_save_variant,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_select_all,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_send,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_separator,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort_asc,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sort_dsc,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_subtot,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_sum,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_to_office,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_to_rep_tree,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_unfix_columns,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_views,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_crystal,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_excel,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_view_grid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_word_processor,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_refresh,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cl_gui_alv_grid=&gtmc_fc_check.<br />
+ENDFORM.                    " BUILD_EXCLUDE_TOOLBAR<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;APPEND_EXCLUDE_FUNCTIONS<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM append_exclude_functions  TABLES   pt_toolbar TYPE ui_functions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;p_value.<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_exclude&nbsp;&nbsp;TYPE&nbsp;ui_func.<br />
+&nbsp;&nbsp;ls_exclude&nbsp;=&nbsp;p_value.<br />
+&nbsp;&nbsp;APPEND&nbsp;ls_exclude&nbsp;TO&nbsp;pt_toolbar.<br />
+ENDFORM.                    " APPEND_EXCLUDE_FUNCTIONS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;F4_ALV_VARIANT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM f4_alv_variant .<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;레이아웃&nbsp;:&nbsp;선택<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;gs_variant1-report&nbsp;=&nbsp;sy-repid.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_VARIANT_F4'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_variant&nbsp;=&nbsp;gs_variant1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;es_variant&nbsp;=&nbsp;gs_variant1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_found&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sy-msgid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NUMBER&nbsp;sy-msgno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;&nbsp;&nbsp;sy-msgv1&nbsp;sy-msgv2&nbsp;sy-msgv3&nbsp;sy-msgv4.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_vari&nbsp;=&nbsp;gs_variant1-variant.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " F4_ALV_VARIANT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_ALV_VARIANT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_alv_variant .<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gs_variant1.<br />
+&nbsp;&nbsp;gs_variant1-report&nbsp;=&nbsp;sy-repid.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'REUSE_ALV_VARIANT_DEFAULT_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cs_variant&nbsp;=&nbsp;gs_variant1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_found&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;p_vari&nbsp;=&nbsp;gs_variant1-variant.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " GET_ALV_VARIANT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_DATA_TO_DYN_WA<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0529&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0530&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_LS_TEMP_MATNR&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM set_data_to_dyn_wa  USING   p_dynwa p_field p_value.<br />
+&nbsp;&nbsp;DATA:&nbsp;l_field&nbsp;&nbsp;&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lk_ref&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_root,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_text&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lk_sql&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_sy_open_sql_db.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs_wa&gt&nbsp;TYPE&nbsp;any,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs_m&gt&nbsp;&nbsp;TYPE&nbsp;any.<br />
+<br />
+&nbsp;&nbsp;MOVE&nbsp;p_field&nbsp;TO&nbsp;l_field.<br />
+&nbsp;&nbsp;TRANSLATE&nbsp;l_field&nbsp;TO&nbsp;UPPER&nbsp;CASE.<br />
+<br />
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN:&nbsp;(p_dynwa)&nbsp;TO&nbsp;&ltfs_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;l_field&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs_m&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs_m&gt&nbsp;=&nbsp;p_value.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_root&nbsp;INTO&nbsp;lk_ref.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_text&nbsp;=&nbsp;lk_ref-&gtget_text(&nbsp;).<br />
+&nbsp;&nbsp;ENDTRY.<br />
+ENDFORM.                    " SET_DATA_TO_DYN_WA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;get_data_from_dyn_wa<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_DYNWA&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_FIELD&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_VALUE&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_data_from_dyn_wa USING p_dynwa p_field p_value.<br />
+&nbsp;&nbsp;DATA:&nbsp;l_field&nbsp;&nbsp;&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lk_ref&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_root,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_text&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;string,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lk_sql&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cx_sy_open_sql_db.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs_wa&gt&nbsp;TYPE&nbsp;any,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltfs_m&gt&nbsp;&nbsp;TYPE&nbsp;any.<br />
+<br />
+&nbsp;&nbsp;MOVE&nbsp;p_field&nbsp;TO&nbsp;l_field.<br />
+&nbsp;&nbsp;TRANSLATE&nbsp;l_field&nbsp;TO&nbsp;UPPER&nbsp;CASE.<br />
+<br />
+&nbsp;&nbsp;TRY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN:&nbsp;(p_dynwa)&nbsp;TO&nbsp;&ltfs_wa&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;l_field&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs_m&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_value&nbsp;=&nbsp;&ltfs_m&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CATCH&nbsp;cx_root&nbsp;INTO&nbsp;lk_ref.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_text&nbsp;=&nbsp;lk_ref-&gtget_text(&nbsp;).<br />
+&nbsp;&nbsp;ENDTRY.<br />
+ENDFORM.                    "get_data_from_dyn_wa<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;HANDLE_DOUBLE_CLICKED<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM handle_double_clicked  USING    p_row TYPE lvc_s_row<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_col&nbsp;TYPE&nbsp;lvc_s_col.<br />
+&nbsp;&nbsp;DATA:&nbsp;lr_fname&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;lvc_fname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fname&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_fname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_matnr&nbsp;TYPE&nbsp;RANGE&nbsp;OF&nbsp;matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_matnr&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_matnr&nbsp;&nbsp;TYPE&nbsp;matnr.<br />
+&nbsp;&nbsp;_set_ranges:&nbsp;&nbsp;lr_fname&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'MATNR'&nbsp;'',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname&nbsp;ls_fname&nbsp;'I'&nbsp;'CP'&nbsp;'2*'&nbsp;&nbsp;&nbsp;&nbsp;''.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_fname&nbsp;ls_fname&nbsp;'I'&nbsp;'EQ'&nbsp;'PREV'&nbsp;&nbsp;''.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CHECK&nbsp;p_col-fieldname&nbsp;IN&nbsp;lr_fname.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;&ltdyn_table&gt&nbsp;ASSIGNING&nbsp;&ltdyn_wa&gt&nbsp;INDEX&nbsp;p_row-index.<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_data_from_dyn_wa&nbsp;USING&nbsp;'&ltDYN_WA&gt'&nbsp;'MATNR'&nbsp;l_matnr.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;p_col-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'MAT'&nbsp;FIELD&nbsp;l_matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'MM03'&nbsp;AND&nbsp;SKIP&nbsp;FIRST&nbsp;SCREEN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;lr_matnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_set_ranges:&nbsp;lr_matnr&nbsp;ls_matnr&nbsp;'I'&nbsp;'EQ'&nbsp;l_matnr&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBMIT&nbsp;zsdr0910&nbsp;"VIA&nbsp;SELECTION-SCREEN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;so_matnr&nbsp;IN&nbsp;lr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;so_perio&nbsp;IN&nbsp;gr_perio<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+ENDFORM.                    " HANDLE_DOUBLE_CLICKED<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;HANDLE_DATA_CHANGED<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ER_DATA_CHANGED&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_E_UCOMM&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM handle_data_changed  USING    pt_data_changed<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_alv_changed_data_protocol<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_ucomm&nbsp;TYPE&nbsp;syucomm.<br />
+&nbsp;&nbsp;"Chnage&nbsp;GT_200&nbsp;Data...<br />
+&nbsp;&nbsp;CHECK&nbsp;pt_data_changed-&gtmt_good_cells[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_cells&nbsp;&nbsp;TYPE&nbsp;lvc_s_modi,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_cells&nbsp;&nbsp;TYPE&nbsp;lvc_t_modi,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_fname&nbsp;&nbsp;&nbsp;TYPE&nbsp;fieldname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_qty_a&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_qty_o&nbsp;&nbsp;&nbsp;TYPE&nbsp;i.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs&gt.<br />
+<br />
+&nbsp;&nbsp;lt_cells[]&nbsp;=&nbsp;pt_data_changed-&gtmt_good_cells[].<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_cells&nbsp;INTO&nbsp;ls_cells.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_200&nbsp;INTO&nbsp;gs_200&nbsp;INDEX&nbsp;ls_cells-row_id.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;ls_cells-fieldname&nbsp;OF&nbsp;STRUCTURE&nbsp;gs_200&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&ltfs&gt&nbsp;=&nbsp;ls_cells-value.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_200-qty_a&nbsp;=&nbsp;&ltfs&gt&nbsp;-&nbsp;gs_200-qty_o.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;gt_200&nbsp;FROM&nbsp;gs_200&nbsp;INDEX&nbsp;ls_cells-row_id.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_cells,&nbsp;gs_200.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;gs_header-total&nbsp;=&nbsp;g_total.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_200&nbsp;INTO&nbsp;gs_200&nbsp;WHERE&nbsp;qty_a&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_200-qty_a&nbsp;TO&nbsp;gs_header-total.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_200.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;gs_header-diff&nbsp;=&nbsp;gs_header-total&nbsp;-&nbsp;gs_header-st_tot.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;MOVE:&nbsp;gs_header-qty_m&nbsp;TO&nbsp;g_qty_m,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_header-diff&nbsp;&nbsp;TO&nbsp;g_diff.<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " HANDLE_DATA_CHANGED<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;HANDLE_DATA_CHANGED_FINISHED<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_E_MODIFIED&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_ET_GOOD_CELLS&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM handle_data_changed_finished  USING    p_modified<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pt_good_cells.<br />
+&nbsp;&nbsp;cl_gui_cfw=&gtset_new_ok_code(&nbsp;'DUMMY'&nbsp;).<br />
+&nbsp;&nbsp;cl_gui_cfw=&gtflush(&nbsp;).<br />
+ENDFORM.                    " HANDLE_DATA_CHANGED_FINISHED<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;STOCK_ADJUSTMENT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM stock_adjustment .<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_rows&nbsp;TYPE&nbsp;lvc_t_row,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_rows&nbsp;TYPE&nbsp;lvc_s_row.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_zsdt0900&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;zsdt0900,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_zsdt0900&nbsp;TYPE&nbsp;zsdt0900.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_matnr&nbsp;TYPE&nbsp;matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_matkl&nbsp;TYPE&nbsp;matkl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_maktx&nbsp;TYPE&nbsp;maktx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meins&nbsp;TYPE&nbsp;meins.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_selected_rows&nbsp;TABLES&nbsp;lt_rows&nbsp;USING&nbsp;g_grid1.<br />
+&nbsp;&nbsp;CHECK&nbsp;lt_rows[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE:&nbsp;lt_rows&nbsp;INTO&nbsp;ls_rows&nbsp;INDEX&nbsp;1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltdyn_table&gt&nbsp;ASSIGNING&nbsp;&ltdyn_wa&gt&nbsp;INDEX&nbsp;ls_rows-index.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;&nbsp;gs_header,&nbsp;gt_200[],&nbsp;gs_200,&nbsp;gs_makt,&nbsp;gs_t001w,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_index,&nbsp;g_total.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;&nbsp;ok_code.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_data_from_dyn_wa<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING:&nbsp;'&ltDYN_WA&gt'&nbsp;'MATKL'&nbsp;l_matkl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'MATNR'&nbsp;l_matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'MAKTX'&nbsp;l_maktx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'MEINS'&nbsp;l_meins,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'LGORT'&nbsp;gs_header-lgort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'LGOBE'&nbsp;gs_header-lgobe,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'WERKS'&nbsp;gs_header-werks,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'NAME2'&nbsp;gs_header-name2,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'LABST'&nbsp;gs_header-labst,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'INSME'&nbsp;gs_header-insme,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'SPEME'&nbsp;gs_header-speme,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'TOTAL'&nbsp;gs_header-total,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'DIFF'&nbsp;&nbsp;gs_header-diff.<br />
+<br />
+&nbsp;&nbsp;gs_header-st_tot&nbsp;=&nbsp;gs_header-labst&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_header-insme&nbsp;+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_header-speme.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE:&nbsp;gt_makt&nbsp;&nbsp;&nbsp;INTO&nbsp;gs_makt&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;l_matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_t001w&nbsp;&nbsp;INTO&nbsp;gs_t001w&nbsp;WITH&nbsp;KEY&nbsp;name&nbsp;=&nbsp;gs_header-werks.<br />
+&nbsp;&nbsp;gs_header-name2&nbsp;=&nbsp;gs_t001w-value.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;memo<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;gs_header-desc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zsdt0910<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;matkl&nbsp;&nbsp;=&nbsp;l_matkl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;&nbsp;=&nbsp;l_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;&nbsp;=&nbsp;gs_header-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;&nbsp;=&nbsp;gs_header-lgort.<br />
+<br />
+&nbsp;&nbsp;MOVE:&nbsp;l_matnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;gs_200-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_makt-value&nbsp;TO&nbsp;gs_200-maktx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_meins&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;gs_200-meins.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;period&nbsp;qty<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_zsdt0900<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zsdt0900<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;matkl&nbsp;&nbsp;=&nbsp;l_matkl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;&nbsp;=&nbsp;l_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;&nbsp;=&nbsp;gs_header-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;&nbsp;=&nbsp;gs_header-lgort.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gr_perio&nbsp;INTO&nbsp;gs_perio.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_zsdt0900&nbsp;INTO&nbsp;ls_zsdt0900<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;period&nbsp;=&nbsp;gs_perio-low.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;gs_perio-low&nbsp;&nbsp;TO&nbsp;gs_200-period,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ls_zsdt0900-qty&nbsp;TO&nbsp;gs_200-qty_n,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_zsdt0900-qty&nbsp;TO&nbsp;gs_200-qty_o.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gs_200&nbsp;TO&nbsp;gt_200.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;ls_zsdt0900,&nbsp;gs_200-period,&nbsp;gs_200-qty_o.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_datum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;dats,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_new_datum&nbsp;TYPE&nbsp;dats,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_num&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_perio(6)&nbsp;&nbsp;TYPE&nbsp;n,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_last_period(6)&nbsp;TYPE&nbsp;n.<br />
+<br />
+&nbsp;&nbsp;"1년&nbsp;이전데이터.<br />
+&nbsp;&nbsp;SORT&nbsp;lt_zsdt0900&nbsp;BY&nbsp;period&nbsp;DESCENDING.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_zsdt0900&nbsp;INTO&nbsp;ls_zsdt0900&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;l_last_period&nbsp;=&nbsp;ls_zsdt0900-period.&nbsp;&nbsp;"마지막&nbsp;생산년월..<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gs_perio-low&nbsp;&gt&nbsp;l_last_period.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;gs_perio-low&nbsp;'01'&nbsp;INTO&nbsp;l_datum.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHILE&nbsp;sy-subrc&nbsp;EQ&nbsp;0.&nbsp;&nbsp;"마지막&nbsp;생산년월까지의&nbsp;리스트.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_num&nbsp;=&nbsp;sy-index&nbsp;*&nbsp;(&nbsp;-1&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'RE_ADD_MONTH_TO_DATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;months&nbsp;&nbsp;=&nbsp;l_num<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;olddate&nbsp;=&nbsp;l_datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;newdate&nbsp;=&nbsp;l_new_datum.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_perio&nbsp;=&nbsp;l_new_datum(6).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_zsdt0900&nbsp;INTO&nbsp;ls_zsdt0900<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;period&nbsp;=&nbsp;l_perio.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;l_perio&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;gs_200-period,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ls_zsdt0900-qty&nbsp;TO&nbsp;gs_200-qty_n,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_zsdt0900-qty&nbsp;TO&nbsp;gs_200-qty_o.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gs_200&nbsp;TO&nbsp;gt_200.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;l_perio&nbsp;NE&nbsp;l_last_period.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;gs_200-period,&nbsp;gs_200-qty_o,&nbsp;l_perio.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDWHILE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"데이터를&nbsp;구하자.<br />
+&nbsp;&nbsp;g_index&nbsp;=&nbsp;ls_rows-index.<br />
+&nbsp;&nbsp;g_total&nbsp;=&nbsp;gs_header-total.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;200.<br />
+<br />
+ENDFORM.                    " STOCK_ADJUSTMENT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;GET_SELECTED_ROWS<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_LT_ROWS&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_G_GRID&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM get_selected_rows  TABLES   pt_rows TYPE lvc_t_row<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;p_grid&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;cl_gui_alv_grid.<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_rows&nbsp;TYPE&nbsp;lvc_t_row.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;p_grid-&gtget_selected_rows<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;et_index_rows&nbsp;=&nbsp;lt_rows.<br />
+<br />
+&nbsp;&nbsp;pt_rows[]&nbsp;=&nbsp;lt_rows[].<br />
+ENDFORM.                    "get_selected_rows<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Module&nbsp;&nbsp;PBO_0200&nbsp;&nbsp;OUTPUT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+MODULE pbo_0200 OUTPUT.<br />
+&nbsp;&nbsp;SET:&nbsp;&nbsp;PF-STATUS&nbsp;'MAIN100'&nbsp;EXCLUDING&nbsp;'CONT',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TITLEBAR&nbsp;'MAIN100'&nbsp;WITH&nbsp;text-t02.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;display_grid_200.<br />
+ENDMODULE.                 " PBO_0200  OUTPUT<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DISPLAY_GRID_200<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM display_grid_200 .<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;g_custom_container&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_custom_container<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;container_name&nbsp;=&nbsp;'CUSTOM_CONTAINER'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_grid2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_parent&nbsp;=&nbsp;g_custom_container.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM:&nbsp;&nbsp;build_fieldcat_200,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_layout_200,<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_color,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_exclude_toolbar_200,<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_style,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;build_event_200.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;gs_variant2-report&nbsp;=&nbsp;sy-repid.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;gs_variant2-handle&nbsp;=&nbsp;'200'.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid2-&gtset_table_for_first_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_layout2<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_variant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_variant2<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_toolbar_excluding&nbsp;=&nbsp;gt_exclude22<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_outtab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_200<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it_fieldcatalog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_fcat2.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll2-row&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_scroll2-col&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;g_grid2-&gtrefresh_table_display<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_stable&nbsp;=&nbsp;gs_scroll2.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM.                    " DISPLAY_GRID_200<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_FIELDCAT_200<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_fieldcat_200 .<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_fcat2[].<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_fieldcat&nbsp;TYPE&nbsp;lvc_s_fcat.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;build_fieldcatalog&nbsp;TABLES&nbsp;gt_fcat2&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MATNR',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'18',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'CONVEXIT'&nbsp;&nbsp;'ALPHA',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'자재코드',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MAKTX',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'20',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'자재명',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'PERIOD',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'6',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'생산년월',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'QTY_N',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'EDIT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'최종수량',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'QTY_O',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'기존수량',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'QTY_A',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'10',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'REF_TABLE'&nbsp;'ZSDT0900',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'REF_FIELD'&nbsp;'QTY',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'QFIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'조정수량',<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'S'&nbsp;'FIELDNAME'&nbsp;'MEINS',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'&nbsp;'&nbsp;'OUTPUTLEN'&nbsp;'4',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_fieldcat&nbsp;'E'&nbsp;'COLTEXT'&nbsp;&nbsp;&nbsp;'단위'.<br />
+ENDFORM.                    " BUILD_FIELDCAT_200<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_LAYOUT_200<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_layout_200 .<br />
+&nbsp;&nbsp;CLEAR&nbsp;gs_layout2.<br />
+&nbsp;&nbsp;gs_layout2-zebra&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout2-cwidth_opt&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout2-no_toolbar&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;gs_layout2-sel_mode&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;gs_layout1-ctab_fname&nbsp;&nbsp;=&nbsp;'CELLCOLOR'.<br />
+*&nbsp;&nbsp;gs_layout-stylefname&nbsp;&nbsp;=&nbsp;'CELLTAB'.<br />
+   </div>
+   <div class="code">
+ENDFORM.                    " BUILD_LAYOUT_200<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;BUILD_EVENT_200<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM build_event_200 .<br />
+&nbsp;&nbsp;g_grid2-&gtregister_edit_event(&nbsp;cl_gui_alv_grid=&gtmc_evt_enter&nbsp;).<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;g_alv_event2.<br />
+&nbsp;&nbsp;SET&nbsp;HANDLER:&nbsp;g_alv_event2-&gthandle_data_changed<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g_alv_event2-&gthandle_data_changed_finished&nbsp;FOR&nbsp;g_grid2.<br />
+ENDFORM.                    " BUILD_EVENT_200<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;STOCK_ADJUSTMENT_PROCESS<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM stock_adjustment_process .<br />
+&nbsp;&nbsp;CHECK&nbsp;gt_200[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_zsds0223&nbsp;TYPE&nbsp;zsds0223.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_200&nbsp;INTO&nbsp;gs_200&nbsp;WHERE&nbsp;qty_a&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;gs_header-werks&nbsp;TO&nbsp;ls_zsds0223-werks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_header-lgort&nbsp;TO&nbsp;ls_zsds0223-lgort,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_header-desc&nbsp;&nbsp;TO&nbsp;ls_zsds0223-memo,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_200-matnr&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_zsds0223-matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_200-period&nbsp;&nbsp;&nbsp;TO&nbsp;ls_zsds0223-period,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_200-qty_a&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_zsds0223-qty,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_200-meins&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;ls_zsds0223-meins.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;call function <a href ="functions/zsd_stock_history_month(생산년월별 재고 이력 생성)/zsd_stock_history_month.html">'ZSD_STOCK_HISTORY_MONTH'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_mtype&nbsp;=&nbsp;'Z'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_typez&nbsp;=&nbsp;ls_zsds0223.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;&ltdyn_table&gt&nbsp;ASSIGNING&nbsp;&ltdyn_wa&gt&nbsp;INDEX&nbsp;g_index.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;gs_200-period&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltdyn_wa&gt&nbsp;TO&nbsp;&ltfm&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ADD:&nbsp;gs_200-qty_a&nbsp;TO&nbsp;&ltfm&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;gs_200.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;set_data_to_dyn_wa&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'TOTAL'&nbsp;gs_header-total,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&ltDYN_WA&gt'&nbsp;'DIFF'&nbsp;gs_header-diff.<br />
+ENDFORM.                    " STOCK_ADJUSTMENT_PROCESS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CHECK_CONFIRM<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_L_ANSWER&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM check_confirm  USING    p_answer.<br />
+&nbsp;&nbsp;CALL FUNCTION 'POPUP_TO_CONFIRM'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;titlebar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Saving...'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text_question&nbsp;=&nbsp;text-a01<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text_button_1&nbsp;=&nbsp;'예'<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;icon_button_1&nbsp;=&nbsp;'ICON_CHECKED'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text_button_2&nbsp;=&nbsp;'NO'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;icon_button_2&nbsp;=&nbsp;'ICON_CANCEL'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;popup_type&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'ICON_MESSAGE_ERROR'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;answer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p_answer.<br />
+ENDFORM.                    " CHECK_CONFIRM<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;F4_GET_LGORT<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtP_0364&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM f4_get_lgort  USING p_field.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_field&nbsp;&nbsp;&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_data&nbsp;&nbsp;&nbsp;TYPE&nbsp;tihttpnvp,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_data&nbsp;&nbsp;&nbsp;TYPE&nbsp;ihttpnvp.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;&nbsp;ret_tab&nbsp;&nbsp;LIKE&nbsp;ddshretval&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs&gt.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;gt_lgort[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;lgort&nbsp;lgobe<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_lgort<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t001l<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;werks&nbsp;&nbsp;IN&nbsp;s_werks.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;retfield&nbsp;&nbsp;&nbsp;=&nbsp;'LGORT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value_org&nbsp;&nbsp;=&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value_tab&nbsp;&nbsp;=&nbsp;gt_lgort<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return_tab&nbsp;=&nbsp;ret_tab.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;p_field&nbsp;TO&nbsp;l_field.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TRANSLATE&nbsp;l_field&nbsp;TO&nbsp;UPPER&nbsp;CASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;(l_field)&nbsp;TO&nbsp;&ltfs&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;ret_tab&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_lgort&nbsp;INTO&nbsp;gs_lgort&nbsp;WITH&nbsp;KEY&nbsp;lgort&nbsp;=&nbsp;ret_tab-fieldval.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE:&nbsp;gs_lgort-lgobe&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " F4_GET_LGORT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*GUI&nbsp;Texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;MAIN100&nbsp;--&gt&nbsp;&<br />
+<br />
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;A01&nbsp;저장하시겠습니까?<br />
+*&nbsp;T01&nbsp;생산년월별&nbsp;재고&nbsp;조회<br />
+*&nbsp;T02&nbsp;생산년월별&nbsp;재고&nbsp;조정<br />
+<br />
+<br />
+*Selection&nbsp;texts<br />
+*----------------------------------------------------------<br />
+*&nbsp;P_VARI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;레이아웃<br />
+*&nbsp;S_LGORT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;저장위치<br />
+*&nbsp;S_MATKL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재그룹<br />
+*&nbsp;S_MATNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재코드<br />
+*&nbsp;S_WERKS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;플랜트<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

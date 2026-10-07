@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPPR9999</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZPPR9999</h2>
+<h3> Description: 바코드라벨 발행 테이블 자재내역 업데이트</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;&nbsp;ZPPR9999<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT  zppr9999 NO STANDARD PAGE HEADING LINE-SIZE 123<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE-ID&nbsp;zfim1.<br />
+<br />
+DATA: gt_temp TYPE STANDARD TABLE OF zppt0170 WITH HEADER LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_zppt0170&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;zppt0170&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+<br />
+CLEAR: gt_temp, gt_temp[], gt_zppt0170, gt_zppt0170[].<br />
+<br />
+SELECT *<br />
+&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_temp<br />
+&nbsp;&nbsp;FROM&nbsp;zppt0170.<br />
+<br />
+LOOP AT gt_temp WHERE maktx IS INITIAL.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;maktx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;gt_temp-maktx<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;makt<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;matnr&nbsp;EQ&nbsp;gt_temp-matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;spras&nbsp;EQ&nbsp;sy-langu.<br />
+<br />
+&nbsp;&nbsp;MODIFY&nbsp;gt_temp.<br />
+<br />
+&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;gt_temp&nbsp;TO&nbsp;gt_zppt0170.<br />
+&nbsp;&nbsp;APPEND&nbsp;gt_zppt0170.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_temp,&nbsp;gt_zppt0170.<br />
+ENDLOOP.<br />
+<br />
+IF gt_zppt0170[] IS NOT INITIAL.<br />
+&nbsp;&nbsp;MODIFY&nbsp;zppt0170&nbsp;FROM&nbsp;TABLE&nbsp;gt_zppt0170.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;i093&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'&nbsp;WITH&nbsp;'zppt0170'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&&nbsp;테이블&nbsp;업데이트에&nbsp;실패했습니다.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK&nbsp;AND&nbsp;WAIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;s011&nbsp;DISPLAY&nbsp;LIKE&nbsp;'S'.&nbsp;"성공적으로&nbsp;처리&nbsp;되었습니다<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;ZFIM1<br />
+*011&nbsp;&nbsp;&nbsp;성공적으로&nbsp;처리&nbsp;되었습니다<br />
+*093&nbsp;&nbsp;&nbsp;&&nbsp;테이블&nbsp;업데이트에&nbsp;실패했습니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

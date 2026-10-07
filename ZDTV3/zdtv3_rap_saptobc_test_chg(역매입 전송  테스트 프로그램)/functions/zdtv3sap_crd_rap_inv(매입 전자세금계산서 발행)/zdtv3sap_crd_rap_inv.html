@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3SAP_CRD_RAP_INV</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3SAP_CRD_RAP_INV</h2>
+<h3> Description: 매입 전자세금계산서 발행</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3SAP_CRD_RAP_INV .<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(SEND) TYPE  CHAR1 OPTIONAL<br />
+*"  TABLES<br />
+*"      INV_HD STRUCTURE  ZDTV3S_AP_HD<br />
+*"      INV_IM STRUCTURE  ZDTV3S_AP_IM OPTIONAL<br />
+*"      INV_PM STRUCTURE  ZDTV3S_AP_PM OPTIONAL<br />
+*"      INV_EX STRUCTURE  ZDTV3S_AP_EX OPTIONAL<br />
+*"      INV_EX_D STRUCTURE  ZDTV3S_AP_EX_D OPTIONAL<br />
+*"      RETURN STRUCTURE  ZDTV3S_RETURN OPTIONAL<br />
+*"  EXCEPTIONS<br />
+*"      FAIL_ISSUE<br />
+*"----------------------------------------------------------------------<br />
+* 변수초기화.<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3sap_crd_rap_inv.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;INIT_DATA.<br />
+&nbsp;&nbsp;G_SEND&nbsp;=&nbsp;SEND.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 건수.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;G_CNT&nbsp;=&nbsp;LINES(&nbsp;INV_HD[]&nbsp;).<br />
+&nbsp;&nbsp;IF&nbsp;G_CNT&nbsp;EQ&nbsp;0&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DT_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'10009'&nbsp;''&nbsp;''&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  IF G_CNT NE 1 .<br />
+*    DT_RETURN RETURN 'E' '10008' '' '' '' '' ''.<br />
+*    EXIT.<br />
+*  ENDIF.<br />
+<br />
+* 하나의 회사코드만 처리가능.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;CHECK_CRD_BUKRS&nbsp;TABLES&nbsp;INV_HD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USING&nbsp;G_BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_ERROR.<br />
+&nbsp;&nbsp;IF&nbsp;G_ERROR&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN[]&nbsp;=&nbsp;GT_RETURN[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 역매입 요청유무<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;&nbsp;INTO&nbsp;GS_ZDTV3T_COMPANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_COMPANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;EQ&nbsp;G_BUKRS.<br />
+&nbsp;&nbsp;IF&nbsp;GS_ZDTV3T_COMPANY-RAP_REQ_FLAG&nbsp;NE&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DT_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'15005'&nbsp;''&nbsp;''&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 생성일/시간/생성자<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;MOVE&nbsp;:&nbsp;SY-DATUM&nbsp;TO&nbsp;G_ERDAT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-UZEIT&nbsp;TO&nbsp;G_ERZET,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SY-UNAME&nbsp;TO&nbsp;G_ERNAM.<br />
+   </div>
+   <div class="codeComment">
+* 저장할 자료를 만듬...<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;MAKE_SAVE_DATA&nbsp;TABLES&nbsp;INV_HD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_IM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_PM<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_EX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_EX_D.<br />
+&nbsp;&nbsp;RETURN[]&nbsp;=&nbsp;GT_RETURN[].<br />
+&nbsp;&nbsp;IF&nbsp;GT_RAP_HEAD[]&nbsp;IS&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*   RETURN[] = GT_RETURN[].<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 전송<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;GT_RETURN&nbsp;,&nbsp;GT_RETURN[].<br />
+   </div>
+   <div class="codeComment">
+** 동기/비동기 결정.<br />
+*  PERFORM GET_SYNC.<br />
+* 세금계산서 저장.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;GT_RAP_HEAD[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;RAP_INV_SAVE_DATA.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;G_SEND&nbsp;EQ&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+** 동기/비동기 결정.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;GET_SYNC.<br />
+   </div>
+   <div class="codeComment">
+* BC전송.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SEND_DATA.<br />
+&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*   MESSAGE RETURN.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;G_TEXT&nbsp;=&nbsp;LINES(&nbsp;GT_RAP_HEAD[]&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;G_TEXT&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;G_TEXT&nbsp;'건을&nbsp;생성&nbsp;하였습니다.'&nbsp;INTO&nbsp;G_TEXT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DT_RETURN&nbsp;GT_RETURN&nbsp;'S'&nbsp;'00000'&nbsp;''&nbsp;G_TEXT&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN[]&nbsp;=&nbsp;GT_RETURN[].<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*  READ TABLE GT_RETURN WITH KEY TYPE = 'E'.<br />
+*  IF SY-SUBRC EQ 0.<br />
+*    DT_RETURN RETURN 'E' '10022' '' '' '' '' ''.<br />
+*    EXIT.<br />
+*  ENDIF.<br />
+* 잠금해제.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;RETURN[]&nbsp;=&nbsp;GT_RETURN[].<br />
+&nbsp;&nbsp;CALL FUNCTION 'DEQUEUE_ALL'.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>CMPWL</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: CMPWL</h2>
+<h3> Description: Customizing Comparison: Worklist Handling</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+TYPE-POOL cmpwl.<br />
+<br />
+TYPES: cmpwl_const2_type(2) TYPE c.<br />
+<br />
+TYPES: BEGIN OF cmpwl_s_address_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pointer_local&nbsp;LIKE&nbsp;addr1_sel-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pointer_remote&nbsp;LIKE&nbsp;addr1_sel-addrnumber,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_local&nbsp;LIKE&nbsp;addr1_sel-addrhandle,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare_result&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;index&nbsp;LIKE&nbsp;sy-tabix,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;namtab_index&nbsp;like&nbsp;sy-tabix,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;cmpwl_s_address_type.<br />
+TYPES: cmpwl_t_address_type TYPE cmpwl_s_address_type OCCURS 0.<br />
+<br />
+<br />
+TYPES: BEGIN OF cmpwl_s_cmpwl_type.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;cmpwl.<br />
+TYPES:   mark_adj TYPE c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mark_cmp&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mark_imp&nbsp;TYPE&nbsp;c.<br />
+TYPES: END OF cmpwl_s_cmpwl_type.<br />
+TYPES: cmpwl_t_cmpwl_type TYPE cmpwl_s_cmpwl_type OCCURS 0.<br />
+<br />
+TYPES: cmpwl_s_cmpwlh_type LIKE cmpwlh.<br />
+TYPES: cmpwl_t_cmpwlh_type TYPE cmpwl_s_cmpwlh_type OCCURS 0.<br />
+<br />
+TYPES: cmpwl_s_cmpwlimp_type LIKE cmpwlimp.<br />
+TYPES: cmpwl_t_cmpwlimp_type TYPE cmpwl_s_cmpwlimp_type OCCURS 0.<br />
+<br />
+TYPES: cmpwl_s_cmpwlk_type LIKE cmpwlk.<br />
+TYPES: cmpwl_t_cmpwlk_type TYPE cmpwl_s_cmpwlk_type OCCURS 0.<br />
+<br />
+TYPES: BEGIN OF cmpwl_s_msg_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgid&nbsp;LIKE&nbsp;sy-msgid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgty&nbsp;LIKE&nbsp;sy-msgty,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgno&nbsp;LIKE&nbsp;sy-msgno,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv1&nbsp;LIKE&nbsp;sy-msgv1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv2&nbsp;LIKE&nbsp;sy-msgv2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv3&nbsp;LIKE&nbsp;sy-msgv3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msgv4&nbsp;LIKE&nbsp;sy-msgv4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;cmpwl_s_msg_type.<br />
+<br />
+TYPES: BEGIN OF cmpwl_system_info_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rfc_dest&nbsp;LIKE&nbsp;rfcdes-rfcdest,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;code_page_local&nbsp;LIKE&nbsp;tcp00-cpcodepage,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;code_page_remote&nbsp;LIKE&nbsp;tcp00-cpcodepage,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endian_check_number_local&nbsp;LIKE&nbsp;tcp00-cpcodepage,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endian_check_number_remote&nbsp;LIKE&nbsp;tcp00-cpcodepage,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;langu_local&nbsp;LIKE&nbsp;sy-langu,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;langu_remote&nbsp;LIKE&nbsp;sy-langu,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_name_local&nbsp;LIKE&nbsp;sy-sysid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_name_remote&nbsp;LIKE&nbsp;sy-sysid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sap_release_local&nbsp;LIKE&nbsp;sy-saprl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sap_release_remote&nbsp;LIKE&nbsp;sy-saprl,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client_local&nbsp;LIKE&nbsp;sy-mandt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client_remote&nbsp;LIKE&nbsp;sy-mandt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t000_local&nbsp;LIKE&nbsp;t000_rfc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t000_remote&nbsp;LIKE&nbsp;t000_rfc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;user_name_local&nbsp;LIKE&nbsp;sy-uname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;user_name_remote&nbsp;LIKE&nbsp;sy-uname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;cmpwl_system_info_type.<br />
+<br />
+TYPES: BEGIN OF cmpwl_s_except_type.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;cmpwlec.<br />
+TYPES:   mark TYPE c.<br />
+TYPES:   delete TYPE c.<br />
+TYPES:   index LIKE sy-tabix.<br />
+TYPES: END OF cmpwl_s_except_type.<br />
+TYPES: cmpwl_t_except_type TYPE cmpwl_s_except_type OCCURS 0.<br />
+<br />
+TYPES: BEGIN OF cmpwl_s_except_sap_type.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;cmpwle.<br />
+TYPES:  mark TYPE c.<br />
+TYPES: END OF cmpwl_s_except_sap_type.<br />
+TYPES: cmpwl_t_except_sap_type TYPE cmpwl_s_except_sap_type OCCURS 0.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;state&nbsp;of&nbsp;work&nbsp;list&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_state_creating_header&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'H',<br />
+&nbsp;&nbsp;cmpwl_state_scheduled_for_crt&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'b',<br />
+&nbsp;&nbsp;cmpwl_state_creating&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'B',<br />
+&nbsp;&nbsp;cmpwl_state_crt_terminated&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'W',<br />
+&nbsp;&nbsp;cmpwl_state_open&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'O',<br />
+&nbsp;&nbsp;cmpwl_state_scheduled_for_cmp&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'c',<br />
+&nbsp;&nbsp;cmpwl_state_comparing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'C',<br />
+&nbsp;&nbsp;cmpwl_state_cmp_terminated&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'X',<br />
+&nbsp;&nbsp;cmpwl_state_scheduled_for_imp&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'i',<br />
+&nbsp;&nbsp;cmpwl_state_importing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'I',<br />
+&nbsp;&nbsp;cmpwl_state_imp_terminated&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'Y',<br />
+&nbsp;&nbsp;cmpwl_state_adjusting&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'A',<br />
+&nbsp;&nbsp;cmpwl_state_adj_terminated&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'Z',<br />
+&nbsp;&nbsp;cmpwl_state_closed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-state&nbsp;VALUE&nbsp;'L'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;kind&nbsp;of&nbsp;work&nbsp;list&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_kind_transport_request&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'R',<br />
+&nbsp;&nbsp;cmpwl_kind_parts_list&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'L',<br />
+&nbsp;&nbsp;cmpwl_kind_cust_template&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'T',<br />
+&nbsp;&nbsp;cmpwl_kind_app_comp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'A',<br />
+&nbsp;&nbsp;cmpwl_kind_project_img&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'P',<br />
+&nbsp;&nbsp;cmpwl_kind_project_img_mark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'Q',<br />
+&nbsp;&nbsp;cmpwl_kind_project_img_view&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'V',<br />
+&nbsp;&nbsp;cmpwl_kind_project_img_views&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'W',<br />
+&nbsp;&nbsp;cmpwl_kind_enterprise_img&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'E',<br />
+&nbsp;&nbsp;cmpwl_kind_enterprise_img_mark&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'F',<br />
+&nbsp;&nbsp;cmpwl_kind_reference_img&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'I',<br />
+&nbsp;&nbsp;cmpwl_kind_ale_group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'G',<br />
+&nbsp;&nbsp;cmpwl_kind_manual_selection&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwlh-kind&nbsp;VALUE&nbsp;'M'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;import&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_imp_not_importable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-impstatus&nbsp;VALUE&nbsp;'X',<br />
+&nbsp;&nbsp;cmpwl_imp_not_selected_for_imp&nbsp;LIKE&nbsp;cmpwl-impstatus&nbsp;VALUE&nbsp;'N',<br />
+&nbsp;&nbsp;cmpwl_imp_selected_for_import&nbsp;&nbsp;LIKE&nbsp;cmpwl-impstatus&nbsp;VALUE&nbsp;'S',<br />
+&nbsp;&nbsp;cmpwl_imp_executing_import&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-impstatus&nbsp;VALUE&nbsp;'E',<br />
+&nbsp;&nbsp;cmpwl_imp_imported_ok&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-impstatus&nbsp;VALUE&nbsp;'O',<br />
+&nbsp;&nbsp;cmpwl_imp_imported_failure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-impstatus&nbsp;VALUE&nbsp;'F',<br />
+&nbsp;&nbsp;cmpwl_imp_terminated&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-impstatus&nbsp;VALUE&nbsp;'A'.<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;adjust&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_adj_init&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-adjstatus&nbsp;VALUE&nbsp;'I',<br />
+&nbsp;&nbsp;cmpwl_adj_open&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-adjstatus&nbsp;VALUE&nbsp;'O',<br />
+&nbsp;&nbsp;cmpwl_adj_closed&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-adjstatus&nbsp;VALUE&nbsp;'L'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;compare&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(=rscmptp1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_cmp_terminated&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'XX',<br />
+&nbsp;&nbsp;cmpwl_cmp_initial&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'00',<br />
+&nbsp;&nbsp;cmpwl_cmp_not_found_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'01',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_fields_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'02',<br />
+&nbsp;&nbsp;cmpwl_cmp_not_active_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'03',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_tvdir_entry_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'04',<br />
+&nbsp;&nbsp;cmpwl_cmp_view_too_wide_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'05',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_auth_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'06',<br />
+&nbsp;&nbsp;cmpwl_cmp_auth_s_tabu_cli_loc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'42',<br />
+&nbsp;&nbsp;cmpwl_cmp_auth_s_tabu_dis_loc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'43',<br />
+<br />
+&nbsp;&nbsp;cmpwl_cmp_no_vmaint_tool_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'07',<br />
+&nbsp;&nbsp;cmpwl_cmp_read_error_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'08',<br />
+&nbsp;&nbsp;cmpwl_cmp_compress_error_local&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'09',<br />
+&nbsp;&nbsp;cmpwl_cmp_decompress_error_loc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'10',<br />
+&nbsp;&nbsp;cmpwl_cmp_not_found_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'11',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_fields_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'12',<br />
+&nbsp;&nbsp;cmpwl_cmp_not_active_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'13',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_tvdir_entr_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'14',<br />
+&nbsp;&nbsp;cmpwl_cmp_view_too_wide_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'15',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_auth_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'16',<br />
+&nbsp;&nbsp;cmpwl_cmp_auth_s_tab_cli_remot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'45',<br />
+&nbsp;&nbsp;cmpwl_cmp_auth_s_tab_dis_remot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'46',<br />
+<br />
+&nbsp;&nbsp;cmpwl_cmp_no_vmaint_tool_remot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'17',<br />
+&nbsp;&nbsp;cmpwl_cmp_read_error_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'18',<br />
+&nbsp;&nbsp;cmpwl_cmp_compress_error_remot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'19',<br />
+&nbsp;&nbsp;cmpwl_cmp_decompr_error_remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'20',<br />
+&nbsp;&nbsp;cmpwl_cmp_comm_failure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'21',<br />
+&nbsp;&nbsp;cmpwl_cmp_system_failure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'22',<br />
+&nbsp;&nbsp;cmpwl_cmp_keys_must_be_cmpared&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'23',<br />
+&nbsp;&nbsp;cmpwl_cmp_key_struct_not_conv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'24',<br />
+&nbsp;&nbsp;cmpwl_cmp_field_struc_not_conv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'25',<br />
+&nbsp;&nbsp;cmpwl_cmp_rfc_dest_not_found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'26',<br />
+&nbsp;&nbsp;cmpwl_cmp_canceled&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'27',<br />
+&nbsp;&nbsp;cmpwl_cmp_different_langu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'28',<br />
+&nbsp;&nbsp;cmpwl_cmp_cliindep_same_system&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'29',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_sm30_view&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'40',<br />
+&nbsp;&nbsp;cmpwl_cmp_systab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'41',<br />
+&nbsp;&nbsp;cmpwl_cmp_restricted_equal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'S',<br />
+&nbsp;&nbsp;cmpwl_cmp_restricted_equal_pro&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'Q',<br />
+&nbsp;&nbsp;cmpwl_cmp_equal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'E',<br />
+&nbsp;&nbsp;cmpwl_cmp_non_equal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'N',<br />
+&nbsp;&nbsp;cmpwl_cmp_non_equal_prop&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'P',<br />
+&nbsp;&nbsp;cmpwl_cmp_restricted_equal_sd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'SS',<br />
+&nbsp;&nbsp;cmpwl_cmp_equal_sd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'SE',<br />
+&nbsp;&nbsp;cmpwl_cmp_non_equal_sd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'SN',<br />
+&nbsp;&nbsp;cmpwl_cmp_non_equal_prop_sd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'SP',<br />
+&nbsp;&nbsp;cmpwl_cmp_excepted&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'47',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_transl_cmp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'48',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_compare&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'49',<br />
+&nbsp;&nbsp;cmpwl_cmp_no_e071k_entry&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'50',<br />
+&nbsp;&nbsp;cmpwl_cmp_selected_for_cmp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'XS',<br />
+&nbsp;&nbsp;cmpwl_cmp_executing_comparison&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'XE',<br />
+&nbsp;&nbsp;cmpwl_cmp_not_selected_for_cmp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmpstatus&nbsp;VALUE&nbsp;'XN'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;return&nbsp;codes&nbsp;&nbsp;&nbsp;(=rscmptp1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_rc_okay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cmpwl_const2_type&nbsp;VALUE&nbsp;'00',<br />
+&nbsp;&nbsp;cmpwl_rc_internal_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cmpwl_const2_type&nbsp;VALUE&nbsp;'63',<br />
+&nbsp;&nbsp;cmpwl_rc_foreign_lock&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cmpwl_const2_type&nbsp;VALUE&nbsp;'64',<br />
+&nbsp;&nbsp;cmpwl_rc_lock_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cmpwl_const2_type&nbsp;VALUE&nbsp;'65',<br />
+&nbsp;&nbsp;cmpwl_rc_wrong_logon_client&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;cmpwl_const2_type&nbsp;VALUE&nbsp;'66'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;compare&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_cl_object&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmplevel&nbsp;VALUE&nbsp;'O',<br />
+&nbsp;&nbsp;cmpwl_cl_table&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmplevel&nbsp;VALUE&nbsp;'T',<br />
+&nbsp;&nbsp;cmpwl_cl_subobject&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmplevel&nbsp;VALUE&nbsp;'V',<br />
+&nbsp;&nbsp;cmpwl_cl_no_compare&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmplevel&nbsp;VALUE&nbsp;'N',<br />
+&nbsp;&nbsp;cmpwl_cl_table_merged&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmplevel&nbsp;VALUE&nbsp;'M',<br />
+&nbsp;&nbsp;cmpwl_cl_not_specified&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-cmplevel&nbsp;VALUE&nbsp;'X'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;comparable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_comparable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-comparable&nbsp;VALUE&nbsp;'X',<br />
+&nbsp;&nbsp;cmpwl_not_comparable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwl-comparable&nbsp;VALUE&nbsp;'&nbsp;'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;compare&nbsp;exceptions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_except_no_compare&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwle-exptkind&nbsp;VALUE&nbsp;'N',<br />
+&nbsp;&nbsp;cmpwl_except_no_field_compare&nbsp;&nbsp;LIKE&nbsp;cmpwle-exptkind&nbsp;VALUE&nbsp;'F',<br />
+&nbsp;&nbsp;cmpwl_except_table_compare&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;cmpwle-exptkind&nbsp;VALUE&nbsp;'T'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;compare/import&nbsp;actions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_object_compare&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c&nbsp;VALUE&nbsp;'C',<br />
+&nbsp;&nbsp;cmpwl_mass_compare&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c&nbsp;VALUE&nbsp;'M',<br />
+&nbsp;&nbsp;cmpwl_interactive_transfer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c&nbsp;VALUE&nbsp;'I',<br />
+&nbsp;&nbsp;cmpwl_automatic_transfer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;c&nbsp;VALUE&nbsp;'A'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;address&nbsp;adjustment&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+CONSTANTS:<br />
+&nbsp;&nbsp;cmpwl_addr_adjusted&nbsp;LIKE&nbsp;addr1_sel-addrnumber&nbsp;VALUE&nbsp;'@ADJUSTED@'.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3SAP_DSP_INVOICE</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3SAP_DSP_INVOICE</h2>
+<h3> Description: 전자세금계산서조회</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3SAP_DSP_INVOICE.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(INV_SEQ) TYPE  ZDTV3E_INV_SEQ OPTIONAL<br />
+*"     VALUE(ISSUE_ID) TYPE  ZDTV3E_SSUE_ID OPTIONAL<br />
+*"     VALUE(INV_TYPE) TYPE  CHAR2<br />
+*"  EXPORTING<br />
+*"     VALUE(RETURN) LIKE  ZDTV3S_RETURN STRUCTURE  ZDTV3S_RETURN<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3sap_dsp_invoice.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_ASP_CODE&nbsp;TYPE&nbsp;ZDTV3E_ASP_CODE.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_SAP_IO.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_DATA&nbsp;TYPE&nbsp;ZDTV3E_XML_DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_DATA2&nbsp;TYPE&nbsp;ZDTV3E_XML_DATA2.<br />
+   </div>
+   <div class="codeComment">
+* 기타발행분처리를 위함.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_STATUS&nbsp;TYPE&nbsp;ZDTV3E_STATUS.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;L_STATUS&nbsp;,&nbsp;L_SAP_IO.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+* 저장분 처리를 위함<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_ISSUE_ID&nbsp;TYPE&nbsp;ZDTV3E_SSUE_ID.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;L_ISSUE_ID.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;INV_SEQ&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;INV_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;INV_SEQ&nbsp;INTO&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ISSUE_ID&nbsp;EQ&nbsp;ISSUE_ID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;INV_SEQ&nbsp;INTO&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AP_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;ISSUE_ID&nbsp;EQ&nbsp;ISSUE_ID.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&lt&lt&lt 2021.11.19 UniDOCU 증빙URL 사용<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zuniefii_u010&nbsp;if&nbsp;found.html">ZUNIEFII_U010&nbsp;IF&nbsp;FOUND</a>.<br />
+   </div>
+   <div class="codeComment">
+*&gt&gt&gt<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CASE&nbsp;INV_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;BUKRS&nbsp;STATUS&nbsp;ISSUE_ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(G_BUKRS,L_STATUS,L_ISSUE_ID)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;XML_DATA&nbsp;INTO&nbsp;L_DATA2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_XML<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AR_ETC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_DATA&nbsp;=&nbsp;ZDTV3T_AR_ETC-XML_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;BUKRS&nbsp;STATUS&nbsp;ISSUE_ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(G_BUKRS,L_STATUS,L_ISSUE_ID)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AP_HEAD<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;XML_DATA&nbsp;INTO&nbsp;L_DATA2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AP_XML<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_AP_ETC<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;EQ&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_DATA&nbsp;=&nbsp;ZDTV3T_AP_ETC-XML_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+   </div>
+   <div class="codeComment">
+*  IF L_DATA2 NE SPACE.<br />
+*    CALL FUNCTION 'ZDTV3SAP_DSP_IEXPLORE2'<br />
+*      EXPORTING<br />
+*        DATA = L_DATA2.<br />
+*    EXIT.<br />
+*  ENDIF.<br />
+* 전자세금계산서 상태 관리<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;SAP_IO&nbsp;INTO&nbsp;L_SAP_IO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_STATUS<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;STATUS&nbsp;EQ&nbsp;L_STATUS&nbsp;.<br />
+&nbsp;&nbsp;CASE&nbsp;L_SAP_IO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+   </div>
+   <div class="codeComment">
+* 저장상태 조회불가<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_ISSUE_ID&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-INV_SEQ&nbsp;=&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE&nbsp;=<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'세금계산서&nbsp;조회는&nbsp;발행&nbsp;후에만&nbsp;가능합니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call function <a href ="../zdtv3sap_dsp_iexplore(IEXPLORE 실행)/zdtv3sap_dsp_iexplore.html">'ZDTV3SAP_DSP_IEXPLORE'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA&nbsp;=&nbsp;L_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'Z'&nbsp;OR&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call function <a href ="../zdtv3sap_user_input(사용자 매입 매출 세금계산서 입력)/zdtv3sap_user_input.html">'ZDTV3SAP_USER_INPUT'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'D'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_SEQ&nbsp;&nbsp;=&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_TYPE&nbsp;=&nbsp;INV_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'C'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zdtv3i_u802&nbsp;if&nbsp;found.html">ZDTV3I_U802&nbsp;IF&nbsp;FOUND</a>.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+   </div>
+   <div class="codeComment">
+*2. 회사정의 및 논리목적지 정보.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zdtv3sap_chk_bc_connect(BC 서버 연결확인)/zdtv3sap_chk_bc_connect.html">'ZDTV3SAP_CHK_BC_CONNECT'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUKRS&nbsp;&nbsp;&nbsp;=&nbsp;G_BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPANY&nbsp;=&nbsp;GS_ZDTV3T_COMPANY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;=&nbsp;GS_RETURN.<br />
+&nbsp;&nbsp;IF&nbsp;GS_RETURN-TYPE&nbsp;EQ&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;=&nbsp;GS_RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* ASP 업체 찾기.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_TABLE(30).<br />
+&nbsp;&nbsp;CASE&nbsp;INV_TYPE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_TABLE&nbsp;=&nbsp;'ZDTV3T_AR_HEAD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;ASP_CODE&nbsp;STATUS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(L_ASP_CODE,L_STATUS)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;(L_TABLE)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;&nbsp;EQ&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_ID&nbsp;NE&nbsp;SPACE.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_TITLE&nbsp;=&nbsp;'매출&nbsp;전자세금계산서&nbsp;조회'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_TABLE&nbsp;=&nbsp;'ZDTV3T_AP_HEAD'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;ASP_CODE&nbsp;STATUS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(L_ASP_CODE,L_STATUS)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;(L_TABLE)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;INV_SEQ&nbsp;&nbsp;EQ&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ISSUE_ID&nbsp;NE&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G_TITLE&nbsp;=&nbsp;'매입&nbsp;전자세금계산서&nbsp;조회'.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;IF&nbsp;L_ASP_CODE&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-INV_SEQ&nbsp;=&nbsp;INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE&nbsp;=&nbsp;'발행&nbsp;전&nbsp;세금계산서입니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+**2. BC서버에서 URL 정보 가져오기<br />
+**&gt S) #22145 / 세금계산서 I/F방식 개선 / 공소정<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MANDT&nbsp;INTO&nbsp;SY-MANDT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_HOST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SYSID&nbsp;EQ&nbsp;SY-SYSID.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+** S) 2021.07.22 - #24395 UniTAX 4.0 로직 수정(DEST 파라미터 추가)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;call function <a href ="../zdtv3inf_saptobc_getxml2(SAP =  BC 매출 전자세금계산서 조회 - URL 정보 가져오기2)/zdtv3inf_saptobc_getxml2.html">'ZDTV3INF_SAPTOBC_GETXML2'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_SEQ&nbsp;&nbsp;=&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASP_CODE&nbsp;=&nbsp;L_ASP_CODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;=&nbsp;L_STATUS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUEID&nbsp;&nbsp;=&nbsp;L_ISSUE_ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;GS_ZDTV3T_COMPANY-RFCDEST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_URL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;=&nbsp;GS_INF_RETURN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;=&nbsp;4.<br />
+   </div>
+   <div class="codeComment">
+** E) 2021.07.22 - #24395 UniTAX 4.0 로직 수정<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'ZDTV3INF_SAPTOBC_GETXML'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESTINATION&nbsp;GS_ZDTV3T_COMPANY-RFCDEST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INV_SEQ&nbsp;&nbsp;=&nbsp;INV_SEQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASP_CODE&nbsp;=&nbsp;L_ASP_CODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;=&nbsp;L_STATUS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ISSUEID&nbsp;=&nbsp;L_ISSUE_ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_URL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;&nbsp;&nbsp;=&nbsp;GS_INF_RETURN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;=&nbsp;4.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;include&nbsp;<a&nbsp;href&nbsp;="zdtv3i_ua11&nbsp;if&nbsp;found.html">ZDTV3I_UA11&nbsp;IF&nbsp;FOUND</a>.<br />
+<br />
+   </div>
+   <div class="codeComment">
+**********************************************************************<br />
+*&gt S) 2021.10.14 JI.Kim UPDK901944 #24972 [UniTAX]#24972 Fiori WebGui 세금계산서 증빙 조회 로직 추가<br />
+*--------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;DATA:&nbsp;ITS.<br />
+&nbsp;&nbsp;IF&nbsp;GS_INF_RETURN-ERROR_CODE&nbsp;EQ&nbsp;'00000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Check&nbsp;WebGui<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'GUI_IS_ITS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN&nbsp;=&nbsp;ITS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ITS&nbsp;=&nbsp;SPACE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;SAP&nbsp;GUI<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;G_CUSTOM_CONTAINER2&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;G_CUSTOM_CONTAINER2-&gtFREE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;G_CUSTOM_CONTAINER2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;SCREEN&nbsp;100&nbsp;STARTING&nbsp;AT&nbsp;1&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDING&nbsp;AT&nbsp;125&nbsp;27."ENDING&nbsp;AT&nbsp;SY-SCOLS&nbsp;SY-SROWS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Web&nbsp;GUI<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CALL_BROWSER'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;G_URL<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FRONTEND_NOT_SUPPORTED&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FRONTEND_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROG_NOT_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO_BATCH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UNSPECIFIED_ERROR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-INV_SEQ&nbsp;=&nbsp;GS_INF_RETURN-INV_SEQ.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE&nbsp;=&nbsp;GS_INF_RETURN-ERROR_CODE_TEXT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*--------------------------------------------------------------------*<br />
+*  IF GS_INF_RETURN-ERROR_CODE EQ '00000'.<br />
+**3. 화면출력.<br />
+*    IF NOT G_CUSTOM_CONTAINER2 IS INITIAL.<br />
+*      CALL METHOD G_CUSTOM_CONTAINER2-&gtFREE.<br />
+*      CLEAR: G_CUSTOM_CONTAINER2.<br />
+*    ENDIF.<br />
+*    CALL SCREEN 100 STARTING AT 1 1<br />
+*                    ENDING   AT 95 27.<br />
+**                    ENDING   AT SY-SCOLS SY-SROWS.<br />
+*  ELSE.<br />
+*    RETURN-TYPE    = 'E'.<br />
+*    RETURN-INV_SEQ = GS_INF_RETURN-INV_SEQ.<br />
+*    RETURN-MESSAGE = GS_INF_RETURN-ERROR_CODE_TEXT.<br />
+*  ENDIF.<br />
+*&lt E) 2021.10.14 JI.Kim UPDK901944 #24972<br />
+**********************************************************************<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: 00<br />
+*398   & & & &<br />
+*<br />
+* Message class: 0K<br />
+*000   & & & &<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+*001   저장하였습니다.<br />
+*003   자료가 존재하지 않습니다.<br />
+*005   변경된 자료가 없습니다.<br />
+*006   작업을 취소하였습니다.<br />
+*014   &는 POPUP화면을 정의하지 않았습니다.<br />
+*018   &는 사용할수 없는 BUTTON 입니다.<br />
+*019   &의 결과화면 POPUP 레이아웃 정의을 정의하지 않았습니다.<br />
+*023   HTML 자료 수신오류. SAP 패치 15 이상만 가능합니다.<br />
+*030   &에 대한 권한이 존재하지 않습니다.<br />
+*033   매입관리 POPUP 화면정의에 ISSUE_ID 누락.<br />
+*034   & 파일이 존재하지 않습니다.<br />
+*301   파일경로 길이는 128자리까지만 허용합니다.<br />
+*901   &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

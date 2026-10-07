@@ -1,0 +1,818 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZHRF_GROUPWARE_0001</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZHRF_GROUPWARE_0001</h2>
+<h3> Description: 그룹웨어 급여명세서</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zhrf_groupware_0001.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_IMPORT) TYPE  ZHRFS_GROUP_0001<br />
+*"  TABLES<br />
+*"      ET_0001 STRUCTURE  ZHRF_GROUP_0001<br />
+*"----------------------------------------------------------------------<br />
+<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zhrf_groupware_0001.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;gt_rt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;hrpay99_rt&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_crt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;pc208&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_rgdir&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;pc261&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_evpdir&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;pc261&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_pay_result&nbsp;TYPE&nbsp;pay99_result,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_tab01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;hrpay99_tab_of_results,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_crt_tab&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;hrpay99_tab_of_results,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_tab01&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;pay99_result,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;pc207,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_crt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;pc208,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_endda&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paytp(1),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_ocr_txt(40).<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_9007&nbsp;TYPE&nbsp;zhrs9007.<br />
+&nbsp;&nbsp;DATA:&nbsp;t500l_wa&nbsp;TYPE&nbsp;t500l.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_rt,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_rt[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_crt,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_crt[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_tab01,&nbsp;&nbsp;&nbsp;gt_tab01[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_crt_tab,&nbsp;gt_crt_tab[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_rgdir,&nbsp;&nbsp;&nbsp;gt_rgdir[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_evpdir,&nbsp;&nbsp;gt_evpdir[],<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_pay_result,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_tab01,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_lgartname(4).<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;gs_pernr&nbsp;TYPE&nbsp;p_pernr.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;gv_molga_p&nbsp;TYPE&nbsp;molga.<br />
+&nbsp;&nbsp;DATA:&nbsp;1020_anzhl&nbsp;TYPE&nbsp;pranz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1030_anzhl&nbsp;TYPE&nbsp;pranz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1010_anzhl&nbsp;TYPE&nbsp;pranz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;time&nbsp;TYPE&nbsp;pranz.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;4me&nbsp;&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s301&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s302&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s4ue&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s3t1&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dsum&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;psum&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tsum&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1490_betrg&nbsp;LIKE&nbsp;gt_rt-betrg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1010_betrg&nbsp;LIKE&nbsp;gt_rt-betrg.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;gt_t511&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;t511&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_t512w&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;t512w&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;t_orgeh&nbsp;LIKE&nbsp;zhrs9001&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;payty&nbsp;LIKE&nbsp;gt_rgdir-payty.<br />
+&nbsp;&nbsp;DATA:&nbsp;dats&nbsp;LIKE&nbsp;pc261-bondt.<br />
+&nbsp;&nbsp;DATA:&nbsp;be_date&nbsp;LIKE&nbsp;p0001-begda.<br />
+&nbsp;&nbsp;DATA:&nbsp;i_pernr&nbsp;LIKE&nbsp;zhrfs_group_0001-i_pernr.<br />
+&nbsp;&nbsp;DATA:&nbsp;i_ocrsn&nbsp;LIKE&nbsp;zhrfs_group_0001-i_ocrsn.<br />
+&nbsp;&nbsp;DATA:&nbsp;i_paydt&nbsp;LIKE&nbsp;zhrfs_group_0001-i_paydt.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_info&nbsp;LIKE&nbsp;zhrs9003&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;ch_persk&nbsp;LIKE&nbsp;zhrs9003-persk,&nbsp;&nbsp;"사원하위&nbsp;그룹<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ch_pktxt&nbsp;LIKE&nbsp;zhrs9003-pktxt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ch_orgeh&nbsp;LIKE&nbsp;zhrs9003-orgeh,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ch_orgtx&nbsp;LIKE&nbsp;zhrs9003-orgtx,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ch_ename&nbsp;LIKE&nbsp;zhrs9003-ename.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;gt_9011&nbsp;LIKE&nbsp;zhrt9011&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;i_dats&nbsp;&nbsp;LIKE&nbsp;gt_9011-paydt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_dats&nbsp;LIKE&nbsp;gt_9011-paydt.<br />
+<br />
+<br />
+&nbsp;&nbsp;i_pernr&nbsp;=&nbsp;i_import-i_pernr.<br />
+&nbsp;&nbsp;i_ocrsn&nbsp;=&nbsp;i_import-i_ocrsn.<br />
+&nbsp;&nbsp;i_paydt&nbsp;=&nbsp;i_import-i_paydt.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  IF I_OCRSN  = '0001' OR I_OCRSN = '0007'.<br />
+*    PAYTY = ''.<br />
+*  ELSE.<br />
+*    PAYTY = 'A'.<br />
+*  ENDIF.<br />
+*<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CASE&nbsp;i_ocrsn.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'0001'&nbsp;OR&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;payty&nbsp;=&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'9900'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;payty&nbsp;=&nbsp;'B'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;payty&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;i_ocrsn&nbsp;=&nbsp;'0001'.&nbsp;&nbsp;"정규급여<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;i_ocrsn&nbsp;.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;gs_pernr&nbsp;=&nbsp;i_pernr.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;et_0001,&nbsp;et_0001[],&nbsp;gt_9007,&nbsp;gt_9007[],&nbsp;gt_9007t,&nbsp;gt_9007t[].<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 개인 인사정보<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function <a href ="../zhrf0002(사번으로 개인 인사 정보 읽어오기)/zhrf0002.html">'ZHRF0002'</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ipernr&nbsp;&nbsp;&nbsp;=&nbsp;gs_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;operinfo&nbsp;=&nbsp;l_info.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;l_info&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;CHECK&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;ch_pktxt&nbsp;=&nbsp;l_info-pktxt.<br />
+&nbsp;&nbsp;ch_orgeh&nbsp;=&nbsp;l_info-orgeh.<br />
+&nbsp;&nbsp;ch_orgtx&nbsp;=&nbsp;l_info-orgtx.<br />
+&nbsp;&nbsp;ch_ename&nbsp;=&nbsp;l_info-ename&nbsp;.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;l_info-abkrs&nbsp;=&nbsp;'K0'&nbsp;OR&nbsp;l_info-abkrs&nbsp;=&nbsp;'K2'&nbsp;OR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_info-abkrs&nbsp;=&nbsp;'K4'&nbsp;OR&nbsp;l_info-abkrs&nbsp;=&nbsp;'K6'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ch_persk&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ch_persk&nbsp;=&nbsp;'2'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_9011<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zhrt9011<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;gubun&nbsp;=&nbsp;ch_persk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ocrsn&nbsp;=&nbsp;i_ocrsn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;paydt&nbsp;=&nbsp;i_paydt.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_9011&nbsp;WITH&nbsp;KEY&nbsp;gubun&nbsp;=&nbsp;ch_persk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;paydt&nbsp;=&nbsp;i_paydt.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;gs_dats&nbsp;=&nbsp;gt_9011-paydt.&nbsp;&nbsp;"지급일자<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;get_molga_pernr&nbsp;USING&nbsp;gs_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gv_molga_p.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 사번에 대한 급여 READ_PC261<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CALL FUNCTION 'CU_READ_RGDIR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in_rgdir&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_rgdir[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_record_found&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_evpdir,&nbsp;gt_evpdir[].<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;i_ocrsn&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ch_persk&nbsp;=&nbsp;2.<br />
+   </div>
+   <div class="codeComment">
+* 현장직 월급이 다음달 10일에 들어오기 떄문에 전달을 빼준다<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be_date&nbsp;=&nbsp;gs_dats.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'RP_CALC_DATE_IN_INTERVAL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;be_date<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;days&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'00'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;months&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'01'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signum&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'-'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;years&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'00'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calc_date&nbsp;=&nbsp;i_dats.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i_dats&nbsp;=&nbsp;gs_dats.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;i_dats&nbsp;=&nbsp;gs_dats.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&gt&gt payid 로직 추가 필요<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;l_payid&nbsp;TYPE&nbsp;payid.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*1) 지급일 Data 가지고 오기<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_rgdir&nbsp;WHERE&nbsp;paydt&nbsp;=&nbsp;gs_dats&nbsp;&nbsp;&nbsp;"지급일자<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;inocr&nbsp;=&nbsp;i_ocrsn.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;i_ocrsn&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;i_ocrsn&nbsp;=&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_rgdir-inocr&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;gt_rgdir-inocr&nbsp;=&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_rgdir-inper&nbsp;=&nbsp;i_dats(6).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_rgdir-fpper&nbsp;=&nbsp;i_dats(6).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_rgdir-inocr&nbsp;=&nbsp;i_ocrsn.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_rgdir-payty&nbsp;=&nbsp;payty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_rgdir-bondt&nbsp;=&nbsp;i_dats.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CD_EVALUATION_PERIODS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*       BONUS_DATE      = I_DATS<br />
+*       INPER_MODIF     = GT_RGDIR-IPERM<br />
+*       INPER           = GT_RGDIR-INPER<br />
+*       PAY_TYPE        = PAYTY<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bonus_date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_dats&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"$bondt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inper_modif&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_rgdir-iperm&nbsp;&nbsp;"pn-permo&nbsp;monthly<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inper&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_rgdir-inper&nbsp;&nbsp;"period<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pay_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;payty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"$payty<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pay_ident&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_rgdir-payid&nbsp;&nbsp;"$payid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rgdir&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_rgdir[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;evpdir&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_evpdir[]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_record_found&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;t500l_wa.<br />
+&nbsp;&nbsp;CALL FUNCTION 'HRPY_READ_T500L'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;molga&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gv_molga_p<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t500l_entry&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;t500l_wa<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_entry_found&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 임금그룹<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_9003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zhrt9003.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 임금그룹 별 임금유형<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;gt_9004<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zhrt9004.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_t511,&nbsp;gt_t511[].<br />
+&nbsp;&nbsp;SELECT&nbsp;lgart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t511<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_t511<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;molga&nbsp;=&nbsp;gv_molga_p<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;opken&nbsp;=&nbsp;'A'.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;gt_t511&nbsp;BY&nbsp;lgart.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gt_t512w,&nbsp;gt_t512w[].<br />
+&nbsp;&nbsp;SELECT&nbsp;lgart&nbsp;aklas<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;t512w<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_t512w<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;molga&nbsp;=&nbsp;gv_molga_p<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;begda&nbsp;&lt=&nbsp;i_dats<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;endda&nbsp;&gt=&nbsp;i_dats.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;gt_t512w&nbsp;BY&nbsp;lgart.<br />
+<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_evp&nbsp;LIKE&nbsp;pc261&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+&nbsp;&nbsp;DATA:&nbsp;l_pernr&nbsp;TYPE&nbsp;persno.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;i_ocrsn&nbsp;=&nbsp;'9900'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zhrt9999<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;l_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;pernr&nbsp;=&nbsp;gs_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ocrsn&nbsp;=&nbsp;i_ocrsn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;payty&nbsp;=&nbsp;payty<br />
+   </div>
+   <div class="codeComment">
+*       AND payid = payid<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;paydt&nbsp;=&nbsp;i_dats.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;l_pernr&nbsp;IS&nbsp;NOT&nbsp;INITIAL.&nbsp;&nbsp;"권취자&nbsp;소급분<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*# 소급이 있는 월만 남기고 삭제<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_evp[]&nbsp;=&nbsp;gt_evpdir[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_evpdir&nbsp;WHERE&nbsp;srtza&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_evp&nbsp;WITH&nbsp;KEY&nbsp;paydt&nbsp;=&nbsp;gt_evpdir-paydt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;srtza&nbsp;=&nbsp;'P'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ocrsn&nbsp;=&nbsp;gt_evpdir-ocrsn.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;gt_evpdir.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;gt_evpdir&nbsp;BY&nbsp;fpper&nbsp;inper&nbsp;seqnr.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_evpdir&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;i_ocrsn&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;i_ocrsn&nbsp;=&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_evpdir-fpper&nbsp;=&nbsp;i_dats(6).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_evpdir-inper&nbsp;=&nbsp;i_dats(6).<br />
+   </div>
+   <div class="codeComment">
+*    ELSE.<br />
+*      CHECK gt_evpdir-bondt = i_dats.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;i_ocrsn&nbsp;=&nbsp;'9900'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*      CHECK ( gt_evpdir-bondt EQ bondt AND<br />
+*              gt_evpdir-inpid EQ payid ).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gt_evpdir-bondt&nbsp;=&nbsp;i_dats.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'PYXX_READ_PAYROLL_RESULT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;employeenumber&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sequencenumber&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_evpdir-seqnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read_only_international&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clusterid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;t500l_wa-relid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;payroll_result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_pay_result<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;illegal_isocode_or_clusterid&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_generating_import&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;import_mismatch_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subpool_dir_full&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_read_authority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_record_found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;versions_do_not_match&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;gt_evpdir&nbsp;TO&nbsp;gt_pay_result-evp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gt_pay_result&nbsp;TO&nbsp;gt_tab01.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;field_catalog.<br />
+<br />
+&nbsp;&nbsp;FIELD-SYMBOLS:&nbsp;&ltfs&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltpsum&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltdsum&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lttsum&gt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltsgum&gt.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;l_sogum(1).<br />
+<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGPSUM'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltpsum&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGDSUM'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltdsum&gt.<br />
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGTSUM'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&lttsum&gt.<br />
+   </div>
+   <div class="codeComment">
+*  ASSIGN COMPONENT 'LG552'  OF STRUCTURE &ltFS_WA&gt TO &ltSGUM&gt.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS552'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltsgum&gt.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;gt_tab01&nbsp;BY&nbsp;evp-fpper&nbsp;evp-inper.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;gs_tab01,&nbsp;gs_rt.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;gt_tab01[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_tab01&nbsp;INTO&nbsp;gs_tab01.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;i_ocrsn&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;i_ocrsn&nbsp;=&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;(&nbsp;gs_tab01-evp-fpper&nbsp;=&nbsp;i_dats(6)&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_tab01-evp-inper&nbsp;=&nbsp;i_dats(6)&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;gs_tab01-evp-bondt(6)&nbsp;=&nbsp;i_dats(6).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;gs_tab01-inter-rt&nbsp;BY&nbsp;lgart&nbsp;apznr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;assign_field&nbsp;USING&nbsp;'SEQNR'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_tab01-evp-seqnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_fcat&nbsp;INTO&nbsp;gs_fcat&nbsp;WHERE&nbsp;fieldname&nbsp;CP&nbsp;'LG*'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;fieldname&nbsp;NP&nbsp;'*SUM'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;gs_fcat-fieldname&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l_lgartname&nbsp;=&nbsp;gs_fcat-fieldname+2(4).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_9004&nbsp;WHERE&nbsp;lgagp&nbsp;=&nbsp;l_lgartname.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gs_tab01-inter-rt&nbsp;INTO&nbsp;gs_rt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;lgart&nbsp;=&nbsp;gt_9004-lgart.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_t512w&nbsp;WITH&nbsp;KEY&nbsp;lgart&nbsp;=&nbsp;gs_rt-lgart&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_tab01-evp-srtza&nbsp;&lt&gt&nbsp;'A'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-betrg&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-betrg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-anzhl&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-anzhl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-betpe&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-betpe.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_t511&nbsp;WITH&nbsp;KEY&nbsp;lgart&nbsp;=&nbsp;gs_rt-lgart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-betrg&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-betrg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;gt_9004-sign.&nbsp;&nbsp;"계산부호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'+'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_fcat-datatype&nbsp;=&nbsp;'CURR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_rt-betrg&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betpe&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;assign_field&nbsp;USING&nbsp;'WAERS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_tab01-inter-versc-waers.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-anzhl&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;assign_field&nbsp;USING&nbsp;'ZEINH'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-zeinh.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'-'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_fcat-datatype&nbsp;=&nbsp;'CURR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;gs_rt-betrg&nbsp;FROM&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;assign_field&nbsp;USING&nbsp;'WAERS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_tab01-inter-versc-waers.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;gs_rt-anzhl&nbsp;FROM&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;assign_field&nbsp;USING&nbsp;'ZEINH'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-zeinh.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_9003&nbsp;WITH&nbsp;KEY&nbsp;lgagp&nbsp;=&nbsp;gt_9004-lgagp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;gt_9003-ptype.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;&nbsp;'1'.&nbsp;&nbsp;"지급<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltpsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'2'.&nbsp;&nbsp;&nbsp;"공제<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltdsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*▶ 소급분<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;st_tab01&nbsp;TYPE&nbsp;hrpay99_tab_of_results,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ss_tab01&nbsp;TYPE&nbsp;pay99_result.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_evpdir.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;i_ocrsn&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;i_ocrsn&nbsp;=&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;(&nbsp;gt_evpdir-fpper&nbsp;=&nbsp;i_dats(6)&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_evpdir-inper&nbsp;=&nbsp;i_dats(6)&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;NOT&nbsp;gt_evpdir-bondt(6)&nbsp;=&nbsp;i_dats(6).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'PYXX_READ_PAYROLL_RESULT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;employeenumber&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gs_pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sequencenumber&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_evpdir-seqnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read_only_international&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clusterid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;t500l_wa-relid<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;payroll_result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;gt_pay_result<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;illegal_isocode_or_clusterid&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_generating_import&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;import_mismatch_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subpool_dir_full&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_read_authority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_record_found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;versions_do_not_match&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;7<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;gt_evpdir&nbsp;TO&nbsp;gt_pay_result-evp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gt_pay_result&nbsp;TO&nbsp;st_tab01.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;st_tab01&nbsp;INTO&nbsp;ss_tab01.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;ss_tab01-inter-rt&nbsp;BY&nbsp;lgart&nbsp;apznr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ss_tab01-inter-rt&nbsp;INTO&nbsp;gs_rt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_t512w&nbsp;WITH&nbsp;KEY&nbsp;lgart&nbsp;=&nbsp;gs_rt-lgart&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ss_tab01-evp-srtza&nbsp;&lt&gt&nbsp;'A'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-betrg&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-betrg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-anzhl&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-anzhl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-betpe&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-betpe.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;gt_t511&nbsp;WITH&nbsp;KEY&nbsp;lgart&nbsp;=&nbsp;gs_rt-lgart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-betrg&nbsp;=&nbsp;-1&nbsp;*&nbsp;gs_rt-betrg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;gs_rt-lgart(1)&nbsp;NE'/'&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gs_rt-lgart&nbsp;NP&nbsp;'ABDCEFGHIJKLMNOPGRSTUVWXYZ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltsgum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltpsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/301'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS301'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltdsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/302'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS302'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltdsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/4UE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS4UE'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltdsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/4PE'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS4PE'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltdsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;(&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/4ME'&nbsp;OR&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/4TE'&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS4ME'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltdsum&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/101'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS3T1'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;gs_rt-betrg&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;gs_rt-lgart&nbsp;=&nbsp;'/3N9'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASSIGN&nbsp;COMPONENT&nbsp;'LGS3T1'&nbsp;OF&nbsp;STRUCTURE&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBTRACT&nbsp;gs_rt-betrg&nbsp;FROM&nbsp;&ltfs&gt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&lttsum&gt&nbsp;=&nbsp;&ltpsum&gt&nbsp;-&nbsp;&ltdsum&gt.<br />
+<br />
+&nbsp;&nbsp;APPEND&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;&ltfs_table&gt.<br />
+<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;es_0001&nbsp;LIKE&nbsp;et_0001.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;&ltfs_wa&gt.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;&ltfs_table&gt&nbsp;INTO&nbsp;&ltfs_wa&gt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;&ltfs_wa&gt&nbsp;TO&nbsp;gs_9007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gs_9007&nbsp;TO&nbsp;gt_9007.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_9007.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;gt_9007&nbsp;TO&nbsp;gt_9007t.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1000&nbsp;gt_9007t-lg1000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1001&nbsp;gt_9007t-lg1001.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1010&nbsp;gt_9007t-lg1010.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1301&nbsp;gt_9007t-lg1301.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1303&nbsp;gt_9007t-lg1303.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1305&nbsp;gt_9007t-lg1305.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1400&nbsp;gt_9007t-lg1400.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1410&nbsp;gt_9007t-lg1410.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1420&nbsp;gt_9007t-lg1420.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1430&nbsp;gt_9007t-lg1430.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1440&nbsp;gt_9007t-lg1440.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1450&nbsp;gt_9007t-lg1450.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1460&nbsp;gt_9007t-lg1460.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1470&nbsp;gt_9007t-lg1470.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1480&nbsp;gt_9007t-lg1480.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1490&nbsp;gt_9007t-lg1490.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1500&nbsp;gt_9007t-lg1500.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1510&nbsp;gt_9007t-lg1510.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1520&nbsp;gt_9007t-lg1520.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1530&nbsp;gt_9007t-lg1530.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1540&nbsp;gt_9007t-lg1540.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1550&nbsp;gt_9007t-lg1550.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1560&nbsp;gt_9007t-lg1560.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1570&nbsp;gt_9007t-lg1570.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1580&nbsp;gt_9007t-lg1580.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1600&nbsp;gt_9007t-lg1600.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg1610&nbsp;gt_9007t-lg1610.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg2000&nbsp;gt_9007t-lg2000.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg2200&nbsp;gt_9007t-lg2200.<br />
+   </div>
+   <div class="codeComment">
+*    PERFORM write_currency CHANGING gt_9007-lg2200 gt_9007t-lg2300. "학자금<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg2300&nbsp;gt_9007t-lg2300.&nbsp;"학자금<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg4160&nbsp;gt_9007t-lg4160.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg4170&nbsp;gt_9007t-lg4170.&nbsp;"퇴직연<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lg9g02&nbsp;gt_9007t-lg9g02.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgdsum&nbsp;gt_9007t-lgdsum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgl100&nbsp;gt_9007t-lgl100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgpsum&nbsp;gt_9007t-lgpsum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs301&nbsp;gt_9007t-lgs301.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs302&nbsp;gt_9007t-lgs302.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs3n9&nbsp;gt_9007t-lgs3n9.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs3t1&nbsp;gt_9007t-lgs3t1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs4me&nbsp;gt_9007t-lgs4me.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs4pe&nbsp;gt_9007t-lgs4pe.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs4ue&nbsp;gt_9007t-lgs4ue.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgtsum&nbsp;gt_9007t-lgtsum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgb003&nbsp;gt_9007t-lgb003.&nbsp;"통상일<br />
+   </div>
+   <div class="codeComment">
+*    PERFORM WRITE_CURRENCY CHANGING GT_9007-LG552  GT_9007T-LG552.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs552&nbsp;&nbsp;gt_9007t-lgs552.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gt_9007-lgh100&nbsp;gt_9007t-lgh100.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gt_9007-lgh101&nbsp;gt_9007t-lgh101.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gt_9007-lgh103&nbsp;gt_9007t-lgh103.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gt_9007-lgh105&nbsp;gt_9007t-lgh105.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gt_9007-lgh416&nbsp;gt_9007t-lgh416.&nbsp;"정산일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_unit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;gt_9007-lgtime&nbsp;gt_9007t-lgtime.<br />
+   </div>
+   <div class="codeComment">
+*---------------------[ 연말정산용 ]-----------------------------------*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs3ri&nbsp;&nbsp;gt_9007t-lgs3ri.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs3rr&nbsp;&nbsp;gt_9007t-lgs3rr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs3rs&nbsp;&nbsp;gt_9007t-lgs3rs.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;write_currency&nbsp;CHANGING&nbsp;gt_9007-lgs4fe&nbsp;&nbsp;gt_9007t-lgs4fe.<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;GT_9007-LG1011&nbsp;=&nbsp;&nbsp;GT_9007-LG1000&nbsp;*&nbsp;'0.863636364'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GT_9007-LG1012&nbsp;&nbsp;=&nbsp;GT_9007-LG1000&nbsp;*&nbsp;'0.136363636'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;WRITE_CURRENCY&nbsp;CHANGING&nbsp;GT_9007-LG1011&nbsp;GT_9007T-LG1011.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;WRITE_CURRENCY&nbsp;CHANGING&nbsp;GT_9007-LG1012&nbsp;GT_9007T-LG1012.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;gt_9007t.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;persnr&nbsp;TYPE&nbsp;p_pernr.<br />
+&nbsp;&nbsp;DATA:&nbsp;entrydate&nbsp;LIKE&nbsp;p0000-begda.<br />
+&nbsp;&nbsp;DATA:&nbsp;gs_0539&nbsp;TYPE&nbsp;pa0539.<br />
+<br />
+&nbsp;&nbsp;persnr&nbsp;=&nbsp;i_pernr.<br />
+&nbsp;&nbsp;CALL FUNCTION 'HR_ENTRY_DATE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;persnr&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;persnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entrydate&nbsp;=&nbsp;entrydate.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_9007t.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;gt_9007t&nbsp;TO&nbsp;et_0001.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;et_0001-pernr&nbsp;=&nbsp;gs_pernr.&nbsp;&nbsp;&nbsp;"사번<br />
+&nbsp;&nbsp;&nbsp;&nbsp;et_0001-zdats&nbsp;=&nbsp;entrydate.&nbsp;&nbsp;"입사일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;et_0001-ename&nbsp;=&nbsp;ch_ename.&nbsp;&nbsp;&nbsp;"성명<br />
+&nbsp;&nbsp;&nbsp;&nbsp;et_0001-orgtx&nbsp;=&nbsp;ch_orgtx.&nbsp;&nbsp;&nbsp;"부서<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;et_0001.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: HRPAY99IMPEXP<br />
+*004   PCL2 클러스터 &1에 대한 읽기권한이 없습니다<br />
+*005   PCL2 클러스터 &1에 대한 쓰기권한이 없습니다<br />
+*013   프로그래밍 오류: 빈 키입니다. HRPAY99IMPEXP의 설명 013을 참조하십시오.<br />
+*<br />
+* Message class: RP<br />
+*016   & & & &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

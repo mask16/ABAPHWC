@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>Z_TR_CURRENT_SEC_POS2</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function Z_TR_CURRENT_SEC_POS2</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION Z_TR_CURRENT_SEC_POS2.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_BUKRS) TYPE  BUKRS DEFAULT '1000'<br />
+*"  TABLES<br />
+*"      T_DATE STRUCTURE  RSPARAMS<br />
+*"      T_GSART STRUCTURE  RSPARAMS<br />
+*"      T_PARTNER STRUCTURE  RSPARAMS OPTIONAL<br />
+*"      E_POS STRUCTURE  ZTRS0010<br />
+*"  CHANGING<br />
+*"     REFERENCE(CT_MESSAGES) TYPE  BAPIERR_T OPTIONAL<br />
+*"  EXCEPTIONS<br />
+*"      RLDEPO_ERR<br />
+*"      RANL_ERR<br />
+*"      RFHA_ERR<br />
+*"      PARAM_ERR<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-z_tr_current_sec_pos2.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LT_ITAB&nbsp;&nbsp;&nbsp;LIKE&nbsp;TZPAT&nbsp;&nbsp;OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;LT_BUT0&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARTNER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BUT000-PARTNER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;LT_BUT0.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;L_DATUM1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;SY-DATUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_DATUM2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;SY-DATUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L_DAY(3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;N.<br />
+&nbsp;&nbsp;RANGES&nbsp;:&nbsp;LR_GSART&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;TZPA-GSART,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LR_PARTNER&nbsp;&nbsp;FOR&nbsp;BUT000-PARTNER.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;T_DATE&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;L_DATUM1&nbsp;&nbsp;=&nbsp;T_DATE-LOW.<br />
+&nbsp;&nbsp;L_DATUM2&nbsp;&nbsp;=&nbsp;T_DATE-HIGH.<br />
+&nbsp;&nbsp;IF&nbsp;T_DATE-HIGH&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;L_DATUM2&nbsp;&nbsp;=&nbsp;T_DATE-LOW.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;L_DAY&nbsp;&nbsp;&nbsp;=&nbsp;L_DATUM2&nbsp;-&nbsp;L_DATUM1&nbsp;+&nbsp;1.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* DAT_LIST 관련기준일과 평가기준(전기일, 포지션일)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DO&nbsp;L_DAY&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;L_DATUM1&nbsp;&nbsp;TO&nbsp;IT_IDAT_LIST-STICHTAG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_IDAT_LIST-RSTICH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;IT_IDAT_LIST&nbsp;INTO&nbsp;ST_IWA_CCSEL_LDB-DAT_LIST.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;1&nbsp;TO&nbsp;L_DATUM1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;L_DATUM1&nbsp;&gt&nbsp;L_DATUM2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDDO.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* RANGE관련 각 필드의 선택값 정의<br />
+* 회사코드<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;E_POS.<br />
+&nbsp;&nbsp;MOVE&nbsp;:&nbsp;'BUKRS'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'I'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-SIGN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'EQ'&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-OPTION,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BUKRS&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 유가증권 구분자 CHECK MARK<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;MOVE&nbsp;:&nbsp;'FLG_SE'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;MOVE&nbsp;:&nbsp;'FLG_OTC'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 금융상품유형<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;LR_GSART.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_GSART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;T_GSART&nbsp;TO&nbsp;LR_GSART.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;LR_GSART.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;TABLE&nbsp;LT_ITAB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;TZPAT<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;GSART&nbsp;&nbsp;IN&nbsp;LR_GSART.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ITAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;'GSART'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'I'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-SIGN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'EQ'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-OPTION,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_ITAB-GSART&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* BP<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;T_PARTNER[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;T_PARTNER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;T_PARTNER&nbsp;TO&nbsp;LR_PARTNER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;LR_PARTNER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;PARTNER&nbsp;INTO&nbsp;TABLE&nbsp;LT_BUT0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;BUT000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;PARTNER&nbsp;&nbsp;IN&nbsp;LR_PARTNER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_BUT0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;'PARTNR'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'I'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-SIGN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'EQ'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-OPTION,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_BUT0-PARTNER&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 시장가<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;MOVE&nbsp;'KURSA'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;'01'&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* ???<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;MOVE&nbsp;'NUMBR'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;'001'&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 상품 그룹(001:유가증권 003:머니마켓/외환 004:파생)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;MOVE&nbsp;'PRODUCT_GROUP'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;'001'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+<br />
+&nbsp;&nbsp;MOVE&nbsp;'003'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 포지션기준일(1) 전기일(2) 기준<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;MOVE&nbsp;'RSTICH_PB'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;'1'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 평가영역<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;IT_ISEL,&nbsp;IT_IRANGE,&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;MOVE&nbsp;'VALUATION_AREA'&nbsp;TO&nbsp;IT_IRANGE-FIELDNAME.<br />
+&nbsp;&nbsp;MOVE&nbsp;'001'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;IT_ISEL-LOW.<br />
+<br />
+&nbsp;&nbsp;COLLECT&nbsp;IT_ISEL&nbsp;INTO&nbsp;IT_IRANGE-SELOPT_T.<br />
+&nbsp;&nbsp;APPEND&nbsp;IT_IRANGE&nbsp;TO&nbsp;ST_IWA_CCSEL_LDB-RANGE.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;MAKE_IT_CCSF.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'FTI_LDB_PB_SEL_POSITIONS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IM_SELECTION&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ST_IWA_CCSEL_LDB<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IM_TAB_CCSF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ST_IT_CCSF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EX_TAB_POSITION&nbsp;=&nbsp;ST_ET_POSITIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CT_MESSAGES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;CT_MESSAGES.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;LS_POSITIONS&nbsp;&nbsp;TYPE&nbsp;FTI_LDB_TR_POSITIONS_T&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;ST_ET_POSITIONS&nbsp;INTO&nbsp;LS_POSITIONS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;E_POS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_POSITIONS&nbsp;TO&nbsp;E_POS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_POS-PDATE&nbsp;&nbsp;=&nbsp;LS_POSITIONS-STICHTAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_POS-SPMON&nbsp;&nbsp;=&nbsp;E_POS-PDATE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_POSITIONS-SECURITY_ACCOUNT&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_POS-SECURITY_ID&nbsp;&nbsp;=&nbsp;LS_POSITIONS-DEAL_NUMBER.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;E_POS.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;DELETE&nbsp;E_POS&nbsp;&nbsp;&nbsp;WHERE&nbsp;BOOK_VAL_PC&nbsp;=&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BOOK_VAL_LC&nbsp;=&nbsp;0.<br />
+<br />
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

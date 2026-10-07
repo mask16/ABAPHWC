@@ -1,0 +1,1621 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZRPTPSH10</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZRPTPSH10</h2>
+<h3> Description: 개인 근무 일정</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&nbsp;XJH&nbsp;20160725&nbsp;Note&nbsp;2346870<br />
+*&nbsp;YTZ&nbsp;20140925&nbsp;small&nbsp;enhancements&nbsp;according&nbsp;note&nbsp;2072067,&nbsp;not&nbsp;marked<br />
+*&nbsp;XRK&nbsp;20110923&nbsp;Note1635285&nbsp;Name&nbsp;column&nbsp;truncated&nbsp;after&nbsp;23&nbsp;characters<br />
+*YTZ&nbsp;&nbsp;&nbsp;&nbsp;111108&nbsp;note&nbsp;1272931<br />
+*&nbsp;XIR&nbsp;&nbsp;&nbsp;230604&nbsp;small&nbsp;enhancements&nbsp;according&nbsp;note&nbsp;743317,&nbsp;not&nbsp;marked<br />
+*4.7<br />
+*XLT&nbsp;140303&nbsp;note&nbsp;604361<br />
+*4.6C&nbsp;LCP<br />
+*XHRL9CK042157&nbsp;130201&nbsp;note&nbsp;381930<br />
+*XPXL9CK028631&nbsp;031100&nbsp;Tabelle&nbsp;PSP&nbsp;l#schen&nbsp;bei&nbsp;neuer&nbsp;Pernr(Hinweis354871)<br />
+*XLTL9CK018334&nbsp;010800&nbsp;Hinweis&nbsp;0322021&nbsp;VTKEN&nbsp;beachten<br />
+*XLTL9CK002809&nbsp;240200&nbsp;Hinweis&nbsp;0209805<br />
+*4.6A<br />
+*XLTAHRK050322&nbsp;120499&nbsp;#berarbeitet,&nbsp;alte&nbsp;Korrekturen&nbsp;gel#scht.<br />
+   </div>
+   <div class="code">
+report zrptpsh10.<br />
+include &lticon&gt.<br />
+type-pools vclty.<br />
+tables: pernr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t001p,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t550a.<br />
+<br />
+infotypes: 0000,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0001,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0002,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0007,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2001&nbsp;mode&nbsp;n,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Absences<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2002&nbsp;mode&nbsp;n,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Attendance<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2003&nbsp;mode&nbsp;n,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Substitution<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004&nbsp;mode&nbsp;n,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"On-Call&nbsp;Duty<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2005&nbsp;mode&nbsp;n.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Overtime<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+data: DBA_SELLIST_CLUSTER type VCLTY_SELLIST_TABLE with header line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ert&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;like&nbsp;hrerror&nbsp;&nbsp;&nbsp;&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;psp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;like&nbsp;ptpsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dayint&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;like&nbsp;pwsdayint&nbsp;&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daygen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;like&nbsp;pwsdaygen&nbsp;&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2003&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;like&nbsp;p2003&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+data: begin of fields occurs 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;co1(60),&nbsp;&nbsp;co2(60),&nbsp;&nbsp;co3(60),&nbsp;co4(60),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;fields.<br />
+<br />
+data: timefields like fields occurs 0 with header line.<br />
+<br />
+data: begin of hd occurs 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;like&nbsp;pernr-pernr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name(80),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Note1635285<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;btext&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;t001p-btext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inv_menge&nbsp;like&nbsp;pakey-seqnr,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ALV&nbsp;copies&nbsp;only&nbsp;20&nbsp;columns!<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;moabw&nbsp;like&nbsp;t001p-moabw,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mover&nbsp;like&nbsp;t001p-mover,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ALV&nbsp;copies&nbsp;only&nbsp;20&nbsp;columns!<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;datum&nbsp;like&nbsp;psp-datum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kurzt&nbsp;like&nbsp;t246-kurzt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tprog&nbsp;like&nbsp;psp-tprog,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;varia&nbsp;like&nbsp;psp-varia,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ttext&nbsp;like&nbsp;t550s-ttext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vtart&nbsp;like&nbsp;p2003-vtart,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vtext&nbsp;like&nbsp;t556t-vtext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;motpr&nbsp;like&nbsp;psp-motpr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sobeg(8),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;soend(8),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stdaz&nbsp;like&nbsp;PTEV_REP_H-stdaz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ftkla&nbsp;like&nbsp;psp-ftkla,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tagty&nbsp;like&nbsp;psp-tagty,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tatxt&nbsp;like&nbsp;t553t-langt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zmodn&nbsp;like&nbsp;psp-zmodn,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ptext&nbsp;like&nbsp;t551s-ztext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mofid&nbsp;like&nbsp;t508a-mofid,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ftext&nbsp;like&nbsp;thoct-ltext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;menge&nbsp;like&nbsp;PTEV_REP_H-itanz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alvmarker&nbsp;type&nbsp;rp_xfeld,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;hd.<br />
+<br />
+data: hd_sel like hd occurs 0 with header line.<br />
+<br />
+data: begin of hd_vert,                "XLTL9CK018334 "note 322021<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;like&nbsp;hd-pernr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;like&nbsp;hd-name,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mover&nbsp;like&nbsp;hd-mover,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;motpr&nbsp;like&nbsp;hd-motpr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stdaz&nbsp;like&nbsp;hd-stdaz,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;hd_vert.<br />
+<br />
+data: begin of i200x occurs 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;like&nbsp;pernr-pernr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name(80),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Note1635285<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;datum&nbsp;like&nbsp;psp-datum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;infty&nbsp;like&nbsp;pskey-infty,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;itext&nbsp;like&nbsp;t582s-itext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subty&nbsp;like&nbsp;pskey-subty,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;atext&nbsp;like&nbsp;t554t-atext,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;begda&nbsp;like&nbsp;pskey-begda,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endda&nbsp;like&nbsp;pskey-endda,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;beguz(8),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enduz(8),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stdaz(9),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;i200x.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+data: i200x_sel   like i200x      occurs 0 with header line.<br />
+<br />
+<br />
+data: begin of errortexts occurs 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text(100),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;errortexts.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+data: error_begda(10), error_endda(10).<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+data: wotnr type i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$edit-name(80),&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Note1635285<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$ret-code&nbsp;like&nbsp;sy-subrc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret_cd&nbsp;like&nbsp;sy-subrc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entries&nbsp;type&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message(50).&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"concatenate&nbsp;for&nbsp;T100<br />
+<br />
+data:report_begda like pn-begda,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pro_beg&nbsp;type&nbsp;i,&nbsp;pro_end&nbsp;type&nbsp;i.<br />
+<br />
+data: sw_active(1) value ' ',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;switch_active,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;single_line.<br />
+<br />
+data: header_line1(69).                "XLTL9CK002809<br />
+<br />
+data hlp_pn_endda like pn-endda.       "XLTL9CK018334<br />
+data l_mofid like hd-mofid."NOTE604361<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+selection-screen begin of block param with frame title text-fra.<br />
+selection-screen begin of line.<br />
+selection-screen position 2.<br />
+parameters: rdclust type rdclst.<br />
+selection-screen comment 5(25) text-ta0 for field rdclust.<br />
+selection-screen end   of line.<br />
+selection-screen end of block param.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+selection-screen begin of block active with frame title text-frb.<br />
+selection-screen begin of line.<br />
+parameters:<br />
+activ1 like rptxxxxx-kr_feld1 radiobutton group act default 'X'.<br />
+selection-screen comment 4(36) text-ta1 for field activ1.<br />
+selection-screen end of line.<br />
+selection-screen begin of line.<br />
+parameters:<br />
+activ2 like rptxxxxx-kr_feld1 radiobutton group act.<br />
+selection-screen comment 4(36) text-ta2 for field activ2.<br />
+selection-screen end of line.<br />
+selection-screen begin of line.<br />
+parameters:<br />
+activ3 like rptxxxxx-kr_feld1 radiobutton group act.<br />
+selection-screen comment 4(36) text-ta3 for field activ3.<br />
+selection-screen end of line.<br />
+selection-screen end of block active.<br />
+   </div>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Macro&nbsp;definition&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+************************************************************************<br />
+*<br />
+   </div>
+   <div class="code">
+define macro_it_check.<br />
+&nbsp;&nbsp;if&nbsp;p&1_valid&nbsp;eq&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;pn-begda&nbsp;to&nbsp;error_begda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;pn-endda&nbsp;to&nbsp;error_endda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;error_begda&nbsp;error_endda&nbsp;into&nbsp;error_message<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;error_handling&nbsp;using&nbsp;pernr-pernr&nbsp;'72'&nbsp;'E'&nbsp;'111'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&2&nbsp;error_message&nbsp;space&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;reject.<br />
+&nbsp;&nbsp;endif.<br />
+end-of-definition.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+<br />
+   </div>
+   <div class="code">
+initialization.<br />
+&nbsp;&nbsp;pnptimed&nbsp;=&nbsp;'M'.<br />
+<br />
+start-of-selection.<br />
+&nbsp;&nbsp;perform&nbsp;fill_fields_for_display_list.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;show&nbsp;active/inactive<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;if&nbsp;activ1&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Rentner&nbsp;und&nbsp;Aktive,&nbsp;2&nbsp;und&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;switch_active&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sw_active&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;elseif&nbsp;activ2&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Ruhende,&nbsp;Rentner&nbsp;und&nbsp;Aktive<br />
+&nbsp;&nbsp;&nbsp;&nbsp;switch_active&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sw_active&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;switch_active&nbsp;=&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Ausgetretene,&nbsp;Ruhende,&nbsp;Rentner&nbsp;und&nbsp;Aktive<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sw_active&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;selection-begda&nbsp;might&nbsp;change<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;report_begda&nbsp;=&nbsp;pn-begda.<br />
+<br />
+get pernr.<br />
+&nbsp;&nbsp;pro_end&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;clear:&nbsp;psp,&nbsp;psp[].&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"note&nbsp;354871<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;selection-beginn&nbsp;before&nbsp;hire&nbsp;date,&nbsp;pws&nbsp;from&nbsp;hire&nbsp;date<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;rp-provide-from-frst&nbsp;p0001&nbsp;'&nbsp;'&nbsp;pn-begda&nbsp;pn-endda.<br />
+&nbsp;&nbsp;if&nbsp;pn-begda&nbsp;&lt&nbsp;p0001-begda.&nbsp;pn-begda&nbsp;=&nbsp;p0001-begda.endif.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;rp_read_all_time_ity&nbsp;pn-begda&nbsp;pn-endda.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;hlp_pn_endda&nbsp;=&nbsp;pn-endda&nbsp;+&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+&nbsp;&nbsp;rp_read_all_time_ity&nbsp;pn-begda&nbsp;hlp_pn_endda.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+<br />
+<br />
+&nbsp;&nbsp;perform&nbsp;build_psp.<br />
+<br />
+&nbsp;&nbsp;hd-pernr&nbsp;=&nbsp;pernr-pernr.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;provide&nbsp;*&nbsp;from&nbsp;p0001&nbsp;*&nbsp;from&nbsp;p0002&nbsp;between&nbsp;pn-begda&nbsp;and&nbsp;pn-endda.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;IT0001,&nbsp;IT0002&nbsp;should&nbsp;be&nbsp;there&nbsp;all&nbsp;the&nbsp;time<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;macro_it_check&nbsp;0001&nbsp;'Org.&nbsp;Zuordnung'(i01).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;macro_it_check&nbsp;0002&nbsp;'Daten&nbsp;zur&nbsp;Person'(i02).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;rp-set-name-format.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;rp-edit-name&nbsp;p0001&nbsp;p0002&nbsp;t001p-molga&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;$edit-name&nbsp;to&nbsp;hd-name.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;rp-read-t001p&nbsp;p0001-werks&nbsp;p0001-btrtl&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;t001p&nbsp;to&nbsp;hd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;hd&nbsp;to&nbsp;hd_sel.&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;pro_beg&nbsp;=&nbsp;pro_end&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;pro_end&nbsp;=&nbsp;pro_beg&nbsp;+&nbsp;p0001-endda&nbsp;-&nbsp;p0001-begda.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;sw_active&nbsp;=&nbsp;'1':&nbsp;show&nbsp;active&nbsp;and&nbsp;inactive&nbsp;days&nbsp;from&nbsp;I0001-begda<br />
+*&nbsp;sw_active&nbsp;=&nbsp;'&nbsp;':&nbsp;show&nbsp;active&nbsp;days&nbsp;only.<br />
+*&nbsp;psp-active&nbsp;contains&nbsp;X&nbsp;for&nbsp;status&nbsp;2&nbsp;=&nbsp;1,2,3&nbsp;and&nbsp;&nbsp;'&nbsp;'&nbsp;for&nbsp;status&nbsp;2&nbsp;=&nbsp;0.<br />
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;l_mofid&nbsp;=&nbsp;hd-mofid.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"NOTE604361<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;psp&nbsp;from&nbsp;pro_beg&nbsp;to&nbsp;pro_end<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;activ&nbsp;ne&nbsp;sw_active.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call function 'HR_CHOOSE_SUBSTITUTION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pernr-pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;psp-datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tables<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0001<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I0049&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2003&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p2003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2003_exp&nbsp;=&nbsp;i2003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;count_time_infotypes&nbsp;using&nbsp;psp-datum&nbsp;changing&nbsp;hd-menge.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;psp&nbsp;to&nbsp;hd.<br />
+   </div>
+   <div class="codeComment">
+*BEGIN&nbsp;XLTL9CK018334<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;wochentag&nbsp;using&nbsp;hd-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret246&nbsp;&nbsp;using&nbsp;sy-langu&nbsp;wotnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-kurzt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-mofid&nbsp;=&nbsp;l_mofid.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"NOTE604361<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;rethoct&nbsp;using&nbsp;sy-langu&nbsp;hd-mofid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-ftext.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;hd-tagty&nbsp;=&nbsp;'0'.&nbsp;clear&nbsp;hd-tagty.&nbsp;endif.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"In&nbsp;Zukunft&nbsp;#ndern&nbsp;?<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;hd-ftkla&nbsp;=&nbsp;'0'.&nbsp;clear&nbsp;hd-ftkla.&nbsp;endif.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"note&nbsp;1595555<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret553t&nbsp;using&nbsp;sy-langu&nbsp;hd-tagty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-tatxt.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;hd-tprog&nbsp;&lt&gt&nbsp;'****'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret550s&nbsp;using&nbsp;sy-langu&nbsp;hd-motpr&nbsp;hd-tprog<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-ttext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret551s&nbsp;using&nbsp;sy-langu&nbsp;hd-motpr&nbsp;hd-zmodn&nbsp;changing&nbsp;hd-ptext.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;single_line&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;i2003&nbsp;where&nbsp;tprog&nbsp;&nbsp;is&nbsp;initial<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;&nbsp;&nbsp;schkz&nbsp;&nbsp;is&nbsp;initial.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;single_line&nbsp;=&nbsp;'0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-tfill&nbsp;=&nbsp;1&nbsp;and&nbsp;i2003-vtken&nbsp;ne&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;single_line&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;single_line&nbsp;=&nbsp;'1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;nur&nbsp;einzeilige&nbsp;Anzeige.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;TPROG&nbsp;&lt&gt&nbsp;'****'&nbsp;oder&nbsp;'****'&nbsp;und&nbsp;nur&nbsp;eine&nbsp;Vertretung,&nbsp;die&nbsp;am&nbsp;akt&nbsp;Tag<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;beginnt<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;i2003&nbsp;index&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;eq&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;not&nbsp;i2003-mofid&nbsp;is&nbsp;initial.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-mofid&nbsp;=&nbsp;i2003-mofid.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOTE604361<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;rethoct&nbsp;using&nbsp;sy-langu&nbsp;hd-mofid&nbsp;changing&nbsp;hd-ftext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-vtart&nbsp;=&nbsp;i2003-vtart.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret556t&nbsp;using&nbsp;sy-langu&nbsp;hd-mover&nbsp;hd-vtart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-vtext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;DAYINT&nbsp;wegen&nbsp;AZPR<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;dayint&nbsp;with&nbsp;key&nbsp;datum&nbsp;=&nbsp;psp-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;dayint-beguz&nbsp;is&nbsp;initial&nbsp;and&nbsp;dayint-enduz&nbsp;is&nbsp;initial.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear:&nbsp;hd-sobeg,&nbsp;hd-soend.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;dayint-enduz&nbsp;gt&nbsp;'240000'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dayint-enduz&nbsp;=&nbsp;dayint-enduz&nbsp;+&nbsp;'0'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;dayint-beguz&nbsp;to&nbsp;hd-sobeg&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;dayint-enduz&nbsp;to&nbsp;hd-soend&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-inv_menge&nbsp;=&nbsp;hd-menge.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;hd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear:&nbsp;hd-vtart,&nbsp;hd-vtext,&nbsp;hd-ttext,&nbsp;hd-sobeg,&nbsp;hd-soend.&nbsp;&nbsp;"MOD&nbsp;Note&nbsp;2346870<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mehrzeilige&nbsp;Anzeige,&nbsp;mehrere&nbsp;Uhrzeitvertretungen,&nbsp;VTKEN<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;hd&nbsp;to&nbsp;hd_vert.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-inv_menge&nbsp;=&nbsp;hd-menge.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;hd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;hd.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sort&nbsp;i2003&nbsp;by&nbsp;begda.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;VTKEN&nbsp;nach&nbsp;hinten.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;i2003.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-vtart&nbsp;=&nbsp;i2003-vtart.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret556t&nbsp;using&nbsp;sy-langu&nbsp;hd_vert-mover&nbsp;hd-vtart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-vtext.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;i2003-vtken&nbsp;eq&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-datum&nbsp;=&nbsp;psp-datum&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-datum&nbsp;=&nbsp;psp-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;i2003-beguz&nbsp;to&nbsp;hd-sobeg&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;i2003-enduz&nbsp;to&nbsp;hd-soend&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;hd_vert&nbsp;to&nbsp;hd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-stdaz&nbsp;=&nbsp;i2003-stdaz.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"note&nbsp;1272931<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;hd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;hd_sel&nbsp;to&nbsp;hd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;single&nbsp;line<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-inv_menge&nbsp;=&nbsp;hd-menge.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ALV&nbsp;copies&nbsp;only&nbsp;20&nbsp;columns<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;psp&nbsp;to&nbsp;hd.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;dayint&nbsp;with&nbsp;key&nbsp;datum&nbsp;=&nbsp;psp-datum.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;dayint-beguz&nbsp;is&nbsp;initial&nbsp;and&nbsp;dayint-enduz&nbsp;is&nbsp;initial.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear:&nbsp;hd-sobeg,&nbsp;hd-soend.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;dayint-beguz&nbsp;gt&nbsp;'240000'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dayint-beguz&nbsp;=&nbsp;dayint-beguz&nbsp;+&nbsp;'0'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;dayint-enduz&nbsp;gt&nbsp;'240000'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dayint-enduz&nbsp;=&nbsp;dayint-enduz&nbsp;+&nbsp;'0'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;dayint-beguz&nbsp;to&nbsp;hd-sobeg&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;dayint-enduz&nbsp;to&nbsp;hd-soend&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+**<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;i2003&nbsp;where&nbsp;begda&nbsp;le&nbsp;psp-datum<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endda&nbsp;ge&nbsp;psp-datum.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;not&nbsp;i2003-mofid&nbsp;is&nbsp;initial.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-mofid&nbsp;=&nbsp;i2003-mofid.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hd-vtart&nbsp;=&nbsp;i2003-vtart.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret556t&nbsp;using&nbsp;sy-langu&nbsp;hd-mover&nbsp;hd-vtart&nbsp;changing&nbsp;hd-vtext.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+**<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;wochentag.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret246&nbsp;&nbsp;using&nbsp;sy-langu&nbsp;wotnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-kurzt.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;rethoct&nbsp;using&nbsp;sy-langu&nbsp;hd-mofid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-ftext.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;hd-tagty&nbsp;=&nbsp;'0'.&nbsp;clear&nbsp;hd-tagty.&nbsp;endif.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"In&nbsp;Zukunft&nbsp;#ndern&nbsp;?<br />
+*&nbsp;&nbsp;&nbsp;perform&nbsp;ret553t&nbsp;using&nbsp;sy-langu&nbsp;hd-tagty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;hd-tatxt.<br />
+*<br />
+*&nbsp;&nbsp;&nbsp;perform&nbsp;ret550s&nbsp;using&nbsp;sy-langu&nbsp;hd-motpr&nbsp;hd-tprog&nbsp;changing&nbsp;hd-ttext.<br />
+*&nbsp;&nbsp;&nbsp;perform&nbsp;ret551s&nbsp;using&nbsp;sy-langu&nbsp;hd-motpr&nbsp;hd-zmodn&nbsp;changing&nbsp;hd-ptext.<br />
+**<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;hd.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear:&nbsp;hd-vtart,&nbsp;hd-vtext.<br />
+*END&nbsp;XLTL9CK018334<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;endprovide.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"PSP<br />
+<br />
+&nbsp;&nbsp;pn-begda&nbsp;=&nbsp;report_begda.<br />
+<br />
+end-of-selection.<br />
+<br />
+&nbsp;&nbsp;describe&nbsp;table&nbsp;hd&nbsp;lines&nbsp;entries.<br />
+&nbsp;&nbsp;call function 'HR_GET_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ert<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;errortexts&nbsp;=&nbsp;errortexts<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_errors&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+<br />
+&nbsp;&nbsp;if&nbsp;entries&nbsp;eq&nbsp;0&nbsp;and&nbsp;sy-subrc&nbsp;eq&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;nothing&nbsp;found&nbsp;to&nbsp;display<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;&nbsp;I050(PN).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;exit.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Presetting&nbsp;of&nbsp;RET_CD&nbsp;so&nbsp;that&nbsp;user&nbsp;always&nbsp;comes&nbsp;back&nbsp;to&nbsp;initial&nbsp;list<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ret_cd&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;while&nbsp;ret_cd&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;write_initial_list.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;ret_cd.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"list&nbsp;daily&nbsp;work&nbsp;schedules<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;hd_sel&nbsp;lines&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.&nbsp;message&nbsp;I805(PN).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;list_TAZP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'2'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"list&nbsp;I0007<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;hd_sel&nbsp;lines&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.&nbsp;&nbsp;message&nbsp;I805(PN).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;show_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'3'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"list&nbsp;Time&nbsp;infotype<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;hd_sel&nbsp;lines&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.&nbsp;&nbsp;message&nbsp;I805(PN).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;list_200x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;endwhile.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*----------------------------------------------------------------------<br />
+*&nbsp;&nbsp;General&nbsp;forms<br />
+*----------------------------------------------------------------------<br />
+*<br />
+*----------------------------------------------------------------------<br />
+*&nbsp;Form&nbsp;fill_fields_for_display_list.<br />
+*----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+form fill_fields_for_display_list.<br />
+&nbsp;&nbsp;define&nbsp;macro_fill_fields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;fields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fields-co1&nbsp;=&nbsp;&1.fields-co2&nbsp;=&nbsp;&2.fields-co3&nbsp;=&nbsp;&3.fields-co4&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;fields.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+&nbsp;&nbsp;define&nbsp;macro_fill_timefields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;timefields.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;timefields-co1&nbsp;=&nbsp;&1.timefields-co2&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;timefields-co3&nbsp;=&nbsp;&3.timefields-co4&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;timefields.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PERNR'&nbsp;'PERNR'&nbsp;'F'.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Name'(001)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PAKEY'&nbsp;'SEQNR'&nbsp;&nbsp;&nbsp;'I'.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T001P'&nbsp;'MOABW'&nbsp;&nbsp;&nbsp;'I'.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T001P'&nbsp;'MOVER'&nbsp;&nbsp;&nbsp;'I'.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Datum'(002)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SYST'&nbsp;&nbsp;'DATUM'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Tag'(003)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T246'&nbsp;&nbsp;'KURZT'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'TAzp'(004)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T550A'&nbsp;'TPROG'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'TV'(005)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T550A'&nbsp;'VARIA'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T550S'&nbsp;'TTEXT'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Va'(006)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T556'&nbsp;&nbsp;'VTART'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T556T'&nbsp;'VTEXT'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Gp'(007)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T550A'&nbsp;'MOTPR'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Arb.B'(008)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Arb.E'(009)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'S.Std'(010)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PTEV_REP_H'&nbsp;'STDAZ'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Fk'(011)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'THOL'&nbsp;&nbsp;'KLASS'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'Tt'(012)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'P2003'&nbsp;'TAGTY'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T553T'&nbsp;'LANGT'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'PAzp'(013)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T551A'&nbsp;'ZMODN'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T551S'&nbsp;'ZTEXT'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'FKi'(014)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T001P'&nbsp;'MOFID'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'THOCT'&nbsp;'LTEXT'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_fields&nbsp;&nbsp;'AZi'(015)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PTEV_REP_H'&nbsp;'ITANZ'&nbsp;space.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PERNR'&nbsp;'PERNR'&nbsp;'F'.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'Name'(001)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;'X'.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'Datum'(002)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SYST'&nbsp;&nbsp;'DATUM'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'IT'(024)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T582S'&nbsp;'INFTY'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T582S'&nbsp;'ITEXT'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'STyp'(020)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PSKEY'&nbsp;'SUBTY'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'Subtyptext'(025)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'G#ltig&nbsp;ab'(026)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PSKEY'&nbsp;'BEGDA'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'G#ltig&nbsp;bis'(027)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PSKEY'&nbsp;'ENDDA'&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'Beg.zt'(021)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'End.zt'(022)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;space.<br />
+&nbsp;&nbsp;macro_fill_timefields&nbsp;&nbsp;'Dauer'(023)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;space.<br />
+endform.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*<br />
+*&nbsp;Generate&nbsp;reTxyz&nbsp;routines<br />
+*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+define macro_gen_form_retext3table.<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;re&1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;........&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;RE_SPRSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;RE_MODIF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;RE_SUBTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;RE_TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form re&1 using  re_sprsl re_modif re_subty changing re_text.<br />
+&nbsp;&nbsp;tables&nbsp;&1.<br />
+&nbsp;&nbsp;if&nbsp;&1-&2&nbsp;ne&nbsp;re_sprsl&nbsp;or&nbsp;&1-&3&nbsp;ne&nbsp;re_modif&nbsp;or&nbsp;&1-&4&nbsp;ne&nbsp;re_subty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;select&nbsp;single&nbsp;*&nbsp;from&nbsp;&1&nbsp;where&nbsp;&2&nbsp;eq&nbsp;re_sprsl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;&3&nbsp;eq&nbsp;re_modif<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;&4&nbsp;eq&nbsp;re_subty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;ne&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&1-&2&nbsp;=&nbsp;re_sprsl.&1-&3&nbsp;=&nbsp;re_modif.&1-&4&nbsp;=&nbsp;re_subty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;&1-&2&nbsp;&1-&3&nbsp;&1-&4&nbsp;into&nbsp;error_message.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;error_handling&nbsp;using&nbsp;pernr-pernr&nbsp;'72'&nbsp;'E'&nbsp;&6<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message&nbsp;space&nbsp;space&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;re_text.&nbsp;exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;re_text&nbsp;=&nbsp;&1-&5.<br />
+endform.<br />
+end-of-definition.<br />
+<br />
+define macro_gen_form_retext2table.<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;re&1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;........&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;RE_SPRSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;RE_MODIF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;RE_TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form re&1 using  re_sprsl re_modif  changing re_text.<br />
+&nbsp;&nbsp;tables&nbsp;&1.<br />
+&nbsp;&nbsp;if&nbsp;&1-&2&nbsp;ne&nbsp;re_sprsl&nbsp;or&nbsp;&1-&3&nbsp;ne&nbsp;re_modif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;select&nbsp;single&nbsp;*&nbsp;from&nbsp;&1&nbsp;where&nbsp;&2&nbsp;eq&nbsp;re_sprsl&nbsp;and&nbsp;&3&nbsp;eq&nbsp;re_modif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;ne&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&1-&2&nbsp;=&nbsp;re_sprsl.&nbsp;&1-&3&nbsp;=&nbsp;re_modif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;&1-&2&nbsp;&1-&3&nbsp;into&nbsp;error_message.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;error_handling&nbsp;using&nbsp;pernr-pernr&nbsp;'72'&nbsp;'E'&nbsp;&5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message&nbsp;space&nbsp;space&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;re_text.&nbsp;exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;re_text&nbsp;=&nbsp;&1-&4.<br />
+<br />
+endform.<br />
+end-of-definition.<br />
+macro_gen_form_retext3table t582S sprsl infty itbld itext '023'.<br />
+macro_gen_form_retext3table t554t sprsl moabw awart atext '010'.<br />
+macro_gen_form_retext3table t557t sprsl mover stnby stext '011'.<br />
+macro_gen_form_retext3table t556t sprsl mover vtart vText '014'.<br />
+macro_gen_form_retext3table t550S spras motpr tprog tText '022'.<br />
+macro_gen_form_retext3table t551s sprsl motpr zmodn ztext '039'.<br />
+macro_gen_form_retext2table thoct spras ident ltext '040'.<br />
+macro_gen_form_retext2table t246  sprsl wotnr kurzt '020'.<br />
+macro_gen_form_retext2table t553t sprsl tagty langt '008'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;BUILD_PSP<br />
+*----------------------------------------------------------------------<br />
+   </div>
+   <div class="code">
+form build_psp.<br />
+&nbsp;&nbsp;call function 'HR_PERSONAL_WORK_SCHEDULE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pernr-pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;begda&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pn-begda<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endda&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pn-endda<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KUG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WORKING_HOURS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;switch_activ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;switch_active<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0001_i0007_error&nbsp;=&nbsp;'0'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read_cluster&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;rdclust<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WARNING_OCCURED&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tables<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0000&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0000<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0002&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0007&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0007<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I0049&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p2001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2002&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p2002<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2003&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p2003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perws&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;psp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exceptions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_occured&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;abort_occured&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;call function 'HR_DISPLAY_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_popup&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_print&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_img&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;invalid_linesize&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;reject.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;call function 'HR_WORK_SCHEDULE_TIMES'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pernr-pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;begda&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pn-begda<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endda&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;pn-endda<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KUG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BREAK_OVERTIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'1'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFRESH_INFOTYPE_BUFFER&nbsp;=&nbsp;'X'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WARNING_OCCURED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tables<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0007&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0007<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2003&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p2003<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I0049&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perws&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;psp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;daygen&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;daygen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dayint&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;dayint<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exceptions<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_occured&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perws_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;call function 'HR_DISPLAY_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_popup&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_print&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_img&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;invalid_linesize&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;reject.<br />
+&nbsp;&nbsp;endif.<br />
+endform.<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;WOCHENTAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form wochentag<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using&nbsp;datum&nbsp;like&nbsp;psp-datum.&nbsp;"XLTL9CK018334<br />
+&nbsp;&nbsp;data&nbsp;pack&nbsp;type&nbsp;p.<br />
+   </div>
+   <div class="codeComment">
+*pack&nbsp;=&nbsp;psp-datum&nbsp;mod&nbsp;7.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;pack&nbsp;=&nbsp;datum&nbsp;mod&nbsp;7.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+&nbsp;&nbsp;pack&nbsp;=&nbsp;pack&nbsp;+&nbsp;6.<br />
+&nbsp;&nbsp;wotnr&nbsp;=&nbsp;pack&nbsp;mod&nbsp;7.<br />
+&nbsp;&nbsp;if&nbsp;wotnr&nbsp;eq&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;wotnr&nbsp;=&nbsp;7.<br />
+&nbsp;&nbsp;endif.<br />
+endform.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;count_time_infotypes<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gtPSP_DATUM&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt--counter&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form count_time_infotypes using    psp_datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;counter&nbsp;like&nbsp;hd-menge.<br />
+&nbsp;&nbsp;define&nbsp;macro_count_200x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;&1&nbsp;where&nbsp;begda&nbsp;le&nbsp;psp_datum&nbsp;&nbsp;and<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endda&nbsp;ge&nbsp;psp_datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;counter&nbsp;&nbsp;=&nbsp;counter&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+&nbsp;&nbsp;clear&nbsp;counter.<br />
+<br />
+&nbsp;&nbsp;describe&nbsp;table&nbsp;i2003&nbsp;lines&nbsp;counter.&nbsp;&nbsp;"XLTL9CK018334<br />
+<br />
+&nbsp;&nbsp;macro_count_200x&nbsp;p2001.<br />
+&nbsp;&nbsp;macro_count_200x&nbsp;p2002.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;macro_count_200x&nbsp;i2003.&nbsp;"XLTL9CK018334<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;macro_count_200x&nbsp;p2004.<br />
+&nbsp;&nbsp;macro_count_200x&nbsp;p2005.<br />
+<br />
+endform.                                                    "<br />
+<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ERROR_HANDLING<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fuellen&nbsp;der&nbsp;Fehlertabelle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM ERROR_HANDLING USING PERNR ARBGB typ NO MSGV1 MSGV2 MSGV3 MSGV4.<br />
+&nbsp;&nbsp;data:&nbsp;l_pernr&nbsp;like&nbsp;p0001-pernr.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"L9CK042157<br />
+<br />
+&nbsp;&nbsp;l_pernr&nbsp;=&nbsp;pernr.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"L9CK042157<br />
+&nbsp;&nbsp;CALL FUNCTION 'HR_APPEND_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERNR&nbsp;=&nbsp;PERNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"L9CK042157<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;=&nbsp;l_pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"L9CK042157<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ARBGB&nbsp;=&nbsp;arbgb<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGTY&nbsp;=&nbsp;typ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNO&nbsp;=&nbsp;NO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV1&nbsp;=&nbsp;MSGV1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV2&nbsp;=&nbsp;MSGV2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV3&nbsp;=&nbsp;MSGV3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV4&nbsp;=&nbsp;MSGV4.<br />
+ENDFORM.                               " ERROR_HANDLING<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Output&nbsp;forms<br />
+*----------------------------------------------------------------------<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;WRITE_INITIAL_LIST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Overview&nbsp;list&nbsp;per&nbsp;personell&nbsp;number&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form write_initial_list.<br />
+&nbsp;&nbsp;data:&nbsp;"&nbsp;header_line1(69),&nbsp;header_line2(69),"&nbsp;XLTL9CK002809<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;header_begda(10),&nbsp;header_endda(10).<br />
+&nbsp;&nbsp;write&nbsp;pn-begda&nbsp;to&nbsp;header_begda.<br />
+&nbsp;&nbsp;write&nbsp;pn-endda&nbsp;to&nbsp;header_endda.<br />
+&nbsp;&nbsp;if&nbsp;pn-begda&nbsp;=&nbsp;pn-endda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;text-h01&nbsp;header_begda&nbsp;into&nbsp;header_line1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;text-h02&nbsp;header_begda&nbsp;text-h03&nbsp;header_endda<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;into&nbsp;header_line1&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;clear&nbsp;sy-ucomm.<br />
+   </div>
+   <div class="codeComment">
+*XLTL9CK018484&nbsp;Beginn<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function 'HR_GET_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ert<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;errortexts&nbsp;=&nbsp;errortexts<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_errors&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2.<br />
+   </div>
+   <div class="codeComment">
+*XLTL9CK018484&nbsp;End<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;call function 'HR_DISPLAY_BASIC_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;basic_list_title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Pers#nlicher&nbsp;Arbeitszeitplan'(h04)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current_report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'RPTPSH10'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'01'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'RPTPSH10'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head_line1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;header_line1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lay_out&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dyn_pushbutton_text1&nbsp;=&nbsp;'TagesAZP'(p01)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dyn_pushbutton_text2&nbsp;=&nbsp;'Sollarbeitszeit'(p02)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dyn_pushbutton_text3&nbsp;=&nbsp;'Zeitinfotypen'(p03)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alv_marker&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'ALVMARKER'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return_code&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ret_cd<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;hd<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;fields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;select_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;hd_sel<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ert<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;download_problem&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_data_tab_entries&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;case&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_APPEND_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ARBGB&nbsp;=&nbsp;'PN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGTY&nbsp;=&nbsp;'I'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNO&nbsp;=&nbsp;'173'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"PC&nbsp;-&nbsp;Download&nbsp;nicht&nbsp;m#glich.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_APPEND_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ARBGB&nbsp;=&nbsp;'PN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGTY&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNO&nbsp;=&nbsp;'800'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Interner&nbsp;Fehler!<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call function 'HR_DISPLAY_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_popup&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_print&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_img&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit.<br />
+&nbsp;&nbsp;endcase.<br />
+endform.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;WRITE_INFOTYPE_LIST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;List&nbsp;of&nbsp;all&nbsp;time-infotype&nbsp;records&nbsp;for&nbsp;selected&nbsp;employee&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form write_infotype_list  changing ret_cd2 like sy-subrc.<br />
+<br />
+&nbsp;&nbsp;data&nbsp;push_button_text&nbsp;&nbsp;like&nbsp;smp_dyntxt.<br />
+<br />
+&nbsp;&nbsp;push_button_text-icon_id&nbsp;=&nbsp;&nbsp;icon_select_detail.<br />
+&nbsp;&nbsp;push_button_text-quickinfo&nbsp;=&nbsp;'Detail&nbsp;ausw#hlen'(p04).<br />
+<br />
+&nbsp;&nbsp;clear&nbsp;sy-ucomm.<br />
+&nbsp;&nbsp;call function 'HR_DISPLAY_BASIC_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;basic_list_title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'Anzeige&nbsp;von&nbsp;Zeitinfotypen'(h05)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current_report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'RPTPSH10_200X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'02'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'RPTPSH10_200X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;head_line1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;header_line1&nbsp;&nbsp;"XLTL9CK002809<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lay_out&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dyn_pushbutton_text1&nbsp;=&nbsp;push_button_text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return_code&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ret_cd2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i200x<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fieldname_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;timefields<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;select_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i200x_sel<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;download_problem&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_data_tab_entries&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;case&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_APPEND_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ARBGB&nbsp;=&nbsp;'PN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGTY&nbsp;=&nbsp;'I'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNO&nbsp;=&nbsp;'173'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"PC&nbsp;-&nbsp;Download&nbsp;nicht&nbsp;m#glich.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_APPEND_ERROR_LIST'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ARBGB&nbsp;=&nbsp;'PN'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGTY&nbsp;=&nbsp;'W'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNO&nbsp;=&nbsp;'800'.<br />
+&nbsp;&nbsp;endcase.<br />
+endform.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;show_0007<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM show_0007.<br />
+&nbsp;&nbsp;data:&nbsp;begin&nbsp;of&nbsp;date_0007&nbsp;occurs&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;datum&nbsp;like&nbsp;psp-datum,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;of&nbsp;date_0007.<br />
+<br />
+&nbsp;&nbsp;data:beg_0007&nbsp;like&nbsp;pn-begda,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_0007&nbsp;like&nbsp;pn-endda.<br />
+<br />
+&nbsp;&nbsp;loop&nbsp;at&nbsp;hd_sel.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;move&nbsp;hd_sel-datum&nbsp;to&nbsp;date_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;date_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;at&nbsp;end&nbsp;of&nbsp;pernr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sort&nbsp;date_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;date_0007&nbsp;lines&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;date_0007&nbsp;index&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;beg_0007&nbsp;=&nbsp;date_0007-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;date_0007&nbsp;index&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_0007&nbsp;=&nbsp;date_0007-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rp_read_infotype&nbsp;hd_sel-pernr&nbsp;0007&nbsp;P0007&nbsp;beg_0007&nbsp;end_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;p0007&nbsp;lines&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;beg_0007&nbsp;to&nbsp;error_begda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;end_0007&nbsp;to&nbsp;error_endda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;concatenate&nbsp;error_begda&nbsp;error_endda&nbsp;into&nbsp;error_message<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;separated&nbsp;by&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;error_handling&nbsp;using&nbsp;hd_sel-pernr&nbsp;'72'&nbsp;'E'&nbsp;'111'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0007'&nbsp;error_message&nbsp;space&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'PER'&nbsp;field&nbsp;hd_sel-pernr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'ITP'&nbsp;field&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'BEG'&nbsp;field&nbsp;beg_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'END'&nbsp;field&nbsp;end_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'FCD'&nbsp;field&nbsp;'DIS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;transaction&nbsp;'PA20'&nbsp;and&nbsp;skip&nbsp;first&nbsp;screen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'PER'&nbsp;field&nbsp;hd_sel-pernr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'ITP'&nbsp;field&nbsp;'0007'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'BEG'&nbsp;field&nbsp;beg_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'END'&nbsp;field&nbsp;end_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'FCD'&nbsp;field&nbsp;'LIST'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;transaction&nbsp;'PA20'&nbsp;and&nbsp;skip&nbsp;first&nbsp;screen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refresh&nbsp;date_0007.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endat.<br />
+&nbsp;&nbsp;endloop.<br />
+ENDFORM.                               " show_0007<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;list_200x<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM list_200x.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Tabelle&nbsp;zur&nbsp;#bergabe&nbsp;der&nbsp;Zeitinfotypen&nbsp;an&nbsp;HR_DISPLAY_BASIC_LIST<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;data:&nbsp;ret_cd2&nbsp;like&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;data:&nbsp;i200x_entries&nbsp;type&nbsp;i.<br />
+<br />
+&nbsp;&nbsp;data:&nbsp;ldatum&nbsp;like&nbsp;hd_sel-datum.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+<br />
+&nbsp;&nbsp;ldatum&nbsp;=&nbsp;hd_sel-datum&nbsp;+&nbsp;'1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+<br />
+&nbsp;&nbsp;clear&nbsp;i200x.<br />
+&nbsp;&nbsp;refresh&nbsp;i200x.<br />
+&nbsp;&nbsp;loop&nbsp;at&nbsp;hd_sel&nbsp;where&nbsp;inv_menge&nbsp;ne&nbsp;'0'.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Infotypen&nbsp;zum&nbsp;Satz&nbsp;vorhanden<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;pernr-pernr&nbsp;=&nbsp;hd_sel-pernr.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;rp_read_all_time_ity&nbsp;hd_sel-datum&nbsp;hd_sel-datum.&nbsp;"XLTL9CK018334<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;rp_read_all_time_ity&nbsp;hd_sel-datum&nbsp;ldatum.&nbsp;"XLTL9CK018334<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*&nbsp;begin&nbsp;of&nbsp;insertion&nbsp;note&nbsp;1272931<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;hd_sel-pernr&nbsp;ne&nbsp;p0001-pernr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;p0001.&nbsp;refresh&nbsp;p0001.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'HR_READ_INFOTYPE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCLAS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'A'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;hd_sel-pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;infty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'0001'<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'18000101'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDDA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'99991231'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BYPASS_BUFFER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUBRC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tables<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;infty_tab&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0001<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INFTY_NOT_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0&nbsp;or&nbsp;p0001&nbsp;is&nbsp;initial.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;I000(HRTIM00WS)&nbsp;with&nbsp;'0001'.&nbsp;exit.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endif.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;end&nbsp;of&nbsp;insertion&nbsp;note&nbsp;1272931<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;call function 'HR_CHOOSE_SUBSTITUTION'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exporting<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pernr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;hd_sel-pernr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;hd_sel-datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tables<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i0001&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p0001<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I0049&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2003&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;p2003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i2003_exp&nbsp;=&nbsp;i2003<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;sort&nbsp;i2003&nbsp;by&nbsp;begda.&nbsp;"XLTL9CK018334<br />
+&nbsp;&nbsp;&nbsp;&nbsp;rp_read_all_time_ity&nbsp;hd_sel-datum&nbsp;hd_sel-datum.&nbsp;"XLTL9CK018334<br />
+<br />
+&nbsp;&nbsp;&nbsp;perform&nbsp;fill_i200x.<br />
+&nbsp;&nbsp;endloop.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"loop&nbsp;for&nbsp;all&nbsp;entries&nbsp;of&nbsp;HD_SEL<br />
+&nbsp;&nbsp;describe&nbsp;table&nbsp;i200x&nbsp;lines&nbsp;i200x_entries.<br />
+&nbsp;&nbsp;case&nbsp;i200x_entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines&nbsp;selected&nbsp;with&nbsp;no&nbsp;time-it&nbsp;available<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message&nbsp;I122(72).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Presetting&nbsp;of&nbsp;RET_CD2&nbsp;for&nbsp;list&nbsp;of&nbsp;time-infotype&nbsp;records<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret_cd2&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;ret_cd2&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;write_infotype_list&nbsp;changing&nbsp;ret_cd2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;ret_cd2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'1'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"P200x&nbsp;record<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;describe&nbsp;table&nbsp;i200x_sel&nbsp;lines&nbsp;i200x_entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;i200x_entries.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0.&nbsp;message&nbsp;I805(PN).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'PER'&nbsp;field&nbsp;i200x_sel-pernr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'ITP'&nbsp;field&nbsp;i200x_sel-infty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'SUB'&nbsp;field&nbsp;i200x_sel-subty.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'BEG'&nbsp;field&nbsp;i200x_sel-begda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'END'&nbsp;field&nbsp;i200x_sel-endda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set&nbsp;parameter&nbsp;id&nbsp;'FCD'&nbsp;field&nbsp;'DIS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call&nbsp;transaction&nbsp;'PA51'&nbsp;and&nbsp;skip&nbsp;first&nbsp;screen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endwhile.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"show&nbsp;time-it&nbsp;list<br />
+&nbsp;&nbsp;endcase.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+ENDFORM.                               " list_200x<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;list_TAZP<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM list_TAZP.<br />
+   </div>
+   <div class="codeComment">
+*XLTL9CK018484&nbsp;Fehlerhandling&nbsp;Korrektur<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;loop&nbsp;at&nbsp;hd_sel&nbsp;where&nbsp;tprog&nbsp;=&nbsp;'****'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;&nbsp;tprog&nbsp;is&nbsp;initial.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"note&nbsp;322021<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Keine&nbsp;Anzeige&nbsp;von&nbsp;TagesAZP,&nbsp;da&nbsp;TagesAZP&nbsp;=&nbsp;'****'<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;error_handling&nbsp;using&nbsp;hd_sel-pernr&nbsp;'72'&nbsp;'E'&nbsp;'121'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;space&nbsp;space&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;exit.<br />
+&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;perform&nbsp;fill_dba_sellist_cluster.<br />
+<br />
+<br />
+&nbsp;&nbsp;if&nbsp;not&nbsp;dba_sellist_cluster[]&nbsp;is&nbsp;initial.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;call function 'VIEWCLUSTER_MAINTENANCE_CALL'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;viewcluster_name&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'T550A'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maintenance_action&nbsp;&nbsp;=&nbsp;'S'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DBA_SELLIST_CLUSTER&nbsp;=&nbsp;DBA_SELLIST_CLUSTER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;no_show_auth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;others&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;sy-subrc.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;error_handling&nbsp;using&nbsp;space&nbsp;'PN'&nbsp;'E'&nbsp;'800'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;space&nbsp;space&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;'2'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;error_handling&nbsp;using&nbsp;space&nbsp;'P2'&nbsp;'I'&nbsp;'759'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'T550A'&nbsp;space&nbsp;space&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Keine&nbsp;Berechtigung&nbsp;zum&nbsp;Anzeigen<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endcase.<br />
+<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+ENDFORM.                               " list_TAZP<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fill&nbsp;table&nbsp;forms<br />
+*----------------------------------------------------------------------<br />
+*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;fill_i200x<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form fill_i200x.<br />
+&nbsp;&nbsp;define&nbsp;macro_fill_i200x.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;at&nbsp;&1&nbsp;where&nbsp;begda&nbsp;le&nbsp;pn-endda<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;&nbsp;&nbsp;endda&nbsp;ge&nbsp;pn-begda.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;move-corresponding&nbsp;&1&nbsp;to&nbsp;i200x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;&1-beguz&nbsp;to&nbsp;i200x-beguz&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;&1-enduz&nbsp;to&nbsp;i200x-enduz&nbsp;&nbsp;using&nbsp;edit&nbsp;mask&nbsp;'__:__'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i200x-pernr&nbsp;=&nbsp;hd_sel-pernr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i200x-name&nbsp;&nbsp;=&nbsp;hd_sel-name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;ret582s&nbsp;using&nbsp;sy-langu&nbsp;&nbsp;'&2'&nbsp;space&nbsp;changing&nbsp;i200x-itext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;re&3&nbsp;&nbsp;&nbsp;&nbsp;using&nbsp;sy-langu&nbsp;&nbsp;&nbsp;&4&nbsp;&nbsp;&5&nbsp;&nbsp;&nbsp;&nbsp;changing&nbsp;i200x-atext.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write&nbsp;&6&nbsp;to&nbsp;i200x-stdaz&nbsp;no-zero&nbsp;right-justified.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;i200x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;i200x.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;endloop.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+&nbsp;&nbsp;i200x-datum&nbsp;=&nbsp;hd_sel-datum.<br />
+&nbsp;macro_fill_i200x&nbsp;p2001&nbsp;2001&nbsp;t554t&nbsp;hd_sel-moabw&nbsp;p2001-awart&nbsp;p2001-stdaz.<br />
+&nbsp;macro_fill_i200x&nbsp;p2002&nbsp;2002&nbsp;t554t&nbsp;hd_sel-moabw&nbsp;p2002-awart&nbsp;p2002-stdaz.<br />
+&nbsp;&nbsp;macro_fill_i200x&nbsp;i2003&nbsp;2003&nbsp;t556t&nbsp;hd_sel-mover&nbsp;i2003-vtart&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;macro_fill_i200x&nbsp;p2004&nbsp;2004&nbsp;t557t&nbsp;hd_sel-mover&nbsp;p2004-stnby&nbsp;'&nbsp;'.<br />
+&nbsp;macro_fill_i200x&nbsp;p2005&nbsp;2005&nbsp;mehr&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;space&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p2005-stdaz.<br />
+endform.                               " fill_i200x<br />
+   </div>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+*<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form remehr using d1 type c d2 type c d3 type c changing d4 type c.<br />
+endform.<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;fill_dba_sellist_cluster<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM fill_dba_sellist_cluster.<br />
+&nbsp;&nbsp;data:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;550a&nbsp;like&nbsp;vimsellist&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;550p&nbsp;like&nbsp;vimsellist&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;550x&nbsp;like&nbsp;vimsellist&nbsp;occurs&nbsp;0&nbsp;with&nbsp;header&nbsp;line.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;lt_buf_t550a&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;t550a.<br />
+<br />
+&nbsp;&nbsp;define&nbsp;macro_dba_sellist_cluster_flds.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;clear&nbsp;dba_sellist_cluster.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DBA_SELLIST_CLUSTER-OBJECT&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DBA_SELLIST_CLUSTER-sellist[]&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;append&nbsp;dba_sellist_cluster.<br />
+&nbsp;&nbsp;end-of-definition.<br />
+<br />
+&nbsp;&nbsp;refresh:&nbsp;550a,&nbsp;550p,&nbsp;550x,&nbsp;dba_sellist_cluster,&nbsp;lt_buf_t550a.<br />
+<br />
+&nbsp;&nbsp;loop&nbsp;at&nbsp;hd_sel&nbsp;where&nbsp;tprog&nbsp;ne&nbsp;'****'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;&nbsp;not&nbsp;tprog&nbsp;is&nbsp;initial.&nbsp;"XLTL9CK018334<br />
+&nbsp;&nbsp;&nbsp;&nbsp;perform&nbsp;fill_arg_t550apx&nbsp;tables&nbsp;550a&nbsp;550p&nbsp;550x&nbsp;lt_buf_t550a.<br />
+&nbsp;&nbsp;endloop.<br />
+<br />
+&nbsp;&nbsp;if&nbsp;not&nbsp;550a&nbsp;is&nbsp;initial.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+&nbsp;&nbsp;&nbsp;&nbsp;macro_dba_sellist_cluster_flds&nbsp;'V_T550A'&nbsp;550A[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;macro_dba_sellist_cluster_flds&nbsp;'V_T550P'&nbsp;550P[].<br />
+&nbsp;&nbsp;&nbsp;&nbsp;macro_dba_sellist_cluster_flds&nbsp;'V_T550X'&nbsp;550X[].<br />
+&nbsp;&nbsp;endif.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"XLTL9CK018334<br />
+<br />
+ENDFORM.                               " fill_dba_sellist_cluster<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;fill_arg_t550apx<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM fill_arg_t550apx tables a_sellist structure VIMSELLIST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_sellist&nbsp;structure&nbsp;VIMSELLIST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_sellist&nbsp;structure&nbsp;VIMSELLIST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_t550a&nbsp;&nbsp;STRUCTURE&nbsp;t550a.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;datum_vmc(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;recno&nbsp;like&nbsp;t550x-recno&nbsp;value&nbsp;'01',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seqno&nbsp;like&nbsp;t550a-seqno.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_t550a&nbsp;TYPE&nbsp;t550a.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_t550a&nbsp;TRANSPORTING&nbsp;NO&nbsp;FIELDS&nbsp;WHERE&nbsp;mandt&nbsp;EQ&nbsp;sy-mandt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;motpr&nbsp;EQ&nbsp;hd_sel-motpr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;tprog&nbsp;EQ&nbsp;hd_sel-tprog<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;varia&nbsp;EQ&nbsp;hd_sel-varia<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;begda&nbsp;LE&nbsp;hd_sel-datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;endda&nbsp;GE&nbsp;hd_sel-datum.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;t550a&nbsp;INTO&nbsp;ls_t550a&nbsp;WHERE&nbsp;motpr&nbsp;EQ&nbsp;hd_sel-motpr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;tprog&nbsp;EQ&nbsp;hd_sel-tprog<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;varia&nbsp;EQ&nbsp;hd_sel-varia<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;endda&nbsp;GE&nbsp;hd_sel-datum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;begda&nbsp;LE&nbsp;hd_sel-datum.<br />
+<br />
+&nbsp;&nbsp;if&nbsp;sy-subrc&nbsp;ne&nbsp;0.<br />
+&nbsp;&nbsp;concatenate&nbsp;hd_sel-tprog&nbsp;hd_sel-varia&nbsp;hd_sel-datum&nbsp;into&nbsp;error_message.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;ERROR_HANDLING&nbsp;USING&nbsp;space<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'72'&nbsp;'E'&nbsp;'009'&nbsp;error_message&nbsp;space&nbsp;space&nbsp;space.<br />
+&nbsp;&nbsp;else.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_t550a&nbsp;TO&nbsp;lt_t550a.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;&nbsp;&nbsp;lt_t550a.<br />
+&nbsp;&nbsp;endif.<br />
+<br />
+&nbsp;&nbsp;write&nbsp;ls_t550a-endda&nbsp;to&nbsp;datum_vmc.<br />
+<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;a_sellist&nbsp;using&nbsp;'MOTPR'&nbsp;'EQ'&nbsp;ls_t550a-motpr&nbsp;'OR'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;a_sellist&nbsp;using&nbsp;'VARIA'&nbsp;'EQ'&nbsp;ls_t550a-varia&nbsp;'AND'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;a_sellist&nbsp;using&nbsp;'TPROG'&nbsp;'EQ'&nbsp;ls_t550a-tprog&nbsp;'AND'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;a_sellist&nbsp;using&nbsp;'SEQNO'&nbsp;'EQ'&nbsp;ls_t550a-seqno&nbsp;'AND'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;a_sellist&nbsp;using&nbsp;'ENDDA'&nbsp;'EQ'&nbsp;datum_vmc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'AND'.<br />
+<br />
+&nbsp;&nbsp;select&nbsp;max(&nbsp;seqno&nbsp;)&nbsp;into&nbsp;(seqno)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from&nbsp;t550p&nbsp;where&nbsp;motpr&nbsp;eq&nbsp;hd_sel-motpr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;&nbsp;&nbsp;pamod&nbsp;eq&nbsp;ls_t550a-pamod.<br />
+<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;p_sellist&nbsp;using&nbsp;'MOTPR'&nbsp;'EQ'&nbsp;ls_t550a-motpr&nbsp;'OR'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;p_sellist&nbsp;using&nbsp;'PAMOD'&nbsp;'EQ'&nbsp;ls_t550a-pamod&nbsp;'AND'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;p_sellist&nbsp;using&nbsp;'SEQNO'&nbsp;'LE'&nbsp;seqno&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'AND'.<br />
+<br />
+&nbsp;&nbsp;select&nbsp;max(&nbsp;seqno&nbsp;)&nbsp;&nbsp;into&nbsp;(seqno)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from&nbsp;t550x&nbsp;where&nbsp;regel&nbsp;eq&nbsp;ls_t550a-regel<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;recno&nbsp;eq&nbsp;recno.<br />
+<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;x_sellist&nbsp;using&nbsp;'RECNO'&nbsp;'LE'&nbsp;recno&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'OR'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;x_sellist&nbsp;using&nbsp;'REGEL'&nbsp;'EQ'&nbsp;ls_t550a-regel&nbsp;'AND'.<br />
+&nbsp;&nbsp;perform&nbsp;ini_fld&nbsp;tables&nbsp;x_sellist&nbsp;using&nbsp;'SEQNO'&nbsp;'LE'&nbsp;seqno&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'AND'.<br />
+<br />
+ENDFORM.                               " fill_arg_t550apx<br />
+<br />
+   </div>
+   <div class="codeComment">
+*---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FORM&nbsp;INIT_FIELD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br />
+*---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+form ini_fld tables dba_sellist structure VIMSELLIST<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using&nbsp;fldna<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fldop<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fldva&nbsp;and_or.<br />
+<br />
+&nbsp;&nbsp;data:&nbsp;tabix&nbsp;like&nbsp;sy-tabix.<br />
+<br />
+&nbsp;&nbsp;describe&nbsp;table&nbsp;dba_sellist&nbsp;lines&nbsp;tabix.<br />
+&nbsp;&nbsp;if&nbsp;tabix&nbsp;gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;read&nbsp;table&nbsp;dba_sellist&nbsp;index&nbsp;tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;dba_sellist-and_or&nbsp;=&nbsp;and_or.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;modify&nbsp;dba_sellist&nbsp;index&nbsp;tabix.<br />
+&nbsp;&nbsp;endif.<br />
+&nbsp;&nbsp;clear&nbsp;dba_sellist.<br />
+&nbsp;&nbsp;dba_sellist-viewfield&nbsp;=&nbsp;fldna.<br />
+&nbsp;&nbsp;dba_sellist-operator&nbsp;=&nbsp;fldop.<br />
+&nbsp;&nbsp;dba_sellist-value&nbsp;=&nbsp;fldva.<br />
+&nbsp;&nbsp;append&nbsp;dba_sellist.<br />
+endform.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Text&nbsp;elements<br />
+*----------------------------------------------------------<br />
+*&nbsp;001&nbsp;이름<br />
+*&nbsp;002&nbsp;일자<br />
+*&nbsp;003&nbsp;일자<br />
+*&nbsp;004&nbsp;DWS<br />
+*&nbsp;005&nbsp;DV<br />
+*&nbsp;006&nbsp;Va<br />
+*&nbsp;007&nbsp;그룹<br />
+*&nbsp;008&nbsp;시작<br />
+*&nbsp;009&nbsp;종료<br />
+*&nbsp;010&nbsp;PlHrs<br />
+*&nbsp;011&nbsp;HCl<br />
+*&nbsp;012&nbsp;DT<br />
+*&nbsp;013&nbsp;개인&nbsp;WS<br />
+*&nbsp;014&nbsp;HCr<br />
+*&nbsp;015&nbsp;근무시간<br />
+*&nbsp;020&nbsp;STy.<br />
+*&nbsp;021&nbsp;시작<br />
+*&nbsp;022&nbsp;종료<br />
+*&nbsp;023&nbsp;기간<br />
+*&nbsp;024&nbsp;IT<br />
+*&nbsp;025&nbsp;하위유형&nbsp;텍스트<br />
+*&nbsp;026&nbsp;효력&nbsp;시작일<br />
+*&nbsp;027&nbsp;효력&nbsp;종료일<br />
+*&nbsp;FRA&nbsp;근무&nbsp;일정<br />
+*&nbsp;FRB&nbsp;기간&nbsp;조회<br />
+*&nbsp;H01&nbsp;기준일:<br />
+*&nbsp;H02&nbsp;평가&nbsp;기간:<br />
+*&nbsp;H03&nbsp;To<br />
+*&nbsp;H04&nbsp;개인&nbsp;근무&nbsp;일정<br />
+*&nbsp;H05&nbsp;시간&nbsp;인포타입&nbsp;조회<br />
+*&nbsp;I01&nbsp;조직&nbsp;지정<br />
+*&nbsp;I02&nbsp;개인&nbsp;데이터<br />
+*&nbsp;P01&nbsp;일일&nbsp;WS<br />
+*&nbsp;P02&nbsp;계획&nbsp;근무&nbsp;시간<br />
+*&nbsp;P03&nbsp;시간&nbsp;인포타입<br />
+*&nbsp;P04&nbsp;세부사항&nbsp;선택<br />
+*&nbsp;TA0&nbsp;클러스터에서&nbsp;읽기<br />
+*&nbsp;TA1&nbsp;연금&nbsp;및&nbsp;근무<br />
+*&nbsp;TA2&nbsp;비근무,&nbsp;연금&nbsp;및&nbsp;근무<br />
+*&nbsp;TA3&nbsp;퇴사,&nbsp;비근무,&nbsp;연금&nbsp;및&nbsp;근무<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;72<br />
+*122&nbsp;&nbsp;&nbsp;선택한&nbsp;요일에&nbsp;시간인포타입레코드가&nbsp;없습니다<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;HRTIM00WS<br />
+*000&nbsp;&nbsp;&nbsp;인포타입&nbsp;&1을(를)&nbsp;찾지&nbsp;못했습니다<br />
+*<br />
+*&nbsp;Message&nbsp;class:&nbsp;PN<br />
+*001&nbsp;&nbsp;&nbsp;테이블&nbsp;&1에&nbsp;키&nbsp;&2에&nbsp;대한&nbsp;엔트리가&nbsp;없습니다<br />
+*050&nbsp;&nbsp;&nbsp;엔트리에&nbsp;대해&nbsp;사용&nbsp;가능한&nbsp;데이터가&nbsp;없습니다.<br />
+*805&nbsp;&nbsp;&nbsp;사원을&nbsp;선택하지&nbsp;않았습니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

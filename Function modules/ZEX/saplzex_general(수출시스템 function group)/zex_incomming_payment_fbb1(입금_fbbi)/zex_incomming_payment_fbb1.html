@@ -1,0 +1,587 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZEX_INCOMMING_PAYMENT_FBB1</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZEX_INCOMMING_PAYMENT_FBB1</h2>
+<h3> Description: 입금_FBBI</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZEX_INCOMMING_PAYMENT_FBB1.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(P_ZNGRNO) LIKE  ZEX502-ZNGRNO<br />
+*"     REFERENCE(P_ZINPSQ) LIKE  ZEX502-ZINPSQ<br />
+*"  TABLES<br />
+*"      RETURN STRUCTURE  BAPIRET2<br />
+*"  EXCEPTIONS<br />
+*"      POST_ERROR<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zex_incomming_payment_fbb1.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;V_XREF3&nbsp;LIKE&nbsp;ZEX502-XREF3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_VKGRP&nbsp;LIKE&nbsp;VBRP-VKGRP,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_VKBUR&nbsp;LIKE&nbsp;VBRP-VKBUR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_TEXT(40).<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;RETURN.<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;ZEX500.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX500<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E000&nbsp;WITH&nbsp;'입금의뢰&nbsp;관리번호를&nbsp;확인하시오.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;ZEX502.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX502<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E000&nbsp;WITH&nbsp;'입금&nbsp;내역을&nbsp;확인하시오.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;ZEX502-ZCOMPL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'전기완료&nbsp;상태입니다.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;ZEX005.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX005<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;=&nbsp;ZEX500-BUKRS.<br />
+&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;CTU_PARAMS-DISMODE.<br />
+&nbsp;&nbsp;IF&nbsp;SY-UNAME&nbsp;=&nbsp;ZEX005-ZSYMGR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ZEX005-DISMODE&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'N'&nbsp;TO&nbsp;CTU_PARAMS-DISMODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;ZEX005-DISMODE&nbsp;TO&nbsp;CTU_PARAMS-DISMODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;CTU_PARAMS-UPDMODE&nbsp;&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;CTU_PARAMS-CATTMODE&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;CTU_PARAMS-DEFSIZE&nbsp;&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;CTU_PARAMS-RACOMMIT&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;CTU_PARAMS-NOBINPT&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;CTU_PARAMS-NOBIEND&nbsp;&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IT_503.<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX503<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_503<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IT_504.<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX504<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_504<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IT_505.<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX505<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_505<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;IT_006.<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX006<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;IT_006<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;BUKRS&nbsp;&nbsp;EQ&nbsp;ZEX500-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZFUSYN&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;SORT&nbsp;IT_006&nbsp;BY&nbsp;ZFPAGE&nbsp;ZFSEQU.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;IT_503&nbsp;WITH&nbsp;KEY&nbsp;ZINPSQ&nbsp;=&nbsp;P_ZINPSQ.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;IT_503-VBELN&nbsp;'입금'&nbsp;INTO&nbsp;V_TEXT&nbsp;SEPARATED&nbsp;BY&nbsp;SPACE.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;VBRK.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBRK<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;EQ&nbsp;IT_503-VBELN.<br />
+   </div>
+   <div class="codeComment">
+* 사업영역/손익센터/영업그룹/사업장/코스트센터<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;V_GSBER,&nbsp;V_PRCTR,&nbsp;V_VKGRP,&nbsp;V_VKBUR,&nbsp;V_KOSTL.<br />
+&nbsp;&nbsp;SELECT&nbsp;MAX(&nbsp;GSBER&nbsp;)&nbsp;MAX(&nbsp;PRCTR&nbsp;)&nbsp;MAX(&nbsp;VKGRP&nbsp;)&nbsp;MAX(&nbsp;VKBUR&nbsp;)&nbsp;MAX(&nbsp;KOSTL&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;(V_GSBER,&nbsp;V_PRCTR,&nbsp;V_VKGRP,&nbsp;V_VKBUR,&nbsp;V_KOSTL)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBRP<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;EQ&nbsp;IT_503-VBELN.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;VBRK-VKORG&nbsp;VBRK-VTWEG&nbsp;VBRK-SPART&nbsp;V_VKBUR&nbsp;V_VKGRP&nbsp;INTO&nbsp;V_XREF3.<br />
+   </div>
+   <div class="codeComment">
+* 사업장<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;MAX(&nbsp;BUPLA&nbsp;)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;V_BUPLA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;VBRK<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;EQ&nbsp;IT_503-VBELN.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* --<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;V_BUPLA&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;V_BUPLA&nbsp;=&nbsp;'J100'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;V_GSBER&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;V_GSBER&nbsp;=&nbsp;'H1'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;V_KOSTL&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;V_KOSTL&nbsp;=&nbsp;'PACA'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* --<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;WRITE&nbsp;:&nbsp;ZEX502-WKURS&nbsp;TO&nbsp;V_KURSF.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;&nbsp;BDCDATA.<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BLDAT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Document&nbsp;Date<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BLART'&nbsp;&nbsp;&nbsp;'LD',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Type&nbsp;전표유형<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BUKRS'&nbsp;&nbsp;&nbsp;&nbsp;ZEX500-BUKRS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Company&nbsp;Code<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BUDAT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Date<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-BKTXT'&nbsp;&nbsp;&nbsp;'수출대금입금',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;전표헤더텍스트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-WAERS'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-WAERS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Currency<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-WWERT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;환산일(환율)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BKPF-KURSF'&nbsp;&nbsp;&nbsp;&nbsp;V_KURSF,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;환율<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;'40',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;ZEX502-ZACCN1,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;외화당좌<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Enter<br />
+<br />
+   </div>
+   <div class="codeComment">
+* SUM(비용).<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;&nbsp;V_WRBTR_1.<br />
+&nbsp;&nbsp;SELECT&nbsp;SUM(&nbsp;WRBTR&nbsp;)&nbsp;INTO&nbsp;V_WRBTR_1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX504<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;WAERS&nbsp;&nbsp;EQ&nbsp;ZEX502-WAERS.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 실입금액<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;WRITE&nbsp;ZEX502-ZRSAMT&nbsp;CURRENCY&nbsp;ZEX502-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR.<br />
+&nbsp;&nbsp;CALL FUNCTION 'CONVERT_TO_LOCAL_CURRENCY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ZEX502-ZIPDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_AMOUNT&nbsp;&nbsp;&nbsp;=&nbsp;ZEX502-ZRSAMT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_CURRENCY&nbsp;=&nbsp;ZEX502-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOCAL_CURRENCY&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;V_KURSF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE_OF_RATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'M'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOCAL_AMOUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;V_DMBTR_1.<br />
+&nbsp;&nbsp;WRITE&nbsp;V_DMBTR_1&nbsp;CURRENCY&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_DMBTR.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;실입금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-DMBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_DMBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;실입금액원화<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-VALUT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기준일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-GSBER'&nbsp;&nbsp;&nbsp;&nbsp;V_GSBER,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사업영역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-KOSTL'&nbsp;&nbsp;&nbsp;&nbsp;V_KOSTL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;코스트센터<br />
+   </div>
+   <div class="codeComment">
+*     ' ' 'COBL-PRCTR'    V_PRCTR,              " 손익센터<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-ZUONR'&nbsp;&nbsp;&nbsp;&nbsp;IT_503-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;지정번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-SGTXT'&nbsp;&nbsp;&nbsp;&nbsp;V_TEXT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;텍스트<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 비용<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;V_COUNT.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_505.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;IT_505-WRBTR&nbsp;&nbsp;CURRENCY&nbsp;IT_505-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;IT_505-NEWKO,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계정<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;IT_505-NEWBS,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*   외화차이금액<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;IT_505-WAERS&nbsp;=&nbsp;'KRW'&nbsp;AND&nbsp;V_COUNT&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_COUNT&nbsp;=&nbsp;V_COUNT&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ZIPAMT&nbsp;=&nbsp;ZEX502-ZIPAMT&nbsp;-&nbsp;(&nbsp;ZEX502-ZRSAMT&nbsp;+&nbsp;V_WRBTR_1&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;V_ZIPAMT&nbsp;&nbsp;CURRENCY&nbsp;ZEX502-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR_C.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;'0'&nbsp;TO&nbsp;V_WRBTR_C.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;IT_505-WAERS&nbsp;=&nbsp;'KRW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR_C,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;비용(외화차이금액)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-DMBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;비용<br />
+   </div>
+   <div class="codeComment">
+*         ' ' 'BSEG-MWSKZ'    IT_505-MWSKZ,       " Tax code<br />
+*         ' ' 'BSEG-BUPLA'    V_BUPLA,            " 사업장<br />
+*         ' ' 'COBL-GSBER'    V_GSBER,            " 사업영역<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-KOSTL'&nbsp;&nbsp;&nbsp;&nbsp;V_KOSTL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;코스트센터<br />
+   </div>
+   <div class="codeComment">
+*         ' ' 'COBL-PRCTR'    V_PRCTR,            " 손익센터<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-ZUONR'&nbsp;&nbsp;&nbsp;&nbsp;IT_503-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;지정번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-SGTXT'&nbsp;&nbsp;&nbsp;&nbsp;V_TEXT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERT_TO_LOCAL_CURRENCY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ZEX502-ZIPDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_AMOUNT&nbsp;&nbsp;&nbsp;=&nbsp;IT_505-WRBTR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_CURRENCY&nbsp;=&nbsp;IT_505-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOCAL_CURRENCY&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;V_KURSF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE_OF_RATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'M'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOCAL_AMOUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;V_DMBTR_1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;V_DMBTR_1&nbsp;CURRENCY&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_DMBTR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;비용(외화금액)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-DMBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_DMBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;비용(원화)<br />
+   </div>
+   <div class="codeComment">
+*         ' ' 'BSEG-MWSKZ'    IT_505-MWSKZ,       " Tax code<br />
+*         ' ' 'BSEG-BUPLA'    V_BUPLA,            " 사업장<br />
+*         ' ' 'COBL-GSBER'    V_GSBER,            " 사업영역<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-KOSTL'&nbsp;&nbsp;&nbsp;&nbsp;V_KOSTL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;코스트센터<br />
+   </div>
+   <div class="codeComment">
+*         ' ' 'COBL-PRCTR'    V_PRCTR,            " 손익센터<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-ZUONR'&nbsp;&nbsp;&nbsp;&nbsp;IT_503-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;지정번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-SGTXT'&nbsp;&nbsp;&nbsp;&nbsp;V_TEXT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Text<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 원화(당좌)입금액<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;ZEX502-ZDAAMT&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;ZEX502-ZDAAMT&nbsp;CURRENCY&nbsp;ZEX502-ZDACUR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;ZEX502-ZACCND,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;계정<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;'40',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;'0',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-DMBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;원화(당좌)입금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-VALUT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기준일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-GSBER'&nbsp;&nbsp;&nbsp;&nbsp;V_GSBER,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사업영역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-KOSTL'&nbsp;&nbsp;&nbsp;&nbsp;V_KOSTL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;코스트센터<br />
+   </div>
+   <div class="codeComment">
+*       ' ' 'COBL-PRCTR'    V_PRCTR,            " 손익센터<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-ZUONR'&nbsp;&nbsp;&nbsp;&nbsp;IT_503-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;지정번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-SGTXT'&nbsp;&nbsp;&nbsp;&nbsp;V_TEXT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;텍스트<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 현재 원화<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;V_DMBTR_1.<br />
+&nbsp;&nbsp;CALL FUNCTION 'CONVERT_TO_LOCAL_CURRENCY'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ZEX502-ZIPDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_AMOUNT&nbsp;&nbsp;&nbsp;=&nbsp;ZEX502-ZIPAMT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_CURRENCY&nbsp;=&nbsp;ZEX502-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOCAL_CURRENCY&nbsp;&nbsp;&nbsp;=&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;V_KURSF<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE_OF_RATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'M'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOCAL_AMOUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;V_DMBTR_1.<br />
+   </div>
+   <div class="codeComment">
+* BILLING 원화<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;CLEAR&nbsp;V_DMBTR_2.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;IT_503.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;BKPF&nbsp;WHERE&nbsp;AWKEY&nbsp;=&nbsp;IT_503-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;FROM&nbsp;BSEG&nbsp;WHERE&nbsp;BUKRS&nbsp;=&nbsp;BKPF-BUKRS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;BELNR&nbsp;=&nbsp;BKPF-BELNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;GJAHR&nbsp;=&nbsp;BKPF-GJAHR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;SHKZG&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADD&nbsp;BSEG-DMBTR&nbsp;TO&nbsp;V_DMBTR_2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+   </div>
+   <div class="codeComment">
+* 환차<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;V_DMBTR_3&nbsp;=&nbsp;V_DMBTR_1&nbsp;-&nbsp;V_DMBTR_2.<br />
+&nbsp;&nbsp;IF&nbsp;NOT&nbsp;V_DMBTR_3&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;V_DMBTR_3&nbsp;&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;'50',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;ZEX005-ZACCN2,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;외환차익<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Enter<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_DMBTR_3&nbsp;=&nbsp;V_DMBTR_3&nbsp;*&nbsp;-1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;'40',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;ZEX005-ZACCN3,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;외환차손<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Enter<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE&nbsp;V_DMBTR_3&nbsp;CURRENCY&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_DMBTR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0300',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;'0',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-DMBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_DMBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;원화(당좌)입금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-VALUT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기준일<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-GSBER'&nbsp;&nbsp;&nbsp;&nbsp;V_GSBER,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사업영역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'COBL-KOSTL'&nbsp;&nbsp;&nbsp;&nbsp;V_KOSTL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;코스트센터<br />
+   </div>
+   <div class="codeComment">
+*       ' ' 'COBL-PRCTR'    V_PRCTR,            " 손익센터<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-ZUONR'&nbsp;&nbsp;&nbsp;&nbsp;IT_503-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;지정번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-SGTXT'&nbsp;&nbsp;&nbsp;&nbsp;V_TEXT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;텍스트<br />
+&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 입금액(AR)<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;WRITE&nbsp;ZEX502-ZIPAMT&nbsp;CURRENCY&nbsp;ZEX502-WAERS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_WRBTR.<br />
+&nbsp;&nbsp;WRITE&nbsp;V_DMBTR_2&nbsp;CURRENCY&nbsp;'KRW'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TO&nbsp;V_DMBTR.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWBS'&nbsp;&nbsp;&nbsp;'12',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Posting&nbsp;Key<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'RF05A-NEWKO'&nbsp;&nbsp;&nbsp;VBRK-KUNRG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Customer<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'/00'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Enter<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;&nbsp;BDCDATA_APPEND&nbsp;USING&nbsp;:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'SAPMF05A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0301',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-WRBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;입금액<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-DMBTR'&nbsp;&nbsp;&nbsp;&nbsp;V_DMBTR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;입금액원화<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-GSBER'&nbsp;&nbsp;&nbsp;&nbsp;V_GSBER,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;사업영역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-ZFBDT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-ZIPDAT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기산일기준<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-HKONT'&nbsp;&nbsp;&nbsp;&nbsp;ZEX502-HKONT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;G/L&nbsp;계정<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-ZUONR'&nbsp;&nbsp;&nbsp;&nbsp;IT_503-VBELN,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;지정번호<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BSEG-SGTXT'&nbsp;&nbsp;&nbsp;&nbsp;V_TEXT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;텍스트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'&nbsp;'&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;'=BU'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"<br />
+   </div>
+   <div class="codeComment">
+* --<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'BLN'&nbsp;FIELD&nbsp;''.<br />
+&nbsp;&nbsp;SET&nbsp;PARAMETER&nbsp;ID&nbsp;'GJR'&nbsp;FIELD&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;REFRESH&nbsp;:&nbsp;MESSTAB.<br />
+&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'FBB1'&nbsp;&nbsp;USING&nbsp;&nbsp;&nbsp;&nbsp;BDCDATA<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPTIONS&nbsp;&nbsp;FROM&nbsp;CTU_PARAMS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;MESSTAB.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;MESSTAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE&nbsp;:&nbsp;MESSTAB-MSGTYP&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-TYPE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGID&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-ID,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGNR&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-NUMBER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV1&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV2&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV3&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V3,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSTAB-MSGV4&nbsp;&nbsp;&nbsp;TO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN-MESSAGE_V4.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'MESSAGE_TEXT_BUILD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-NUMBER<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSGV4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;RETURN-MESSAGE_V4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE_TEXT_OUTPUT&nbsp;=&nbsp;RETURN-MESSAGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;GET&nbsp;PARAMETER&nbsp;ID&nbsp;'BLN'&nbsp;FIELD&nbsp;BELNR.<br />
+&nbsp;&nbsp;GET&nbsp;PARAMETER&nbsp;ID&nbsp;'GJR'&nbsp;FIELD&nbsp;GJAHR.&nbsp;&nbsp;&nbsp;"&nbsp;회계년도.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;BELNR&nbsp;&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;&nbsp;GJAHR&nbsp;&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;E000&nbsp;WITH&nbsp;'Data&nbsp;전기&nbsp;도중&nbsp;오류가&nbsp;발생하였습니다.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;UPDATE&nbsp;ZEX502<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;BELNR&nbsp;&nbsp;=&nbsp;BELNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GJAHR&nbsp;&nbsp;=&nbsp;GJAHR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BLDAT&nbsp;&nbsp;=&nbsp;ZEX502-ZIPDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BUDAT&nbsp;&nbsp;=&nbsp;ZEX502-ZIPDAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZCOMPL&nbsp;=&nbsp;'X'<br />
+&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;AND&nbsp;ZINPSQ&nbsp;EQ&nbsp;P_ZINPSQ.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000&nbsp;WITH&nbsp;'Data&nbsp;전기후&nbsp;저장&nbsp;도중&nbsp;오류가&nbsp;발생하였습니다.'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RAISING&nbsp;POST_ERROR.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SUM(&nbsp;ZIPAMT&nbsp;)&nbsp;INTO&nbsp;V_ZIPAMT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZEX502<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZCOMPL&nbsp;EQ&nbsp;'X'.<br />
+&nbsp;&nbsp;IF&nbsp;V_ZIPAMT&nbsp;&lt&nbsp;ZEX500-ZNGRMT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;ZEX500<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;ZCOMPL&nbsp;=&nbsp;'&nbsp;'<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;ZEX500<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SET&nbsp;ZCOMPL&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ZNGRNO&nbsp;EQ&nbsp;P_ZNGRNO.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: M8<br />
+*260   문서 &을(를)전기했습니다<br />
+*<br />
+* Message class: MIGO<br />
+*012   자재문서 &을(를) 전기했습니다<br />
+*<br />
+* Message class: ZEX01<br />
+*000   &<br />
+*001   & 관리번호 [&]이(가) &되었습니다.<br />
+*007   Data & 도중 오류가 발생하였습니다.<br />
+*011   영업문서와 재무문서의 수출유형이 다릅니다.<br />
+*015   문서범주는 동일해야 합니다<br />
+*027   관리번호 [&]은(는) 다른 사용자가 처리중입니다. 사용자 : &<br />
+*039   Incoterms는 동일해야 합니다.<br />
+*040   판매처는 동일해야 합니다.<br />
+*041   인도처는 동일해야 합니다.<br />
+*<br />
+* Message class: ZIM01<br />
+*019   Long Text [&]은(는) 최대 [&]라인 입력 가능. [&]라인 이후는 삭제됩니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

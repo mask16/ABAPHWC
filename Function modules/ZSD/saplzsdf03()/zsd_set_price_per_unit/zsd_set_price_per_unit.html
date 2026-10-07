@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_SET_PRICE_PER_UNIT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_SET_PRICE_PER_UNIT</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zsd_set_price_per_unit.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_INTNO) TYPE  ZESDINTNO<br />
+*"     VALUE(I_ITEM) TYPE  SEQNR6<br />
+*"     VALUE(I_DISMODE) TYPE  CTU_MODE DEFAULT 'N'<br />
+*"  TABLES<br />
+*"      T_RETURN STRUCTURE  BAPIRET2<br />
+*"----------------------------------------------------------------------<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zsd_set_price_per_unit.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;lt_bdcdata&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;bdcdata_tab,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_bdcmsgcoll&nbsp;TYPE&nbsp;tab_bdcmsgcoll,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_bdcmsgcoll&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lt_bdcmsgcoll,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_bdcparams&nbsp;&nbsp;TYPE&nbsp;ctu_params,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_zsdt0121&nbsp;&nbsp;&nbsp;TYPE&nbsp;zsdt0121,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_price&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;char12.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;ls_zsdt0121<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zsdt0121<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;intno&nbsp;EQ&nbsp;i_intno<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;item&nbsp;&nbsp;EQ&nbsp;i_item.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;WRITE&nbsp;ls_zsdt0121-apprc&nbsp;TO&nbsp;lv_price&nbsp;NO-GROUPING&nbsp;CURRENCY&nbsp;ls_zsdt0121-waers.<br />
+&nbsp;&nbsp;IF&nbsp;ls_zsdt0121-kunnr2&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*    대리점 실수요자 코드 존재<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;'0100'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=ANTA'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-KSCHL'&nbsp;'ZP02'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_zsdt0121-matnr&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*     제품코드 존재시<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPLV14A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=WEIT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV130-SELKZ(01)'&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1900'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=SICH'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-VKORG'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-KUNNR(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kunnr&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-KUNZZ(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kunnr2&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-MATNR(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-matnr&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KBETR(01)'&nbsp;&nbsp;&nbsp;lv_price&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KONWA(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-waers&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KPEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kpein&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KMEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-meins&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATAB(01)'&nbsp;&nbsp;ls_zsdt0121-frdat&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+   </div>
+   <div class="codeComment">
+** S) 2026.07.02 NYG 9999.12.31 -&gt 99991231로 날짜형식 변경<br />
+*          'RV13A-DATBI(01)'  '9999.12.31'        ''  ''  CHANGING lt_bdcdata,<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATBI(01)'&nbsp;&nbsp;'99991231'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*     제품코드 미존재<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPLV14A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=WEIT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV130-SELKZ(02)'&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1902'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=SICH'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-VKORG'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-KUNNR(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kunnr&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-KUNZZ(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kunnr2&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-PRODH(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-prdha&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-MVGR1(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-mvgr1&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KBETR(01)'&nbsp;&nbsp;&nbsp;lv_price&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KONWA(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-waers&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KPEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kpein&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KMEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-meins&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATAB(01)'&nbsp;&nbsp;ls_zsdt0121-frdat&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+   </div>
+   <div class="codeComment">
+** S) 2026.07.02 NYG 9999.12.31 -&gt 99991231로 날짜형식 변경<br />
+*          'RV13A-DATBI(01)'  '9999.12.31'        ''  ''  CHANGING lt_bdcdata.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATBI(01)'&nbsp;&nbsp;'99991231'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*   대리점 실수요자 코드 미존재<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;'0100'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;'=ANTA'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-KSCHL'&nbsp;'ZP01'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_zsdt0121-matnr&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+   </div>
+   <div class="codeComment">
+*     제품코드 존재<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPLV14A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=WEIT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV130-SELKZ(01)'&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1907'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=SICH'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-VKORG'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-VTWEG(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-vtweg&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-KUNNR(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kunnr&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-MATNR(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-matnr&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KBETR(01)'&nbsp;&nbsp;&nbsp;lv_price&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KONWA(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-waers&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KPEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kpein&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KMEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-meins&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATAB(01)'&nbsp;&nbsp;ls_zsdt0121-frdat&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+   </div>
+   <div class="codeComment">
+** S) 2026.07.02 NYG 9999.12.31 -&gt 99991231로 날짜형식 변경<br />
+*          'RV13A-DATBI(01)'  '9999.12.31'        ''  ''  CHANGING lt_bdcdata.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATBI(01)'&nbsp;&nbsp;'99991231'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+   </div>
+   <div class="codeComment">
+*     제품코드 미존재<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPLV14A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0100'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=WEIT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV130-SELKZ(02)'&nbsp;'X'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;set_bdcdata&nbsp;USING:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SAPMV13A'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1908'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'BDC_OKCODE'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'=SICH'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-VKORG'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1000'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-VTWEG(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-vtweg&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-KUNNR(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kunnr&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-PRODH(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-prdha&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KOMG-MVGR1(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-mvgr1&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KBETR(01)'&nbsp;&nbsp;&nbsp;lv_price&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KONWA(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-waers&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KPEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-kpein&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'X'&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'KONP-KMEIN(01)'&nbsp;&nbsp;&nbsp;ls_zsdt0121-meins&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATAB(01)'&nbsp;&nbsp;ls_zsdt0121-frdat&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata,<br />
+   </div>
+   <div class="codeComment">
+** S) 2026.07.02 NYG 9999.12.31 -&gt 99991231로 날짜형식 변경<br />
+*          'RV13A-DATBI(01)'  '9999.12.31'        ''  ''  CHANGING lt_bdcdata<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'RV13A-DATBI(01)'&nbsp;&nbsp;'99991231'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;CHANGING&nbsp;lt_bdcdata.<br />
+   </div>
+   <div class="codeComment">
+** E) 2026.07.02 NYG 9999.12.31 -&gt 99991231로 날짜형식 변경<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ls_bdcparams-dismode&nbsp;&nbsp;=&nbsp;i_dismode.&nbsp;&nbsp;"처리모드<br />
+&nbsp;&nbsp;ls_bdcparams-updmode&nbsp;&nbsp;=&nbsp;'S'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"갱신세션<br />
+&nbsp;&nbsp;ls_bdcparams-cattmode&nbsp;=&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"CATT모드<br />
+&nbsp;&nbsp;ls_bdcparams-defsize&nbsp;&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"기본화면<br />
+&nbsp;&nbsp;ls_bdcparams-racommit&nbsp;=&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"COMMIT&nbsp;이후&nbsp;지속<br />
+&nbsp;&nbsp;ls_bdcparams-nobinpt&nbsp;&nbsp;=&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"BI&nbsp;세션<br />
+&nbsp;&nbsp;ls_bdcparams-nobiend&nbsp;&nbsp;=&nbsp;space.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"BI&nbsp;세션<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;TRANSACTION&nbsp;'VK11'&nbsp;USING&nbsp;lt_bdcdata<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OPTIONS&nbsp;FROM&nbsp;ls_bdcparams<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGES&nbsp;INTO&nbsp;lt_bdcmsgcoll.<br />
+<br />
+&nbsp;&nbsp;CALL FUNCTION 'CONVERT_BDCMSGCOLL_TO_BAPIRET2'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imt_bdcmsgcoll&nbsp;=&nbsp;lt_bdcmsgcoll<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ext_return&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;t_return.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZSDM<br />
+*026   That is not authorized.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_IF_WEB_FG_COLLECT</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_IF_WEB_FG_COLLECT</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZSD_IF_WEB_FG_COLLECT.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_USERID) LIKE  ZSDT5000-USERID OPTIONAL<br />
+*"     VALUE(I_FDATE) TYPE  ZPRODGRDATE OPTIONAL<br />
+*"     VALUE(I_TDATE) TYPE  ZPRODGRDATE OPTIONAL<br />
+*"     VALUE(I_WERKS) TYPE  ZEWERKS OPTIONAL<br />
+*"     VALUE(I_SHIFT) TYPE  ZPDASHIFT OPTIONAL<br />
+*"     VALUE(I_MARKET) TYPE  VTWEG OPTIONAL<br />
+*"     VALUE(I_MRP) TYPE  DISPO OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_RET) LIKE  ZSDS0001-RET<br />
+*"     VALUE(E_MSG) LIKE  ZSDS0001-MSG<br />
+*"  TABLES<br />
+*"      T_TAB STRUCTURE  ZSDS0243<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zsd_if_web_fg_collect.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+"  (ZPPT0110)의 결과<br />
+&nbsp;&nbsp;TYPES:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;ty_product,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;werks_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pbarcode&nbsp;&nbsp;TYPE&nbsp;zppt0110-pbarcode,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zplnum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;zppt0110-zplnum,&nbsp;"&nbsp;MAX(ZPLNUM)을&nbsp;구하기&nbsp;위한&nbsp;원본<br />
+&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;ty_product,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;&nbsp;(ZPPT0170)의&nbsp;집계&nbsp;결과<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;ty_barcode_agg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;werks_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pbarcode&nbsp;TYPE&nbsp;zppt0170-pbarcode,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matnr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qcharg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;zppt0170-qcharg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;menge&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;zppt0170-menge,&nbsp;"&nbsp;SUM(MENGE)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;ty_barcode_agg,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;최종&nbsp;집계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;ty_final_agg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PBARCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZPPT0170-PBARCODE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;팔레트&nbsp;바코드<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAKTX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;MAKTX,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;자재내역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MENGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZPPT0170-MENGE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;QCHARG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZPPT0170-QCHARG,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;품질&nbsp;LOT&nbsp;ID<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PCOUNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;I,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;파렛트&nbsp;개수&nbsp;카운트용<br />
+&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;ty_final_agg.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--- 데이터 변수(임시 테이블) 선언 ---*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_prod_raw&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;ty_product,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_prod_raw&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ty_product,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(ZPPT0170)&nbsp;-&nbsp;필터링&nbsp;전&nbsp;원본<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_barcode_raw&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;zppt0170,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_barcode_raw&nbsp;TYPE&nbsp;zppt0170,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(ZPPT0170)&nbsp;-&nbsp;필터링&nbsp;및&nbsp;집계&nbsp;후<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_barcode_agg&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;ty_barcode_agg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_barcode_agg&nbsp;TYPE&nbsp;ty_barcode_agg,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Join&nbsp;대상&nbsp;마스터&nbsp;데이터<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_makt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;makt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_makt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;makt,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_marc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;marc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_marc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;marc,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_t024d&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;t024d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_t024d&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;t024d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_zppt0090&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;zppt0090,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_zppt0090&nbsp;&nbsp;TYPE&nbsp;zppt0090,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;최종&nbsp;집계&nbsp;테이블<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_final_agg&nbsp;&nbsp;&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;ty_final_agg,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_final_agg&nbsp;&nbsp;&nbsp;TYPE&nbsp;ty_final_agg,<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;&nbsp;필요한&nbsp;변수<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lv_plant1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;werks_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lv_werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZEWERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lv_check_werks&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;zppt0170-zwerks,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lv_shift_pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;char40.&nbsp;&nbsp;&nbsp;"&nbsp;LIKE&nbsp;패턴용<br />
+<br />
+&nbsp;&nbsp;RANGES:&nbsp;lr_mrp_pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ls_marc-dispo,&nbsp;&nbsp;"&nbsp;&lt---&nbsp;RANGES로&nbsp;선언<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lr_market_pattern&nbsp;&nbsp;FOR&nbsp;ls_zppt0090-vtweg.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_mrp_range&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_mrp_pattern,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_market_range&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_market_pattern.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_result&nbsp;TYPE&nbsp;ZSDS0243.&nbsp;"&nbsp;T_TAB의&nbsp;구조체<br />
+<br />
+&nbsp;&nbsp;"DATA:&nbsp;lv_total_menge&nbsp;LIKE&nbsp;ZPPT0170-MENGE,&nbsp;&nbsp;&nbsp;"&nbsp;총계&nbsp;계산&nbsp;변수<br />
+&nbsp;&nbsp;"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_total_count&nbsp;TYPE&nbsp;I.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;총계&nbsp;변수&nbsp;(파렛트&nbsp;개수)<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;T_TAB,&nbsp;T_TAB[].<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--- 2. 플랜트 코드 변환  ---*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;lv_werks&nbsp;=&nbsp;I_WERKS.&nbsp;&nbsp;"&nbsp;공정을&nbsp;임시로&nbsp;저장한다.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;I_WERKS&nbsp;=&nbsp;'P2SUB'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_plant1&nbsp;&nbsp;=&nbsp;'1020'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_werks&nbsp;&nbsp;=&nbsp;'P2CO2W'.&nbsp;&nbsp;&nbsp;"&nbsp;2공장&nbsp;CO2공정에&nbsp;SUB가&nbsp;존재한다<br />
+&nbsp;&nbsp;ELSEIF&nbsp;I_WERKS&nbsp;=&nbsp;'P1STSW'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_plant1&nbsp;&nbsp;=&nbsp;'1010'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_MRP&nbsp;=&nbsp;'402'.&nbsp;&nbsp;"&nbsp;STS&nbsp;SUB&nbsp;일&nbsp;경우<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_werks&nbsp;=&nbsp;'P1CO2W'.&nbsp;&nbsp;&nbsp;"&nbsp;1공장&nbsp;CO2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;werks&nbsp;INTO&nbsp;lv_plant1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zppt0180<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;zwerks&nbsp;=&nbsp;I_WERKS.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;lv_plant1&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_ret&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_msg&nbsp;=&nbsp;'플랜트&nbsp;코드가&nbsp;존재하지&nbsp;않습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;i_shift&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;i_shift&nbsp;&nbsp;=&nbsp;'A'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_shift_pattern&nbsp;&nbsp;=&nbsp;'%'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;i_shift&nbsp;'%'&nbsp;INTO&nbsp;&nbsp;lv_shift_pattern.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--- ZPPT0110 조회 및 MAX(ZPLNUM) 구현 ---*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;werks&nbsp;pbarcode&nbsp;zplnum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zppt0110<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;lt_prod_raw<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;werks&nbsp;=&nbsp;lv_plant1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;prod_gr_date&nbsp;BETWEEN&nbsp;i_fdate&nbsp;AND&nbsp;i_tdate<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;pda_shift&nbsp;LIKE&nbsp;&nbsp;lv_shift_pattern.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;전체&nbsp;/&nbsp;주간&nbsp;/&nbsp;야간<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;lt_prod_raw&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_ret&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_msg&nbsp;=&nbsp;'조회&nbsp;기간에&nbsp;생산&nbsp;실적이&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;ABAP으로&nbsp;MAX(ZPLNUM)&nbsp;구현&nbsp;(정렬&nbsp;-&gt&nbsp;중복제거)<br />
+&nbsp;&nbsp;SORT&nbsp;lt_prod_raw&nbsp;BY&nbsp;werks&nbsp;pbarcode&nbsp;zplnum&nbsp;DESCENDING.<br />
+&nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;lt_prod_raw&nbsp;COMPARING&nbsp;werks&nbsp;pbarcode.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;DB에서&nbsp;ZPPT0170&nbsp;원시&nbsp;데이터&nbsp;조회<br />
+&nbsp;&nbsp;SELECT&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zppt0170<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;TABLE&nbsp;lt_barcode_raw<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;lt_prod_raw<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;werks&nbsp;=&nbsp;lt_prod_raw-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;pbarcode&nbsp;=&nbsp;lt_prod_raw-pbarcode.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;lt_barcode_raw&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_ret&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_msg&nbsp;=&nbsp;'바코드&nbsp;정보가&nbsp;&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;&nbsp;LOOP&nbsp;-&nbsp;170&nbsp;Total&nbsp;&nbsp;Col&nbsp;/&nbsp;공정이&nbsp;아닌것은&nbsp;삭제&nbsp;(P1STSW등)<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_barcode_raw&nbsp;INTO&nbsp;ls_barcode_raw.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;ls_barcode_raw-pbarcode+6(1)&nbsp;=&nbsp;'1'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_check_werks&nbsp;=&nbsp;ls_barcode_raw-zwerks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_check_werks&nbsp;=&nbsp;ls_barcode_raw-zwerksp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;필터&nbsp;조건과&nbsp;맞지&nbsp;않으면&nbsp;데이터&nbsp;삭제<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lv_check_werks&nbsp;&lt&gt&nbsp;lv_werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;lt_barcode_raw.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;170&nbsp;Total&nbsp;&nbsp;Col&nbsp;-&gt&nbsp;&nbsp;PBARCODE&nbsp;MAKTX&nbsp;MENGE&nbsp;QCHARG&nbsp;PCOUNT&nbsp;로&nbsp;집계<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_barcode_raw&nbsp;INTO&nbsp;ls_barcode_raw.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;ls_barcode_agg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;ls_barcode_raw&nbsp;TO&nbsp;ls_barcode_agg.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;COLLECT:&nbsp;키(문자필드)가&nbsp;같은&nbsp;항목을&nbsp;찾아&nbsp;숫자필드(itqty,&nbsp;menge,&nbsp;pcount)를&nbsp;자동&nbsp;합산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;ls_barcode_agg&nbsp;INTO&nbsp;lt_barcode_agg.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;lt_barcode_agg&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_ret&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_msg&nbsp;=&nbsp;'해당&nbsp;공정의&nbsp;자료가&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;(B)&nbsp;MAKT&nbsp;자재&nbsp;-&nbsp;자재내역&nbsp;임시테이블<br />
+&nbsp;&nbsp;SELECT&nbsp;matnr&nbsp;maktx&nbsp;FROM&nbsp;makt&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_makt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;lt_barcode_agg<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;matnr&nbsp;=&nbsp;lt_barcode_agg-matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;spras&nbsp;=&nbsp;SY-LANGU.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;(C)&nbsp;MARC&nbsp;-&nbsp;자재+&nbsp;공정&nbsp;MRP&nbsp;관리자&nbsp;임시테이블<br />
+&nbsp;&nbsp;SELECT&nbsp;matnr&nbsp;werks&nbsp;dispo&nbsp;FROM&nbsp;marc&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_marc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;lt_barcode_agg<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;matnr&nbsp;=&nbsp;lt_barcode_agg-matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;=&nbsp;lt_barcode_agg-werks.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;(F)&nbsp;T024D&nbsp;&nbsp;&nbsp;MRP내역<br />
+&nbsp;&nbsp;IF&nbsp;lt_marc&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;werks&nbsp;dispo&nbsp;dsnam&nbsp;FROM&nbsp;t024d&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_t024d<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;lt_marc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;&nbsp;werks&nbsp;=&nbsp;lt_marc-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;dispo&nbsp;=&nbsp;lt_marc-dispo.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;(E)&nbsp;ZPPT0090&nbsp;유통경로<br />
+&nbsp;&nbsp;RANGES:&nbsp;lr_zplnum&nbsp;FOR&nbsp;zppt0090-zplnum.<br />
+&nbsp;&nbsp;DATA:&nbsp;ls_zplnum&nbsp;LIKE&nbsp;LINE&nbsp;OF&nbsp;lr_zplnum.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;lr_zplnum[].<br />
+<br />
+&nbsp;"&nbsp;&nbsp;작업지시번호가&nbsp;같은&nbsp;걸&nbsp;배열에&nbsp;넣는다<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_prod_raw&nbsp;INTO&nbsp;ls_prod_raw.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;ls_prod_raw-zplnum&nbsp;IS&nbsp;NOT&nbsp;INITIAL.&nbsp;"&nbsp;빈&nbsp;값은&nbsp;제외<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_zplnum-sign&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_zplnum-option&nbsp;=&nbsp;'EQ'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_zplnum-low&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_prod_raw-zplnum.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;ls_zplnum&nbsp;INTO&nbsp;lr_zplnum.&nbsp;"&nbsp;중복&nbsp;제거하며&nbsp;Range&nbsp;생성<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;작업지시번호가&nbsp;존재하면<br />
+&nbsp;&nbsp;IF&nbsp;lr_zplnum[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;zplnum&nbsp;matnr&nbsp;vtweg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;zppt0090<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_zppt0090<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;zplnum&nbsp;IN&nbsp;lr_zplnum.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;.NET에서&nbsp;넘어온&nbsp;SQL&nbsp;와일드카드(%)를&nbsp;ABAP&nbsp;와일드카드(*)로&nbsp;변환<br />
+&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'%'&nbsp;IN&nbsp;i_mrp&nbsp;WITH&nbsp;'*'.<br />
+&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'_'&nbsp;IN&nbsp;i_mrp&nbsp;WITH&nbsp;'+'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--- MRP 필터 패턴 생성 ---*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;i_mrp&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;i_mrp&nbsp;=&nbsp;'AAA'&nbsp;OR&nbsp;i_mrp&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;lr_mrp_pattern[].<br />
+<br />
+&nbsp;&nbsp;ELSEIF&nbsp;i_mrp&nbsp;=&nbsp;'302'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;CO2일&nbsp;경우<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_mrp_range-sign&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_mrp_range-option&nbsp;=&nbsp;'BT'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_mrp_range-low&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'301'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_mrp_range-high&nbsp;&nbsp;&nbsp;=&nbsp;'302'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_mrp_range&nbsp;TO&nbsp;lr_mrp_pattern.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_mrp_range-sign&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_mrp_range-option&nbsp;=&nbsp;'CP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_mrp_range-low&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_mrp.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_mrp_range&nbsp;TO&nbsp;lr_mrp_pattern.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--- MARKET 필터 패턴 생성 ---*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'%'&nbsp;IN&nbsp;i_market&nbsp;WITH&nbsp;'*'.<br />
+&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;'_'&nbsp;IN&nbsp;i_market&nbsp;WITH&nbsp;'+'.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;i_market&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;i_market&nbsp;=&nbsp;'AA'&nbsp;OR&nbsp;i_market&nbsp;=&nbsp;'*'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;lr_market_pattern[].<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_market_range-sign&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_market_range-option&nbsp;=&nbsp;'CP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_market_range-low&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;i_market.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_market_range&nbsp;TO&nbsp;lr_market_pattern.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;메인&nbsp;루프&nbsp;(Subquery&nbsp;A와&nbsp;D&nbsp;조인)<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_prod_raw&nbsp;INTO&nbsp;ls_prod_raw.&nbsp;"&nbsp;(A&nbsp;테이블&nbsp;기준)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(A와&nbsp;D&nbsp;조인)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_barcode_agg&nbsp;INTO&nbsp;ls_barcode_agg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;werks&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_prod_raw-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;pbarcode&nbsp;=&nbsp;ls_prod_raw-pbarcode.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(D와&nbsp;C&nbsp;조인)&nbsp;mrp관리자&nbsp;없으면&nbsp;skip<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_marc&nbsp;INTO&nbsp;ls_marc<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;&nbsp;&nbsp;matnr&nbsp;=&nbsp;ls_barcode_agg-matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;werks&nbsp;=&nbsp;ls_barcode_agg-werks.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.&nbsp;CONTINUE.&nbsp;ENDIF.&nbsp;"&nbsp;(MARC&nbsp;데이터&nbsp;없음)<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(C와&nbsp;F&nbsp;조인)&nbsp;&nbsp;MRP내역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_t024d&nbsp;INTO&nbsp;ls_t024d<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;werks&nbsp;=&nbsp;ls_marc-werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dispo&nbsp;=&nbsp;ls_marc-dispo.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(T024D는&nbsp;데이터가&nbsp;없을&nbsp;수&nbsp;있으므로&nbsp;sy-subrc&nbsp;체크&nbsp;생략)<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(A와&nbsp;E&nbsp;조인)&nbsp;유통경로&nbsp;없으면&nbsp;skip<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_zppt0090&nbsp;INTO&nbsp;ls_zppt0090<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;zplnum&nbsp;=&nbsp;ls_prod_raw-zplnum<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;matnr&nbsp;&nbsp;=&nbsp;ls_barcode_agg-matnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.&nbsp;CONTINUE.&nbsp;ENDIF.&nbsp;"&nbsp;(ZPPT0090&nbsp;데이터&nbsp;없음)<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(D와&nbsp;B&nbsp;조인)&nbsp;자재내역<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_makt&nbsp;INTO&nbsp;ls_makt<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;KEY&nbsp;matnr&nbsp;=&nbsp;ls_barcode_agg-matnr.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;lr_mrp_pattern이&nbsp;비어있고&nbsp;'AAA'&nbsp;-&nbsp;전체<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;전체&nbsp;-&nbsp;2공장&nbsp;CO2&nbsp;-&nbsp;MRP&nbsp;(SUB&nbsp;제외)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lr_mrp_pattern[]&nbsp;IS&nbsp;&nbsp;INITIAL&nbsp;AND&nbsp;&nbsp;lv_werks&nbsp;&nbsp;=&nbsp;'P2CO2W'&nbsp;AND&nbsp;&nbsp;ls_marc-dispo&nbsp;=&nbsp;'401'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.&nbsp;"&nbsp;(MRP&nbsp;조건&nbsp;불일치)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;lr_mrp_pattern이&nbsp;비어있고&nbsp;'AAA'&nbsp;-&nbsp;전체<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;전체&nbsp;-&nbsp;1공장&nbsp;CO2&nbsp;-&nbsp;MRP&nbsp;(STS&nbsp;SUB&nbsp;제외)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lr_mrp_pattern[]&nbsp;IS&nbsp;&nbsp;INITIAL&nbsp;AND&nbsp;&nbsp;lv_werks&nbsp;&nbsp;=&nbsp;'P1CO2W'&nbsp;AND&nbsp;&nbsp;ls_marc-dispo&nbsp;=&nbsp;'402'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.&nbsp;"&nbsp;(MRP&nbsp;조건&nbsp;불일치)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;lr_mrp_pattern이&nbsp;비어있지&nbsp;않고(즉,&nbsp;'전체'가&nbsp;아니고)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ls_marc-dispo가&nbsp;lr_mrp_pattern&nbsp;조건&nbsp;바구니에&nbsp;포함되지&nbsp;않으면(NOT&nbsp;IN)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lr_mrp_pattern[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_marc-dispo&nbsp;NOT&nbsp;IN&nbsp;lr_mrp_pattern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.&nbsp;"&nbsp;(MRP&nbsp;조건&nbsp;불일치)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;(SQL의&nbsp;'E.VTWEG&nbsp;LIKE&nbsp;I_MARKET'&nbsp;구현)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lr_market_pattern[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL&nbsp;AND<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_zppt0090-vtweg&nbsp;NOT&nbsp;IN&nbsp;lr_market_pattern.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONTINUE.&nbsp;"&nbsp;(MARKET&nbsp;조건&nbsp;불일치)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;최종&nbsp;집계<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;ls_final_agg.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ls_final_agg-pbarcode&nbsp;=&nbsp;ls_barcode_agg-pbarcode.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_FINAL_AGG-PBARCODE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_final_agg-maktx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_makt-maktx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_final_agg-menge&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_barcode_agg-menge.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_final_agg-qcharg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_barcode_agg-qcharg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ls_final_agg-pcount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;COLLECT:&nbsp;키(MAKTX,&nbsp;QCHARG)가&nbsp;같으면&nbsp;숫자(PCOUNT,&nbsp;MENGE)를&nbsp;합산<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;ls_final_agg&nbsp;INTO&nbsp;lt_final_agg.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;(lt_barcode_agg)<br />
+&nbsp;&nbsp;ENDLOOP.&nbsp;"&nbsp;(lt_prod_raw)<br />
+<br />
+   </div>
+   <div class="codeComment">
+*--- 최종 결과를 T_TAB으로 전송 ---*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;lt_final_agg&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_ret&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;e_msg&nbsp;=&nbsp;'모든&nbsp;조건을&nbsp;만족하는&nbsp;데이터가&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_final_agg&nbsp;INTO&nbsp;ls_final_agg.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;ls_result.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ls_result-pbarcode&nbsp;&nbsp;=&nbsp;ls_final_agg-pbarcode.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_result-pbarcode&nbsp;&nbsp;=&nbsp;ls_final_agg-pcount.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_result-maktx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_final_agg-maktx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_result-menge&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_final_agg-menge.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ls_result-qcharg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;ls_final_agg-qcharg.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;ls_result&nbsp;TO&nbsp;&nbsp;T_TAB.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;e_ret&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;e_msg&nbsp;=&nbsp;'데이터&nbsp;조회가&nbsp;완료되었습니다.'.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: AM<br />
+*287   Address cannot be maintained; entry in table TSADRV missing<br />
+*290   Entry missing in TSADRV; new address maintenance cannot be called<br />
+*291   Entry missing in TSADRV; new address maintenance cannot be called<br />
+*298   Address group & not defined; delete flag for address not possible<br />
+*<br />
+* Message class: EC<br />
+*089   Internal error: Unable to read screen data<br />
+*<br />
+* Message class: SCPR<br />
+*026   Table & is too wide. It cannot be processed<br />
+*028   The table/view & has no generated maintenance dialog<br />
+*035   Dictionary interface error: Contact SAP<br />
+*120   Table/view & not found<br />
+*273   Function module call error<br />
+*320   BC Set processing error<br />
+*395   Internal field description read error<br />
+*399   No data record activation information<br />
+*408   Table key not supported by activation links<br />
+*<br />
+* Message class: SV<br />
+*001   The selected function is not supported<br />
+*002   Number of retrieved entries: &<br />
+*004   No entries found that match selection criteria<br />
+*005   One entry chosen<br />
+*006   Number of chosen entries: &<br />
+*007   No previous entry exists<br />
+*008   No next entry exists<br />
+*009   An entry already exists with the same key<br />
+*010   An entry with this key is marked for deletion<br />
+*011   Number of deleted entries: &<br />
+*012   Number of changed entries: &<br />
+*013   Entry deleted<br />
+*014   Number of entries copied: &<br />
+*015   Target key must be different from source key<br />
+*016   Number of reset entries: &<br />
+*017   Entry reset<br />
+*018   Data was saved<br />
+*019   Choose the key from the allowed namespace<br />
+*024   Specify target entries<br />
+*025   Specify target entries<br />
+*026   Select entries before performing the function<br />
+*028   Table & not in DDIC<br />
+*032   Position the cursor on a valid entry<br />
+*033   Specify the key within the work area<br />
+*037   The maintenance dialog for & is incomplete or not defined<br />
+*039   Table & has no relevant fields<br />
+*040   & entries reset, & original and & new entries are still marked<br />
+*041   & entries reset, & original entries are still marked<br />
+*042   & entries reset, & new entries are still marked<br />
+*043   Data already saved<br />
+*044   Read access only<br />
+*045   Enter a start date that is before the end date<br />
+*046   Enter an end date that is after the start date<br />
+*047   Overlapping records are deleted or delimited<br />
+*049   Data locked by user & (display only)<br />
+*050   System error: Unable to lock table/view &<br />
+*051   No data maintenance authorization; display only<br />
+*053   No display authorization for requested data<br />
+*054   Maintenance of data in current client & not permitted<br />
+*055   Address for object & not found<br />
+*056   Mark at least one entry before selecting this function<br />
+*057   The selected entry is new and has no original<br />
+*058   The selected entries are new and have no original<br />
+*059   The selected entry is still in its original state<br />
+*060   The selected entries are still in their original state<br />
+*061   & entries are still originals, & new entries have no original<br />
+*065   No entries exist, double-click for long text<br />
+*066   Select block end<br />
+*084   No values can be displayed<br />
+*092   Change task & is being processed<br />
+*095   System error changing change task &<br />
+*096   Task & was changed<br />
+*098   Entry flagged for inclusion in task &<br />
+*099   Entry was flagged for deletion from task &<br />
+*105   & entries were flagged for inclusion in task &<br />
+*106   & entries were flagged for deletion from task &<br />
+*107   Entry was already in task &<br />
+*108   & entries were already in task &<br />
+*109   & entries included, & entries were contained: &<br />
+*110   Entry was not in task &<br />
+*111   & entries deleted, & entries were not included: &<br />
+*112   & entries were not in task &<br />
+*113   Entry could not be retrieved<br />
+*114   & entries could not be retrieved<br />
+*115   Entry could not be deleted<br />
+*116   & entries could not be deleted<br />
+*117   Do not make any changes (SAP entry)<br />
+*120   Other entries are retrieved and modified if necessary<br />
+*121   Deleted entry will be recovered and possibly changed<br />
+*122   Entry was delimited<br />
+*123   Number of delimited entries: &<br />
+*124   Process delimited entries<br />
+*125   Process delimited entry<br />
+*127   Delimit area of validity<br />
+*128   Delivery class &, transport not possible<br />
+*129   Related objects in various tasks<br />
+*130   Client & is local, transport not permitted<br />
+*132   Object locked for task &1, user &2 only display permitted<br />
+*134   Inconsistency in object definition, only display permitted<br />
+*136   Change with caution, entry belongs to customer<br />
+*138   Check maintenance object &1 or update function group &2<br />
+*139   Address data is not taken over<br />
+*140   &1 entries deleted, &2 entries taken over<br />
+*141   Individual entries cannot be put into the change request<br />
+*142   Transport is not possible for the specified data<br />
+*153   No language was chosen<br />
+*160   The installed system codepage does not allow any other languages<br />
+*161   Put the cursor on a form name<br />
+*162   The object &1 &2 &3 cannot be put in a request<br />
+*164   Table/view &1 is not in the Dictionary<br />
+*173   Function group &1 inconsistent<br />
+*174   Enter values in work area for non-key fields<br />
+*175   The selected BC Set function is not supported<br />
+*177   Data record contains fix value from BC Set and cannot be deleted<br />
+*183   Error in remote access to central Customizing Distribution system<br />
+*184   Data record contains fixed value from BC Set and cannot be changed<br />
+*202   You are not authorized to change fields with fixed BC Set values<br />
+*306   Table/view & is not active<br />
+*538   Dropdown lists are not supported in view clusters<br />
+*757   You have no maintenance authorization for this table key<br />
+*763   You have no maintenance authorization for the displayed data records<br />
+*764   Changed data record selection<br />
+*766   Restricted display of datasets<br />
+*808   Not all columns in the table can be displayed in the list<br />
+*810   View &1 is more than 1000 characters long<br />
+*818   &1 of &2 Business Configuration Set entries imported<br />
+*819   Business Configuration Set imported<br />
+*830   Last selected entry has been reached<br />
+*831   First selected entry has been reached<br />
+*863   Number of copied entries (including translations): &<br />
+*870   Maintenance dialog switched to list screen<br />
+*<br />
+* Message class: TB<br />
+*109   No maintenance authorization for cross-client tables (see Help)<br />
+*<br />
+* Message class: TK<br />
+*430   Client &1 has status 'not modifiable'<br />
+*729   Changes to Repository objects are not permitted in this client<br />
+*730   Changes to Repository or cross-client Customizing are not permitted<br />
+*731   You are not allowed to change cross-client Customizing<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

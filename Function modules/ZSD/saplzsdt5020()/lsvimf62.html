@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LSVIMF62</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LSVIMF62</h2>
+<h3> Description: Include LSVIMF60</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*----------------------------------------------------------------------*<br />
+***INCLUDE&nbsp;LSVIMF62&nbsp;.<br />
+*----------------------------------------------------------------------*<br />
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;vim_get_trspkeylen<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delivers&nbsp;key&nbsp;length&nbsp;in&nbsp;bytes&nbsp;of&nbsp;tables&nbsp;whithin&nbsp;a&nbsp;view.&nbsp;Called<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;generated&nbsp;forms&nbsp;CORR_MAINT_yxz<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_get_trspkeylen USING    p_tabname TYPE tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_keylength&nbsp;TYPE&nbsp;syfleng.<br />
+<br />
+&nbsp;&nbsp;TYPES:&nbsp;BEGIN&nbsp;OF&nbsp;tabkeylen_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;TYPE&nbsp;syfleng,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;tabkeylen_type.<br />
+&nbsp;&nbsp;STATICS:&nbsp;tabkeylen_tab&nbsp;TYPE&nbsp;HASHED&nbsp;TABLE&nbsp;OF&nbsp;tabkeylen_type<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;UNIQUE&nbsp;KEY&nbsp;tabname.<br />
+&nbsp;&nbsp;DATA:&nbsp;w_tabkeylen&nbsp;TYPE&nbsp;tabkeylen_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x030l_wa&nbsp;TYPE&nbsp;x030l.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;tabkeylen_tab&nbsp;INTO&nbsp;w_tabkeylen<br />
+&nbsp;&nbsp;&nbsp;WITH&nbsp;TABLE&nbsp;KEY&nbsp;tabname&nbsp;=&nbsp;p_tabname.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DDIF_NAMETAB_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;=&nbsp;p_tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x030l_wa&nbsp;=&nbsp;x030l_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;w_tabkeylen-tabname&nbsp;=&nbsp;p_tabname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;w_tabkeylen-keylen&nbsp;&nbsp;=&nbsp;x030l_wa-keylen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;p_tabname&nbsp;=&nbsp;x_header-texttab&nbsp;AND&nbsp;x_header-genertxtrp&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tabkeylen-keylen&nbsp;=&nbsp;x_header-maxtrtxkln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;x_header-generictrp&nbsp;&lt&gt&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tabkeylen-keylen&nbsp;=&nbsp;x_header-maxtrkeyln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;w_tabkeylen&nbsp;INTO&nbsp;TABLE&nbsp;tabkeylen_tab.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;p_keylength&nbsp;=&nbsp;w_tabkeylen-keylen.<br />
+ENDFORM.                    " vim_get_trspkeylen<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;vim_get_bc_keylen<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delivers&nbsp;key&nbsp;length&nbsp;in&nbsp;bytes&nbsp;of&nbsp;tables&nbsp;whithin&nbsp;a&nbsp;view&nbsp;up&nbsp;to<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;255&nbsp;char.&nbsp;Necessary&nbsp;for&nbsp;writing&nbsp;activation&nbsp;links<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;--&gt&nbsp;&nbsp;p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*&nbsp;&nbsp;&lt--&nbsp;&nbsp;p2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM vim_get_bc_keylen USING    p_tabname TYPE tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_keylength&nbsp;TYPE&nbsp;syfleng.<br />
+<br />
+&nbsp;&nbsp;CONSTANTS&nbsp;max_bc_keylen&nbsp;TYPE&nbsp;i&nbsp;VALUE&nbsp;255.<br />
+<br />
+&nbsp;&nbsp;TYPES:&nbsp;BEGIN&nbsp;OF&nbsp;tabkeylen_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;TYPE&nbsp;tabname,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keylen&nbsp;TYPE&nbsp;syfleng,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;tabkeylen_type.<br />
+&nbsp;&nbsp;STATICS:&nbsp;tabkeylen_tab&nbsp;TYPE&nbsp;HASHED&nbsp;TABLE&nbsp;OF&nbsp;tabkeylen_type<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WITH&nbsp;UNIQUE&nbsp;KEY&nbsp;tabname.<br />
+&nbsp;&nbsp;DATA:&nbsp;w_tabkeylen&nbsp;TYPE&nbsp;tabkeylen_type,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x030l_wa&nbsp;TYPE&nbsp;x030l,&nbsp;max_keylen_byte&nbsp;TYPE&nbsp;i.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;tabkeylen_tab&nbsp;INTO&nbsp;w_tabkeylen<br />
+&nbsp;&nbsp;&nbsp;WITH&nbsp;TABLE&nbsp;KEY&nbsp;tabname&nbsp;=&nbsp;p_tabname.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'DDIF_NAMETAB_GET'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabname&nbsp;&nbsp;=&nbsp;p_tabname<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x030l_wa&nbsp;=&nbsp;x030l_wa.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;w_tabkeylen-tabname&nbsp;=&nbsp;p_tabname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;w_tabkeylen-keylen&nbsp;&nbsp;=&nbsp;x030l_wa-keylen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;max_keylen_byte&nbsp;=&nbsp;max_bc_keylen&nbsp;*&nbsp;cl_abap_char_utilities=&gtcharsize.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;w_tabkeylen-keylen&nbsp;&gt&nbsp;max_keylen_byte.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w_tabkeylen-keylen&nbsp;=&nbsp;max_keylen_byte.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;w_tabkeylen&nbsp;INTO&nbsp;TABLE&nbsp;tabkeylen_tab.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;p_keylength&nbsp;=&nbsp;w_tabkeylen-keylen.<br />
+ENDFORM.                    " vim_get_bc_keylen<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

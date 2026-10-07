@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZDTV3SAP_NTS_TYPE</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZDTV3SAP_NTS_TYPE</h2>
+<h3> Description: 전자세금계산서 상태- 전자/일반-지연수취/지연발급</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZDTV3SAP_NTS_TYPE.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(ISSUE_ID) TYPE  ZDTV3E_SSUE_ID<br />
+*"  EXPORTING<br />
+*"     VALUE(RETURN) LIKE  ZDTV3S_RETURN STRUCTURE  ZDTV3S_RETURN<br />
+*"  CHANGING<br />
+*"     VALUE(NTS_ARAP) TYPE  ZDTV3E_ARAP OPTIONAL<br />
+*"     VALUE(NTS_GB) TYPE  ZDTV3E_NTS_GB OPTIONAL<br />
+*"     VALUE(NTS_TYPE) TYPE  ZDTV3E_NTS_TYPE OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+*{   INSERT         MCDK900646                                        1<br />
+* 전자세금계산서  전송기한을  발급일 다음날로 변경.<br />
+* 부가가치세법 시행령 개정(안)은 2012.7.1<br />
+<br />
+*' ' 	정상<br />
+*1	미발급<br />
+*2	지연발급<br />
+*3	지연수취<br />
+*4	미전송<br />
+*5	지연전송<br />
+
+<div class="codeComment">*       <a href ="global-zdtv3sap_nts_type.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;&nbsp;:&nbsp;DELAY_DT&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;DATUM.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;G_CANCLE&nbsp;,&nbsp;GS_ZDTV3_AMEND,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NTS_ARAP&nbsp;,&nbsp;NTS_GB,&nbsp;&nbsp;NTS_TYPE.<br />
+&nbsp;&nbsp;G_ISSUE_ID&nbsp;=&nbsp;ISSUE_ID.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;GS_NTS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_NTS<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;ISSUE_ID&nbsp;EQ&nbsp;G_ISSUE_ID.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'14005'&nbsp;''&nbsp;G_ISSUE_ID&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* AR/AP Return<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MANDT&nbsp;INTO&nbsp;SY-MANDT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;J_1BBRANCH<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;STCD2&nbsp;EQ&nbsp;GS_NTS-SU_ID.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NTS_ARAP&nbsp;=&nbsp;'AR'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NTS_ARAP&nbsp;=&nbsp;'AP'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*  SELECT SINGLE MANDT INTO SY-MANDT<br />
+*    FROM ZDTV3T_AR_HEAD<br />
+*   WHERE ISSUE_ID EQ G_ISSUE_ID.<br />
+*  IF SY-SUBRC EQ 0.<br />
+*    NTS_ARAP = 'AR'.<br />
+*  ELSE.<br />
+*    SELECT SINGLE MANDT INTO SY-MANDT<br />
+*      FROM ZDTV3T_AP_HEAD<br />
+*     WHERE ISSUE_ID EQ G_ISSUE_ID.<br />
+*     IF SY-SUBRC EQ 0.<br />
+*       NTS_ARAP = 'AR'.<br />
+*     ELSE.<br />
+*      DS_RETURN RETURN 'E' '14005' '' G_ISSUE_ID '' '' ''.<br />
+*      EXIT.<br />
+*     ENDIF.<br />
+*  ENDIF.<br />
+<br />
+<br />
+* 마감일 체크<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;CLOSE_DATE&nbsp;TYPE&nbsp;DATUM.<br />
+&nbsp;&nbsp;CLEAR:&nbsp;CLOSE_DATE.<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;DATUM&nbsp;INTO&nbsp;CLOSE_DATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZDTV3T_NTS_CLOSE<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;GJAHR&nbsp;EQ&nbsp;GS_NTS-ISSUE_DATE(4)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MONAT&nbsp;EQ&nbsp;GS_NTS-ISSUE_DATE+4(2).<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;NE&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DS_RETURN&nbsp;RETURN&nbsp;'E'&nbsp;'14005'&nbsp;''&nbsp;G_ISSUE_ID&nbsp;''&nbsp;''&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;GET_DELAY_DT&nbsp;USING&nbsp;CLOSE_DATE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 전자/종이 CHECK GS_NTS-TRANS_DATE ISSUE_DATE<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GS_NTS-TRANS_DATE&nbsp;&gt&nbsp;CLOSE_DATE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NTS_GB&nbsp;=&nbsp;''&nbsp;.&nbsp;&nbsp;"종이(일반)<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NTS_GB&nbsp;=&nbsp;'X'.&nbsp;&nbsp;"전자<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;DELAY_DT&nbsp;=&nbsp;GS_NTS-ISSUE_PD&nbsp;+&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;.<br />
+&nbsp;&nbsp;PERFORM&nbsp;GET_DELAY_DT&nbsp;USING&nbsp;DELAY_DT.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 지연전송/수취 CHECK - 발행일+1 까지<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;GS_NTS-TRANS_DATE&nbsp;&gt&nbsp;DELAY_DT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;NTS_ARAP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AR'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NTS_TYPE&nbsp;=&nbsp;'5'&nbsp;.&nbsp;&nbsp;"지연진송<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'AP'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NTS_TYPE&nbsp;=&nbsp;'3'&nbsp;.&nbsp;&nbsp;"지연수취<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;NTS_TYPE&nbsp;=&nbsp;'&nbsp;'.&nbsp;&nbsp;"정상<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*}   INSERT<br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Text elements<br />
+*----------------------------------------------------------<br />
+* 001 회계전표헤더<br />
+* 002 회계전표세그멘트<br />
+* 003 구매처마스터 (일반섹션)<br />
+* 004 회계전표헤더<br />
+* 005 회계전표세그멘트<br />
+* 006 구매처마스터 (일반섹션)<br />
+* 007 회계전표헤더<br />
+* 008 회계전표세그멘트<br />
+* 009 구매처마스터 (일반섹션)<br />
+* 010 회계 전표 세그먼트<br />
+* 011 공급업체 마스터(일반 섹션)<br />
+* 012 회계 전표 헤더<br />
+* 013 회계 전표 세그먼트<br />
+<br />
+<br />
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: 00<br />
+*398   & & & &<br />
+*<br />
+* Message class: 0K<br />
+*000   & & & &<br />
+*<br />
+* Message class: ZDTV3M<br />
+*000    & & & &<br />
+*001   저장하였습니다.<br />
+*003   자료가 존재하지 않습니다.<br />
+*005   변경된 자료가 없습니다.<br />
+*006   작업을 취소하였습니다.<br />
+*014   &는 POPUP화면을 정의하지 않았습니다.<br />
+*018   &는 사용할수 없는 BUTTON 입니다.<br />
+*019   &의 결과화면 POPUP 레이아웃 정의을 정의하지 않았습니다.<br />
+*023   HTML 자료 수신오류. SAP 패치 15 이상만 가능합니다.<br />
+*030   &에 대한 권한이 존재하지 않습니다.<br />
+*033   매입관리 POPUP 화면정의에 ISSUE_ID 누락.<br />
+*034   & 파일이 존재하지 않습니다.<br />
+*301   파일경로 길이는 128자리까지만 허용합니다.<br />
+*901   &<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

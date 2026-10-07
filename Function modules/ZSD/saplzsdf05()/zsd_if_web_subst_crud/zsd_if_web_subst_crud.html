@@ -1,0 +1,559 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSD_IF_WEB_SUBST_CRUD</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZSD_IF_WEB_SUBST_CRUD</h2>
+<h3> Description: </h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZSD_IF_WEB_SUBST_CRUD.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     VALUE(I_USERID) TYPE  ZEUSERID_SD OPTIONAL<br />
+*"     VALUE(I_VBELN) TYPE  VBELN_VL OPTIONAL<br />
+*"     VALUE(I_PBARCODE) TYPE  ZEPBARCODE OPTIONAL<br />
+*"     VALUE(I_VENO) TYPE  ZEVEHICLE OPTIONAL<br />
+*"     VALUE(I_FLAG) TYPE  ZEWEBFLAG OPTIONAL<br />
+*"  EXPORTING<br />
+*"     VALUE(E_RET) TYPE  ZSDS0001-RET<br />
+*"     VALUE(E_MSG) TYPE  ZSDS0001-MSG<br />
+*"  TABLES<br />
+*"      T_TAB STRUCTURE  ZSDS0253 OPTIONAL<br />
+*"      T_TAB2 STRUCTURE  ZSDS0254 OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+
+<div class="codeComment">*       <a href ="global-zsd_if_web_subst_crud.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;"&nbsp;변수&nbsp;선언<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_5050&nbsp;TYPE&nbsp;ZSDT5050,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051&nbsp;TYPE&nbsp;ZSDT5051,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5040&nbsp;TYPE&nbsp;ZSDT5040,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_0170&nbsp;TYPE&nbsp;ZPPT0170,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_0170&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;LS_0170.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_5050&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZSDT5050&nbsp;WITH&nbsp;HEADER&nbsp;LINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_5051&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZSDT5051&nbsp;WITH&nbsp;HEADER&nbsp;LINE.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LV_NEW_MENGE&nbsp;TYPE&nbsp;ZSDT5051-MENGE,&nbsp;"&nbsp;스캔된&nbsp;바코드의&nbsp;수량/중량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_TOT_MENGE&nbsp;TYPE&nbsp;ZSDT5050-LFIMG,&nbsp;"&nbsp;합계&nbsp;수량/중량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_VARKEY&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;RSTABLE-VARKEY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_DUMMY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ZSDT5051-PBARCODE.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;LV_REMNG&nbsp;&nbsp;TYPE&nbsp;ZEMENGE1.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;초기화<br />
+&nbsp;&nbsp;CLEAR:&nbsp;E_RET,&nbsp;E_MSG.<br />
+&nbsp;&nbsp;REFRESH:&nbsp;T_TAB,&nbsp;T_TAB2.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;필수&nbsp;입력값&nbsp;체크<br />
+&nbsp;&nbsp;IF&nbsp;I_VBELN&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;I_PBARCODE&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;I_FLAG&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'필수&nbsp;입력값이&nbsp;누락되었습니다(문서번호,&nbsp;바코드,&nbsp;처리구분).'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"====================================================================<br />
+&nbsp;&nbsp;"&nbsp;Lock&nbsp;처리&nbsp;(데이터&nbsp;정합성&nbsp;보장&nbsp;-&nbsp;동시성&nbsp;제어)<br />
+&nbsp;&nbsp;"&nbsp;다수의&nbsp;PDA에서&nbsp;동시&nbsp;스캔&nbsp;시&nbsp;수량&nbsp;꼬임&nbsp;방지<br />
+&nbsp;&nbsp;"====================================================================<br />
+&nbsp;&nbsp;LV_VARKEY&nbsp;=&nbsp;I_VBELN.<br />
+&nbsp;&nbsp;CALL FUNCTION 'ENQUEUE_E_TABLE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODE_RSTABLE&nbsp;&nbsp;&nbsp;=&nbsp;'E'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABNAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'ZSDT5050'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VARKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_VARKEY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOREIGN_LOCK&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SYSTEM_FAILURE&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'다른&nbsp;사용자가&nbsp;해당&nbsp;문서를&nbsp;처리&nbsp;중입니다.&nbsp;잠시&nbsp;후&nbsp;다시&nbsp;시도하세요.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"====================================================================<br />
+&nbsp;&nbsp;"&nbsp;&nbsp;메인&nbsp;로직&nbsp;분기&nbsp;(저장&nbsp;S&nbsp;/&nbsp;삭제&nbsp;X)<br />
+&nbsp;&nbsp;"====================================================================<br />
+&nbsp;&nbsp;"&nbsp;[ZSDT5050&nbsp;헤더&nbsp;데이터&nbsp;조회]&nbsp;--&nbsp;무조건&nbsp;1건<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;INTO&nbsp;LS_5050<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5050<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;I_VBELN.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'납품문서(ZSDT5050)&nbsp;정보를&nbsp;찾을&nbsp;수&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;CASE&nbsp;I_FLAG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"------------------------------------------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;[저장&nbsp;로직]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"------------------------------------------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;이미&nbsp;스캔된&nbsp;바코드인지&nbsp;확인<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;PBARCODE&nbsp;INTO&nbsp;LV_DUMMY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5051<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;I_VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PBARCODE&nbsp;=&nbsp;I_PBARCODE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'이미&nbsp;스캔&nbsp;처리된&nbsp;바코드입니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;파레트&nbsp;유형에&nbsp;따른&nbsp;데이터&nbsp;조회<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_PBARCODE+7(1)&nbsp;=&nbsp;'D'.&nbsp;"&nbsp;소분파레트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;INTO&nbsp;LS_5040<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5040<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;PBARCODE&nbsp;=&nbsp;I_PBARCODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;MATNR&nbsp;&nbsp;&nbsp;=&nbsp;LS_5050-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STATUS&nbsp;&nbsp;=&nbsp;'10'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.&nbsp;E_MSG&nbsp;=&nbsp;'유효한&nbsp;소분파레트(ZSDT5040)&nbsp;정보가&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_NEW_MENGE&nbsp;=&nbsp;LS_5040-REMNG.&nbsp;"&nbsp;※&nbsp;소분파레트의&nbsp;잔량&nbsp;필드&nbsp;매핑<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;"&nbsp;일반파레트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_0170<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZPPT0170<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;WERKS&nbsp;IN&nbsp;('1010',&nbsp;'1020')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PBARCODE&nbsp;=&nbsp;I_PBARCODE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;STOCKSTATE&nbsp;EQ&nbsp;'B'.&nbsp;"재고상태&nbsp;:&nbsp;입고<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.&nbsp;E_MSG&nbsp;=&nbsp;'유효한&nbsp;일반파레트(ZPPT0170)&nbsp;정보가&nbsp;없습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LT_0170&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;LT_0170&nbsp;BY&nbsp;PBARCODE&nbsp;BARCODE&nbsp;FLAG&nbsp;LASTTXNTIME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_0170&nbsp;INTO&nbsp;LS_0170.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_REMNG&nbsp;=&nbsp;LV_REMNG&nbsp;+&nbsp;LS_0170-REMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_0170&nbsp;INDEX&nbsp;1&nbsp;INTO&nbsp;LS_0170.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_0170-REMNG&nbsp;=&nbsp;LV_REMNG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_NEW_MENGE&nbsp;=&nbsp;LS_0170-REMNG.&nbsp;"&nbsp;※&nbsp;일반파레트의&nbsp;잔량&nbsp;필드&nbsp;매핑<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기존&nbsp;저장된&nbsp;총합&nbsp;계산&nbsp;및&nbsp;초과&nbsp;여부&nbsp;검증<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SUM(&nbsp;MENGE&nbsp;)&nbsp;INTO&nbsp;LV_TOT_MENGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5051<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;I_VBELN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_TOT_MENGE&nbsp;=&nbsp;LV_TOT_MENGE&nbsp;+&nbsp;LV_NEW_MENGE.&nbsp;"&nbsp;기존&nbsp;합계&nbsp;+&nbsp;신규&nbsp;스캔&nbsp;수량<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수량&nbsp;초과&nbsp;검증<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LV_TOT_MENGE&nbsp;&gt&nbsp;LS_5050-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'초과&nbsp;스캔&nbsp;에러:&nbsp;스캔한&nbsp;바코드의&nbsp;중량이&nbsp;대체품&nbsp;중량을&nbsp;초과합니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ZSDT5051&nbsp;저장&nbsp;데이터&nbsp;구성<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_5051.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-VBELN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-PBARCODE&nbsp;&nbsp;&nbsp;=&nbsp;I_PBARCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-VEHICLE_NO&nbsp;=&nbsp;I_VENO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-MENGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_NEW_MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-USERID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;I_USERID.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ZSDT5050&nbsp;업데이트&nbsp;데이터&nbsp;구성<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5050-LFIMG&nbsp;=&nbsp;LV_TOT_MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LS_5050-LFIMG&nbsp;=&nbsp;LS_5050-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5050-ZSTATS&nbsp;=&nbsp;'20'.&nbsp;"&nbsp;확정<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5050-ZSTATS&nbsp;=&nbsp;'10'.&nbsp;"&nbsp;임시저장<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;파레트&nbsp;유형에&nbsp;따른&nbsp;데이터&nbsp;조회<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;I_PBARCODE+7(1)&nbsp;=&nbsp;'D'.&nbsp;"&nbsp;소분파레트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-SBARCODE&nbsp;&nbsp;=&nbsp;LS_5040-SBARCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-MATNR&nbsp;&nbsp;=&nbsp;LS_5040-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-MEINS&nbsp;&nbsp;=&nbsp;LS_5040-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-WERKS&nbsp;&nbsp;=&nbsp;LS_5040-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-LGORTN&nbsp;&nbsp;=&nbsp;LS_5040-LGORTN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-QCHARG&nbsp;&nbsp;=&nbsp;LS_5040-QCHARG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-BARCODE&nbsp;&nbsp;=&nbsp;LS_5040-BARCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.&nbsp;"&nbsp;일반파레트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-SBARCODE&nbsp;&nbsp;=&nbsp;I_PBARCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-MATNR&nbsp;&nbsp;=&nbsp;LS_0170-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-MEINS&nbsp;&nbsp;=&nbsp;LS_0170-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-WERKS&nbsp;&nbsp;=&nbsp;LS_0170-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-LGORTN&nbsp;&nbsp;=&nbsp;LS_0170-LGORTN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-QCHARG&nbsp;&nbsp;=&nbsp;LS_0170-QCHARG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5051-BARCODE&nbsp;&nbsp;=&nbsp;LS_0170-BARCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;DB&nbsp;업데이트&nbsp;(CUD)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INSERT&nbsp;ZSDT5051&nbsp;FROM&nbsp;LS_5051.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'ZSDT5051&nbsp;저장&nbsp;중&nbsp;오류가&nbsp;발생했습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Header<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;ZSDT5050&nbsp;FROM&nbsp;LS_5050.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'ZSDT5050&nbsp;업데이트&nbsp;중&nbsp;오류가&nbsp;발생했습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"------------------------------------------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;[삭제&nbsp;로직]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"------------------------------------------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기존&nbsp;ZSDT5051&nbsp;데이터&nbsp;확인<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;INTO&nbsp;LS_5051<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5051<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;I_VBELN<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PBARCODE&nbsp;=&nbsp;I_PBARCODE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.&nbsp;E_MSG&nbsp;=&nbsp;'삭제할&nbsp;스캔&nbsp;내역이&nbsp;존재하지&nbsp;않습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ZSDT5051&nbsp;삭제&nbsp;처리<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;ZSDT5051&nbsp;FROM&nbsp;LS_5051.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'ZSDT5051&nbsp;삭제&nbsp;중&nbsp;오류가&nbsp;발생했습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;삭제&nbsp;후&nbsp;남은&nbsp;ZSDT5051의&nbsp;중량&nbsp;재계산&nbsp;(정합성)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SUM(&nbsp;MENGE&nbsp;)&nbsp;INTO&nbsp;LV_TOT_MENGE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5051<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;I_VBELN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ZSDT5050&nbsp;업데이트&nbsp;데이터&nbsp;구성<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5050-LFIMG&nbsp;&nbsp;=&nbsp;LV_TOT_MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_5050-ZSTATS&nbsp;=&nbsp;'10'.&nbsp;"&nbsp;삭제&nbsp;시&nbsp;무조건&nbsp;임시저장으로&nbsp;변경<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;DB&nbsp;업데이트<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPDATE&nbsp;ZSDT5050&nbsp;FROM&nbsp;LS_5050.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLLBACK&nbsp;WORK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'ZSDT5050&nbsp;업데이트&nbsp;중&nbsp;오류가&nbsp;발생했습니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"------------------------------------------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;[예외&nbsp;Flag&nbsp;처리]<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"------------------------------------------------------------------<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'잘못된&nbsp;처리&nbsp;구분(I_FLAG)&nbsp;입니다.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+<br />
+&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;"====================================================================<br />
+&nbsp;&nbsp;"&nbsp;&nbsp;정상&nbsp;처리&nbsp;완료&nbsp;후&nbsp;최종&nbsp;반영&nbsp;및&nbsp;결과&nbsp;테이블&nbsp;반환<br />
+&nbsp;&nbsp;"====================================================================<br />
+&nbsp;&nbsp;COMMIT&nbsp;WORK&nbsp;AND&nbsp;WAIT.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'S'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'성공적으로&nbsp;처리되었습니다.'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;PDA&nbsp;화면&nbsp;갱신용&nbsp;최신&nbsp;데이터&nbsp;추출<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;LT_5050<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5050<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;I_VBELN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;조회&nbsp;결과&nbsp;Mapping&nbsp;(T_TAB&nbsp;-&nbsp;ZSDS0253)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_5050.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;T_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-VBELN&nbsp;=&nbsp;LT_5050-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-WADAT&nbsp;=&nbsp;LT_5050-WADAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-KUNNR&nbsp;=&nbsp;LT_5050-VKBUR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-MATNR&nbsp;=&nbsp;LT_5050-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-LFIMG&nbsp;=&nbsp;LT_5050-LFIMG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-MENGE&nbsp;=&nbsp;LT_5050-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-MEINS&nbsp;=&nbsp;LT_5050-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-WERKS&nbsp;=&nbsp;LT_5050-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-LGORT&nbsp;=&nbsp;LT_5050-LGORT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;ZSTATS&nbsp;데이터를&nbsp;BSTKD&nbsp;(35)&nbsp;필드에&nbsp;매핑<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB-BSTKD&nbsp;=&nbsp;LT_5050-ZSTATS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;BEZEI&nbsp;INTO&nbsp;T_TAB-NAME1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;TVKBT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;로그인한&nbsp;언어&nbsp;(한국어:&nbsp;'3'&nbsp;또는&nbsp;'KO')<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;VKBUR&nbsp;=&nbsp;LT_5050-VKBUR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MAKTX&nbsp;INTO&nbsp;T_TAB-MAKTX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MAKT&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;LT_5050-MATNR&nbsp;AND&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_TAB.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;&nbsp;LT_5051<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5051<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;VBELN&nbsp;=&nbsp;I_VBELN.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_5051.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;T_TAB2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-PBARCODE&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-PBARCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-SBARCODE&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-SBARCODE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-QCHARG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-QCHARG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-MATNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-MENGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-MENGE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-MEINS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-MEINS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-VEHICLE_NO&nbsp;=&nbsp;LT_5051-VEHICLE_NO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-VBELN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-VBELN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-WERKS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-WERKS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-LGORTN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-LGORTN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_TAB2-BARCODE&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_5051-BARCODE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;자재명(MAKTX)&nbsp;추출<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MAKTX&nbsp;INTO&nbsp;T_TAB2-MAKTX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;MAKT&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;LT_5051-MATNR&nbsp;AND&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;T_TAB2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_RET&nbsp;=&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;E_MSG&nbsp;=&nbsp;'데이터베이스&nbsp;Commit&nbsp;중&nbsp;오류가&nbsp;발생했습니다.'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;Lock&nbsp;해제<br />
+&nbsp;&nbsp;PERFORM&nbsp;UNLOCK_TABLE&nbsp;USING&nbsp;LV_VARKEY.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: AM<br />
+*287   Address cannot be maintained; entry in table TSADRV missing<br />
+*290   Entry missing in TSADRV; new address maintenance cannot be called<br />
+*291   Entry missing in TSADRV; new address maintenance cannot be called<br />
+*298   Address group & not defined; delete flag for address not possible<br />
+*<br />
+* Message class: EC<br />
+*089   Internal error: Unable to read screen data<br />
+*<br />
+* Message class: SCPR<br />
+*026   Table & is too wide. It cannot be processed<br />
+*028   The table/view & has no generated maintenance dialog<br />
+*035   Dictionary interface error: Contact SAP<br />
+*120   Table/view & not found<br />
+*273   Function module call error<br />
+*320   BC Set processing error<br />
+*395   Internal field description read error<br />
+*399   No data record activation information<br />
+*408   Table key not supported by activation links<br />
+*<br />
+* Message class: SV<br />
+*001   The selected function is not supported<br />
+*002   Number of retrieved entries: &<br />
+*004   No entries found that match selection criteria<br />
+*005   One entry chosen<br />
+*006   Number of chosen entries: &<br />
+*007   No previous entry exists<br />
+*008   No next entry exists<br />
+*009   An entry already exists with the same key<br />
+*010   An entry with this key is marked for deletion<br />
+*011   Number of deleted entries: &<br />
+*012   Number of changed entries: &<br />
+*013   Entry deleted<br />
+*014   Number of entries copied: &<br />
+*015   Target key must be different from source key<br />
+*016   Number of reset entries: &<br />
+*017   Entry reset<br />
+*018   Data was saved<br />
+*019   Choose the key from the allowed namespace<br />
+*024   Specify target entries<br />
+*025   Specify target entries<br />
+*026   Select entries before performing the function<br />
+*028   Table & not in DDIC<br />
+*032   Position the cursor on a valid entry<br />
+*033   Specify the key within the work area<br />
+*037   The maintenance dialog for & is incomplete or not defined<br />
+*039   Table & has no relevant fields<br />
+*040   & entries reset, & original and & new entries are still marked<br />
+*041   & entries reset, & original entries are still marked<br />
+*042   & entries reset, & new entries are still marked<br />
+*043   Data already saved<br />
+*044   Read access only<br />
+*045   Enter a start date that is before the end date<br />
+*046   Enter an end date that is after the start date<br />
+*047   Overlapping records are deleted or delimited<br />
+*049   Data locked by user & (display only)<br />
+*050   System error: Unable to lock table/view &<br />
+*051   No data maintenance authorization; display only<br />
+*053   No display authorization for requested data<br />
+*054   Maintenance of data in current client & not permitted<br />
+*055   Address for object & not found<br />
+*056   Mark at least one entry before selecting this function<br />
+*057   The selected entry is new and has no original<br />
+*058   The selected entries are new and have no original<br />
+*059   The selected entry is still in its original state<br />
+*060   The selected entries are still in their original state<br />
+*061   & entries are still originals, & new entries have no original<br />
+*065   No entries exist, double-click for long text<br />
+*066   Select block end<br />
+*084   No values can be displayed<br />
+*092   Change task & is being processed<br />
+*095   System error changing change task &<br />
+*096   Task & was changed<br />
+*098   Entry flagged for inclusion in task &<br />
+*099   Entry was flagged for deletion from task &<br />
+*105   & entries were flagged for inclusion in task &<br />
+*106   & entries were flagged for deletion from task &<br />
+*107   Entry was already in task &<br />
+*108   & entries were already in task &<br />
+*109   & entries included, & entries were contained: &<br />
+*110   Entry was not in task &<br />
+*111   & entries deleted, & entries were not included: &<br />
+*112   & entries were not in task &<br />
+*113   Entry could not be retrieved<br />
+*114   & entries could not be retrieved<br />
+*115   Entry could not be deleted<br />
+*116   & entries could not be deleted<br />
+*117   Do not make any changes (SAP entry)<br />
+*120   Other entries are retrieved and modified if necessary<br />
+*121   Deleted entry will be recovered and possibly changed<br />
+*122   Entry was delimited<br />
+*123   Number of delimited entries: &<br />
+*124   Process delimited entries<br />
+*125   Process delimited entry<br />
+*127   Delimit area of validity<br />
+*128   Delivery class &, transport not possible<br />
+*129   Related objects in various tasks<br />
+*130   Client & is local, transport not permitted<br />
+*132   Object locked for task &1, user &2 only display permitted<br />
+*134   Inconsistency in object definition, only display permitted<br />
+*136   Change with caution, entry belongs to customer<br />
+*138   Check maintenance object &1 or update function group &2<br />
+*139   Address data is not taken over<br />
+*140   &1 entries deleted, &2 entries taken over<br />
+*141   Individual entries cannot be put into the change request<br />
+*142   Transport is not possible for the specified data<br />
+*153   No language was chosen<br />
+*160   The installed system codepage does not allow any other languages<br />
+*161   Put the cursor on a form name<br />
+*162   The object &1 &2 &3 cannot be put in a request<br />
+*164   Table/view &1 is not in the Dictionary<br />
+*173   Function group &1 inconsistent<br />
+*174   Enter values in work area for non-key fields<br />
+*175   The selected BC Set function is not supported<br />
+*177   Data record contains fix value from BC Set and cannot be deleted<br />
+*183   Error in remote access to central Customizing Distribution system<br />
+*184   Data record contains fixed value from BC Set and cannot be changed<br />
+*202   You are not authorized to change fields with fixed BC Set values<br />
+*306   Table/view & is not active<br />
+*538   Dropdown lists are not supported in view clusters<br />
+*757   You have no maintenance authorization for this table key<br />
+*763   You have no maintenance authorization for the displayed data records<br />
+*764   Changed data record selection<br />
+*766   Restricted display of datasets<br />
+*808   Not all columns in the table can be displayed in the list<br />
+*810   View &1 is more than 1000 characters long<br />
+*818   &1 of &2 Business Configuration Set entries imported<br />
+*819   Business Configuration Set imported<br />
+*830   Last selected entry has been reached<br />
+*831   First selected entry has been reached<br />
+*863   Number of copied entries (including translations): &<br />
+*870   Maintenance dialog switched to list screen<br />
+*<br />
+* Message class: TB<br />
+*109   No maintenance authorization for cross-client tables (see Help)<br />
+*<br />
+* Message class: TK<br />
+*430   Client &1 has status 'not modifiable'<br />
+*729   Changes to Repository objects are not permitted in this client<br />
+*730   Changes to Repository or cross-client Customizing are not permitted<br />
+*731   You are not allowed to change cross-client Customizing<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

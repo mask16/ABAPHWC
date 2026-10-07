@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>LZIM_GENERALTOP</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: LZIM_GENERALTOP</h2>
+<h3> Description: 수입제비용 역분개 전기</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION-POOL ZIM_GENERAL MESSAGE-ID ZIM01.<br />
+<br />
+include <a href ="../z_import_common.html">Z_IMPORT_COMMON</a>.<br />
+include <a href ="../z_trade_common.html">Z_TRADE_COMMON</a>.<br />
+<br />
+DATA : IT_TACINFO TYPE ZIMST_TACINFO.<br />
+<br />
+DATA : GOODSMVT_HEADER   LIKE BAPI2017_GM_HEAD_01,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GOODSMVT_CODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPI2017_GM_CODE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GOODSMVT_HEADRET&nbsp;&nbsp;LIKE&nbsp;BAPI2017_GM_HEAD_RET,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATERIALDOCUMENT&nbsp;&nbsp;TYPE&nbsp;BAPI2017_GM_HEAD_RET-MAT_DOC,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATDOCUMENTYEAR&nbsp;&nbsp;&nbsp;TYPE&nbsp;BAPI2017_GM_HEAD_RET-DOC_YEAR.<br />
+<br />
+DATA : BEGIN OF GOODSMVT_ITEM OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;&nbsp;BAPI2017_GM_ITEM_CREATE.<br />
+DATA : END   OF GOODSMVT_ITEM.<br />
+<br />
+DATA : BEGIN OF GOODSMVT_SERIALNUMBER OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;&nbsp;BAPI2017_GM_SERIALNUMBER.<br />
+DATA : END   OF GOODSMVT_SERIALNUMBER.<br />
+<br />
+DATA : HEADERDATA                LIKE BAPI_INCINV_CREATE_HEADER,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADDRESSDATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPI_INCINV_CREATE_ADDRESSDATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVOICEDOCNUMBER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPI_INCINV_FLD-INV_DOC_NO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FISCALYEAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPI_INCINV_FLD-FISC_YEAR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVOICEDOCNUMBER_2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPI_INCINV_FLD-INV_DOC_NO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FISCALYEAR_2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPI_INCINV_FLD-FISC_YEAR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INVOICEDOCNUMBER_REVERSAL&nbsp;LIKE&nbsp;BAPI_INCINV_FLD-INV_DOC_NO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FISCALYEAR_REVERSAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BAPI_INCINV_FLD-FISC_YEAR.<br />
+<br />
+DATA : BEGIN OF ITEMDATA OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;&nbsp;BAPI_INCINV_CREATE_ITEM.<br />
+DATA : END   OF ITEMDATA.<br />
+<br />
+DATA : BEGIN OF ACCOUNTINGDATA OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BAPI_INCINV_CREATE_ACCOUNT.<br />
+DATA : END   OF ACCOUNTINGDATA.<br />
+<br />
+DATA : BEGIN OF GLACCOUNTDATA OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;BAPI_INCINV_CREATE_GL_ACCOUNT.<br />
+DATA : END   OF GLACCOUNTDATA.<br />
+<br />
+DATA:  BEGIN OF TAXDATA OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;&nbsp;BAPI_INCINV_CREATE_TAX.<br />
+DATA:  END   OF TAXDATA.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*AFS&nbsp;GRID------------------------------------------------<br />
+*DATA&nbsp;:&nbsp;BEGIN&nbsp;OF&nbsp;AFS_GOODSMVT_SKU&nbsp;OCCURS&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;&nbsp;/AFS/BAPI_GM_SKU.<br />
+*DATA&nbsp;:&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;AFS_GOODSMVT_SKU.<br />
+*<br />
+*DATA:&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;/AFS/ITEMDATA&nbsp;OCCURS&nbsp;0.<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;&nbsp;&nbsp;/AFS/BAPI_INCINV_CREATE_ITEM.<br />
+*DATA:&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;/AFS/ITEMDATA.<br />
+*--------------------------------------------------------<br />
+<br />
+*&nbsp;Table&nbsp;Control<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_130 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zim130/dictionary-zim130.html">ZIM130</a>.<br />
+DATA : END   OF IT_130.<br />
+<br />
+DATA : BEGIN OF IT_551 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zimst_551/dictionary-zimst_551.html">ZIMST_551</a>.<br />
+DATA : END   OF IT_551.<br />
+<br />
+DATA : BEGIN OF IT_554 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zimst_554/dictionary-zimst_554.html">ZIMST_554</a>.<br />
+DATA : END   OF IT_554.<br />
+<br />
+DATA : BEGIN OF IT_601 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zimst_601/dictionary-zimst_601.html">ZIMST_601</a>.<br />
+DATA : END   OF IT_601.<br />
+<br />
+DATA : BEGIN OF IT_603 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zimst_603/dictionary-zimst_603.html">ZIMST_603</a>.<br />
+DATA : END   OF IT_603.<br />
+<br />
+DATA : BEGIN OF IT_610 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zim610/dictionary-zim610.html">ZIM610</a>.<br />
+DATA : END   OF IT_610.<br />
+<br />
+DATA : BEGIN OF IT_611 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zim611/dictionary-zim611.html">ZIM611</a>.<br />
+DATA : END   OF IT_611.<br />
+DATA : BEGIN OF IT_613 OCCURS 0.<br />
+DATA : V_EBELN  LIKE ZIM613-EBELN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_EBELP&nbsp;&nbsp;LIKE&nbsp;ZIM613-EBELP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zimst_613/dictionary-zimst_613.html">ZIMST_613</a>.<br />
+DATA : END   OF IT_613.<br />
+DATA : BEGIN OF IT_613_D OCCURS 0.<br />
+DATA : V_EBELN  LIKE ZIM613-EBELN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_EBELP&nbsp;&nbsp;LIKE&nbsp;ZIM613-EBELP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zimst_613/dictionary-zimst_613.html">ZIMST_613</a>.<br />
+DATA : END   OF IT_613_D.<br />
+DATA : BEGIN OF IT_613_GC OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zim613/dictionary-zim613.html">ZIM613</a>.<br />
+DATA : END   OF IT_613_GC.<br />
+<br />
+DATA : BEGIN OF IT_621 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zimst_621/dictionary-zimst_621.html">ZIMST_621</a>.<br />
+DATA : END   OF IT_621.<br />
+<br />
+DATA : BEGIN OF IT_722 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zim722/dictionary-zim722.html">ZIM722</a>.<br />
+DATA : END   OF IT_722.<br />
+DATA : BEGIN OF IT_EBELN OCCURS 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EBELN&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;EKKO-EBELN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;&nbsp;&nbsp;OF&nbsp;IT_EBELN.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;EXCEL&nbsp;선택<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_030 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zexst_030/dictionary-zexst_030.html">ZEXST_030</a>.<br />
+DATA : END   OF IT_030.<br />
+DATA : BEGIN OF IT_030S OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zexst_030s/dictionary-zexst_030s.html">ZEXST_030S</a>.<br />
+DATA : END   OF IT_030S.<br />
+DATA : BEGIN OF IT_030D OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zexst_030d/dictionary-zexst_030d.html">ZEXST_030D</a>.<br />
+DATA : END   OF IT_030D.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_030_R OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zexst_030/dictionary-zexst_030.html">ZEXST_030</a>.<br />
+DATA : END   OF IT_030_R.<br />
+DATA : BEGIN OF IT_030_OTH OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zexst_030_oth/dictionary-zexst_030_oth.html">ZEXST_030_OTH</a>.<br />
+DATA : END   OF IT_030_OTH.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--<br />
+   </div>
+   <div class="code">
+DATA : BEGIN OF IT_092 OCCURS 0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include&nbsp;structure&nbsp;<a&nbsp;href&nbsp;="zexst_092/dictionary-zexst_092.html">ZEXST_092</a>.<br />
+DATA : END   OF IT_092.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;--<br />
+   </div>
+   <div class="code">
+DATA : V_KNTTP      LIKE EKPO-KNTTP,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_SAKTO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;EKKN-SAKTO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_KOSTL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;EKKN-KOSTL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ANLN1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;EKKN-ANLN1,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_AUFNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;EKKN-AUFNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_POSID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;PRPS-POSID.<br />
+<br />
+DATA : V_ITEM_TEXT  LIKE GOODSMVT_ITEM-ITEM_TEXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_MVT_IND&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;GOODSMVT_ITEM-MVT_IND,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ZGRQNT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM551-ZGRQNT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_SPOQTY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM551-ZGRQNT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ZISEQN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM552-ZISEQN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ZIVAMT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM600-ZIVAMT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ZBRTWR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM601-ZBRTWR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEMP_FNAN&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BDCDATA-FNAM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEMP_FNAM&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BDCDATA-FNAM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_BPMNG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RSEG-BPMNG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_WAERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BKPF-WAERS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_DYNNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;T019-DYNNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ZPMMFI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM612-ZPMMFI,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_NEWUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05A-NEWUM,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_NEWBS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05A-NEWBS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_SGTXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BSEG-SGTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_NEWKO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;RF05A-NEWKO,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_XBLNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BKPF-XBLNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_BKTXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BKPF-BKTXT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_BELNR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM612-BELNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_WERKS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM613-WERKS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_DMBTR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM610-DMBTR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_WRBTR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM610-WRBTR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_WMWST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM610-WMWST,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_FWBAS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM610-FWBAS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_STEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM101-ZIOFDP,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_ZIBLDN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;ZIM300-ZIBLDN,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_AWKEY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIKE&nbsp;BKPF-AWKEY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_ZBRTWR(30)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_AMOUNT(30)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_AMOUNT_1(30)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_DELCST(30)&nbsp;TYPE&nbsp;C,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_KURSF(12),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_WWERT(10),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V_LOTMSG(60),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DEL_COST(3),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEMP_WRBTR(16),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEMP_DMBTR(16).<br />
+<br />
+CONTROLS : TC1 TYPE TABLEVIEW USING SCREEN 990,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TC9&nbsp;TYPE&nbsp;TABLEVIEW&nbsp;USING&nbsp;SCREEN&nbsp;196,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCE&nbsp;TYPE&nbsp;TABLEVIEW&nbsp;USING&nbsp;SCREEN&nbsp;196,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCF&nbsp;TYPE&nbsp;TABLEVIEW&nbsp;USING&nbsp;SCREEN&nbsp;196.<br />
+<br />
+DATA : T_EMAIL_TITLE(100).<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;TABLES&nbsp;:&nbsp;Z11POT034,&nbsp;Z11POT025,&nbsp;Z11POT027.<br />
+*{&nbsp;&nbsp;&nbsp;INSERT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEDK900415&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1<br />
+*----------------------------------------------------------------------*<br />
+*&nbsp;&nbsp;ZFIC_STRUCTURE_TO_STRING<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+DATA: GV_OFF TYPE I.<br />
+<br />
+DATA: LDTAB  TYPE REF TO DATA,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DREF&nbsp;&nbsp;&nbsp;TYPE&nbsp;REF&nbsp;TO&nbsp;DATA.<br />
+<br />
+DATA: GT_DFIES LIKE DFIES OCCURS 0 WITH HEADER LINE.<br />
+<br />
+DATA: GT_FIELDCAT TYPE LVC_T_FCAT,        " Field catalog<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_FIELDCAT&nbsp;TYPE&nbsp;LVC_S_FCAT.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Field&nbsp;catalog<br />
+<br />
+FIELD-SYMBOLS: &ltGT_TABLE&gt   TYPE TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltFS&gt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ANY,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&ltGT_LINE&gt&nbsp;&nbsp;&nbsp;&nbsp;TYPE&nbsp;ANY.<br />
+   </div>
+   <div class="codeComment">
+*<br />
+*}&nbsp;&nbsp;&nbsp;INSERT<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

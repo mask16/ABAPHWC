@@ -1,0 +1,489 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZSDR5053_F01</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZSDR5053_F01</h2>
+<h3> Description: Include ZSDR5053_F01</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;Include&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZSDR5053_F01<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SELECT_DATA.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_TEMP&nbsp;&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZSDT5053,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_TEMP&nbsp;&nbsp;TYPE&nbsp;ZSDT5053,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_LIFNR&nbsp;TYPE&nbsp;LFA1-LIFNR.&nbsp;"&nbsp;0이&nbsp;채워진&nbsp;공급업체&nbsp;코드를&nbsp;담을&nbsp;임시&nbsp;변수<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;GT_DATA,&nbsp;LT_TEMP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;DB&nbsp;테이블과&nbsp;구조가&nbsp;완벽히&nbsp;동일한&nbsp;임시&nbsp;테이블(LT_TEMP)에&nbsp;먼저&nbsp;조회하여&nbsp;필드&nbsp;불일치&nbsp;에러&nbsp;방지<br />
+&nbsp;&nbsp;SELECT&nbsp;*&nbsp;INTO&nbsp;TABLE&nbsp;LT_TEMP<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ZSDT5053<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;MATNR&nbsp;&nbsp;IN&nbsp;SO_MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;QCHARG&nbsp;IN&nbsp;SO_CHARG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;LIFNR&nbsp;&nbsp;IN&nbsp;SO_LIFNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;PDATE&nbsp;&nbsp;IN&nbsp;SO_PDATE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;ZSTATS&nbsp;IN&nbsp;SO_ZSTAT<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;VBELN&nbsp;&nbsp;IN&nbsp;SO_VBELN.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;임시&nbsp;테이블을&nbsp;돌면서&nbsp;ALV용&nbsp;인터널&nbsp;테이블(GT_DATA)을&nbsp;완성<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_TEMP&nbsp;INTO&nbsp;LS_TEMP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;LS_TEMP&nbsp;TO&nbsp;GS_DATA.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;=====================================================================<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;공급업체&nbsp;코드&nbsp;변환&nbsp;및&nbsp;조회<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;=====================================================================<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;&nbsp;DB에&nbsp;저장된&nbsp;공급업체&nbsp;코드를&nbsp;10자리(0&nbsp;채움)&nbsp;내부&nbsp;포맷으로&nbsp;변환<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;=&nbsp;GS_DATA-LIFNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUTPUT&nbsp;=&nbsp;LV_LIFNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;변환된&nbsp;변수(LV_LIFNR)를&nbsp;사용하여&nbsp;LFA1&nbsp;테이블에서&nbsp;명칭&nbsp;조회<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;NAME1&nbsp;INTO&nbsp;GS_DATA-LIFNR_NM&nbsp;FROM&nbsp;LFA1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;LIFNR&nbsp;=&nbsp;LV_LIFNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;=====================================================================<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MAKTX&nbsp;INTO&nbsp;GS_DATA-MAKTX&nbsp;FROM&nbsp;MAKT&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;GS_DATA-MATNR&nbsp;AND&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;BEZEI&nbsp;INTO&nbsp;GS_DATA-VKBUR_NM&nbsp;FROM&nbsp;TVKBT&nbsp;WHERE&nbsp;VKBUR&nbsp;=&nbsp;GS_DATA-VKBUR&nbsp;AND&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;NAME1&nbsp;INTO&nbsp;GS_DATA-KUNNR_NM&nbsp;FROM&nbsp;KNA1&nbsp;WHERE&nbsp;KUNNR&nbsp;=&nbsp;GS_DATA-KUNNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;GS_DATA-ZSTATS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'10'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-STATS_NM&nbsp;=&nbsp;'입고'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'20'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-STATS_NM&nbsp;=&nbsp;'출고'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;'99'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-STATS_NM&nbsp;=&nbsp;'취소'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;OTHERS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_DATA-STATS_NM.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;기존&nbsp;데이터는&nbsp;키필드(MATNR,&nbsp;QCHARG)&nbsp;수정&nbsp;불가&nbsp;처리<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_CELL_STYLE&nbsp;USING&nbsp;'MATNR'&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_STYLE_DISABLED&nbsp;CHANGING&nbsp;GS_DATA-CELLSTYLES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_CELL_STYLE&nbsp;USING&nbsp;'QCHARG'&nbsp;CL_GUI_ALV_GRID=&gtMC_STYLE_DISABLED&nbsp;CHANGING&nbsp;GS_DATA-CELLSTYLES.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GS_DATA&nbsp;TO&nbsp;GT_DATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+ENDFORM.                    "SELECT_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;ADD_ROW<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM ADD_ROW.<br />
+&nbsp;&nbsp;CLEAR&nbsp;GS_DATA.<br />
+&nbsp;&nbsp;GS_DATA-MODE&nbsp;=&nbsp;'I'.&nbsp;"&nbsp;신규&nbsp;식별자<br />
+&nbsp;&nbsp;GS_DATA-ZSTATS&nbsp;=&nbsp;'10'.<br />
+&nbsp;&nbsp;GS_DATA-STATS_NM&nbsp;=&nbsp;'입고'.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;신규&nbsp;행은&nbsp;키필드&nbsp;입력&nbsp;가능하도록&nbsp;설정<br />
+&nbsp;&nbsp;PERFORM&nbsp;SET_CELL_STYLE&nbsp;USING&nbsp;'MATNR'&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_STYLE_ENABLED&nbsp;CHANGING&nbsp;GS_DATA-CELLSTYLES.<br />
+&nbsp;&nbsp;PERFORM&nbsp;SET_CELL_STYLE&nbsp;USING&nbsp;'QCHARG'&nbsp;CL_GUI_ALV_GRID=&gtMC_STYLE_ENABLED&nbsp;CHANGING&nbsp;GS_DATA-CELLSTYLES.<br />
+<br />
+&nbsp;&nbsp;INSERT&nbsp;GS_DATA&nbsp;INTO&nbsp;GT_DATA&nbsp;INDEX&nbsp;1.&nbsp;"&nbsp;최상단에&nbsp;빈&nbsp;줄&nbsp;추가<br />
+&nbsp;&nbsp;PERFORM&nbsp;REFRESH_GRID.<br />
+ENDFORM.                    "ADD_ROW<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_CELL_STYLE<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_CELL_STYLE USING P_FIELD P_STYLE CHANGING PT_STYLES TYPE LVC_T_STYL.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_STYLE&nbsp;TYPE&nbsp;LVC_S_STYL.<br />
+&nbsp;&nbsp;LS_STYLE-FIELDNAME&nbsp;=&nbsp;P_FIELD.<br />
+&nbsp;&nbsp;LS_STYLE-STYLE&nbsp;=&nbsp;P_STYLE.<br />
+&nbsp;&nbsp;INSERT&nbsp;LS_STYLE&nbsp;INTO&nbsp;TABLE&nbsp;PT_STYLES.<br />
+ENDFORM.                    "SET_CELL_STYLE<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SAVE_DATA<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SAVE_DATA.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_INS&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZSDT5053,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_UPD&nbsp;TYPE&nbsp;TABLE&nbsp;OF&nbsp;ZSDT5053,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_DB&nbsp;&nbsp;TYPE&nbsp;ZSDT5053,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_ERR&nbsp;TYPE&nbsp;C.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;GT_DATA&nbsp;INTO&nbsp;GS_DATA&nbsp;WHERE&nbsp;MODE&nbsp;=&nbsp;'I'&nbsp;OR&nbsp;MODE&nbsp;=&nbsp;'U'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;필수값&nbsp;체크<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-MATNR&nbsp;IS&nbsp;INITIAL&nbsp;OR&nbsp;GS_DATA-QCHARG&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000(00)&nbsp;WITH&nbsp;'자재번호와&nbsp;제조번호는&nbsp;필수입력입니다.'&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_ERR&nbsp;=&nbsp;'X'.&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;GS_DATA&nbsp;TO&nbsp;LS_DB.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;GS_DATA-MODE&nbsp;=&nbsp;'I'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;중복&nbsp;체크<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MANDT&nbsp;INTO&nbsp;SY-MANDT&nbsp;FROM&nbsp;ZSDT5053&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;LS_DB-MATNR&nbsp;AND&nbsp;QCHARG&nbsp;=&nbsp;LS_DB-QCHARG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000(00)&nbsp;WITH&nbsp;LS_DB-MATNR&nbsp;LS_DB-QCHARG&nbsp;'는&nbsp;이미&nbsp;존재하는&nbsp;제조번호입니다.'&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_ERR&nbsp;=&nbsp;'X'.&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_DB-ERDAT&nbsp;=&nbsp;SY-DATUM.&nbsp;LS_DB-ERZET&nbsp;=&nbsp;SY-UZEIT.&nbsp;LS_DB-ERNAM&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_DB&nbsp;TO&nbsp;LT_INS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;GS_DATA-MODE&nbsp;=&nbsp;'U'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_DB-UPDAT&nbsp;=&nbsp;SY-DATUM.&nbsp;LS_DB-UPTIM&nbsp;=&nbsp;SY-UZEIT.&nbsp;LS_DB-UPNAM&nbsp;=&nbsp;SY-UNAME.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_DB&nbsp;TO&nbsp;LT_UPD.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;CHECK&nbsp;LV_ERR&nbsp;IS&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LT_INS[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.&nbsp;INSERT&nbsp;ZSDT5053&nbsp;FROM&nbsp;TABLE&nbsp;LT_INS.&nbsp;ENDIF.<br />
+&nbsp;&nbsp;IF&nbsp;LT_UPD[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.&nbsp;UPDATE&nbsp;ZSDT5053&nbsp;FROM&nbsp;TABLE&nbsp;LT_UPD.&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;COMMIT&nbsp;WORK&nbsp;AND&nbsp;WAIT.<br />
+&nbsp;&nbsp;MESSAGE&nbsp;S000(00)&nbsp;WITH&nbsp;'저장&nbsp;되었습니다.'.<br />
+&nbsp;&nbsp;PERFORM&nbsp;SELECT_DATA.&nbsp;"&nbsp;재조회<br />
+&nbsp;&nbsp;PERFORM&nbsp;REFRESH_GRID.<br />
+ENDFORM.                    "SAVE_DATA<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;CHANGE_STATUS<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM CHANGE_STATUS USING P_STAT.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_ROWS&nbsp;TYPE&nbsp;LVC_T_ROW,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ROW&nbsp;&nbsp;TYPE&nbsp;LVC_S_ROW.<br />
+<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;GV_GRID-&gtGET_SELECTED_ROWS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ET_INDEX_ROWS&nbsp;=&nbsp;LT_ROWS.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;LT_ROWS[]&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000(00)&nbsp;WITH&nbsp;'대상을&nbsp;선택하세요.'&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'.&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ROWS&nbsp;INTO&nbsp;LS_ROW.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_DATA&nbsp;INTO&nbsp;GS_DATA&nbsp;INDEX&nbsp;LS_ROW-INDEX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"IF&nbsp;GS_DATA-ZSTATS&nbsp;=&nbsp;'20'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;MESSAGE&nbsp;S000(00)&nbsp;WITH&nbsp;'출고(20)&nbsp;상태는&nbsp;변경할&nbsp;수&nbsp;없습니다.'&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'.&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-ZSTATS&nbsp;=&nbsp;P_STAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-MODE&nbsp;&nbsp;&nbsp;=&nbsp;'U'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_DATA&nbsp;FROM&nbsp;GS_DATA&nbsp;INDEX&nbsp;LS_ROW-INDEX.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;PERFORM&nbsp;REFRESH_GRID.<br />
+ENDFORM.                    "CHANGE_STATUS<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;엑셀&nbsp;업로드&nbsp;로직&nbsp;(TEXT_CONVERT_XLS_TO_SAP&nbsp;활용)<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM EXCEL_UPLOAD.<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_FILE&nbsp;TYPE&nbsp;FILETABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_FILE&nbsp;TYPE&nbsp;FILE_TABLE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LV_RC&nbsp;&nbsp;&nbsp;TYPE&nbsp;I.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;엑셀&nbsp;파일&nbsp;선택&nbsp;팝업창<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;CL_GUI_FRONTEND_SERVICES=&gtFILE_OPEN_DIALOG<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_FILTER&nbsp;=&nbsp;'Excel&nbsp;Files&nbsp;(*.XLSX;*.XLS)|*.XLSX;*.XLS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHANGING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE_TABLE&nbsp;&nbsp;=&nbsp;LT_FILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_RC.<br />
+&nbsp;&nbsp;CHECK&nbsp;LV_RC&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LV_FILE&nbsp;TYPE&nbsp;RLGRAP-FILENAME.<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;LT_FILE&nbsp;INTO&nbsp;LS_FILE&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LV_FILE&nbsp;=&nbsp;LS_FILE-FILENAME.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;ALSM&nbsp;펑션을&nbsp;위한&nbsp;데이터&nbsp;선언<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_ALSMEX&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;ALSMEX_TABLINE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_ALSMEX&nbsp;TYPE&nbsp;ALSMEX_TABLINE.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;가장&nbsp;안정적인&nbsp;ALSM&nbsp;펑션으로&nbsp;엑셀&nbsp;읽기&nbsp;(R/3&nbsp;TR&nbsp;창&nbsp;안뜸,&nbsp;자동&nbsp;종료됨)<br />
+&nbsp;&nbsp;CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LV_FILE<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BEGIN_COL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_BEGIN_ROW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;2번째&nbsp;줄부터&nbsp;읽음&nbsp;(첫&nbsp;줄&nbsp;헤더&nbsp;무시)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_END_COL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;엑셀의&nbsp;총&nbsp;열(Column)&nbsp;개수<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I_END_ROW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;65000&nbsp;&nbsp;&nbsp;"&nbsp;최대로&nbsp;읽어올&nbsp;행(Row)&nbsp;개수<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTERN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;LT_ALSMEX<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCONSISTENT_PARAMETERS&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPLOAD_OLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;&lt&gt&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;S000(00)&nbsp;WITH&nbsp;'엑셀&nbsp;업로드에&nbsp;실패했습니다.&nbsp;(열려있는&nbsp;엑셀을&nbsp;닫아주세요)'&nbsp;DISPLAY&nbsp;LIKE&nbsp;'E'.&nbsp;EXIT.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;읽어온&nbsp;클립보드&nbsp;데이터를&nbsp;내부&nbsp;인터널&nbsp;테이블&nbsp;형태로&nbsp;매핑<br />
+&nbsp;&nbsp;TYPES:&nbsp;BEGIN&nbsp;OF&nbsp;TY_EXCEL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LIFNR&nbsp;&nbsp;TYPE&nbsp;ZSDT5053-LIFNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PDATE&nbsp;&nbsp;TYPE&nbsp;CHAR8,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MATNR&nbsp;&nbsp;TYPE&nbsp;ZSDT5053-MATNR,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;QCHARG&nbsp;TYPE&nbsp;ZSDT5053-QCHARG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZSTATS&nbsp;TYPE&nbsp;ZSDT5053-ZSTATS,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REMARK&nbsp;TYPE&nbsp;ZSDT5053-REMARK,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;TY_EXCEL.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;LT_EXCEL&nbsp;TYPE&nbsp;STANDARD&nbsp;TABLE&nbsp;OF&nbsp;TY_EXCEL,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_EXCEL&nbsp;TYPE&nbsp;TY_EXCEL.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;ALSM&nbsp;데이터는&nbsp;Row/Col&nbsp;단위로&nbsp;들어오므로&nbsp;정렬&nbsp;후&nbsp;조립합니다.<br />
+&nbsp;&nbsp;SORT&nbsp;LT_ALSMEX&nbsp;BY&nbsp;ROW&nbsp;COL.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_ALSMEX&nbsp;INTO&nbsp;LS_ALSMEX.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;새로운&nbsp;행(Row)이&nbsp;시작될&nbsp;때&nbsp;구조체를&nbsp;초기화<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;NEW&nbsp;ROW.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_EXCEL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;열(Col)&nbsp;번호에&nbsp;맞게&nbsp;데이터&nbsp;할당<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CASE&nbsp;LS_ALSMEX-COL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;1.&nbsp;LS_EXCEL-LIFNR&nbsp;&nbsp;=&nbsp;LS_ALSMEX-VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;2.&nbsp;LS_EXCEL-PDATE&nbsp;&nbsp;=&nbsp;LS_ALSMEX-VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;3.&nbsp;LS_EXCEL-MATNR&nbsp;&nbsp;=&nbsp;LS_ALSMEX-VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;4.&nbsp;LS_EXCEL-QCHARG&nbsp;=&nbsp;LS_ALSMEX-VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;5.&nbsp;LS_EXCEL-ZSTATS&nbsp;=&nbsp;LS_ALSMEX-VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHEN&nbsp;6.&nbsp;LS_EXCEL-REMARK&nbsp;=&nbsp;LS_ALSMEX-VALUE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDCASE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;하나의&nbsp;행(Row)&nbsp;조립이&nbsp;끝나면&nbsp;인터널&nbsp;테이블에&nbsp;추가<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AT&nbsp;END&nbsp;OF&nbsp;ROW.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_EXCEL&nbsp;TO&nbsp;LT_EXCEL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDAT.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;기존에&nbsp;작성하신&nbsp;데이터&nbsp;가공&nbsp;및&nbsp;DB&nbsp;조회&nbsp;로직<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_EXCEL&nbsp;INTO&nbsp;LS_EXCEL.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;보이지&nbsp;않는&nbsp;특수문자&nbsp;제거&nbsp;및&nbsp;공백&nbsp;압축&nbsp;(이전&nbsp;단계에서&nbsp;적용한&nbsp;내용&nbsp;유지)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;CL_ABAP_CHAR_UTILITIES=&gtCR_LF&nbsp;IN&nbsp;LS_EXCEL-LIFNR&nbsp;WITH&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;CL_ABAP_CHAR_UTILITIES=&gtHORIZONTAL_TAB&nbsp;IN&nbsp;LS_EXCEL-LIFNR&nbsp;WITH&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LS_EXCEL-LIFNR&nbsp;NO-GAPS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;CL_ABAP_CHAR_UTILITIES=&gtCR_LF&nbsp;IN&nbsp;LS_EXCEL-MATNR&nbsp;WITH&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REPLACE&nbsp;ALL&nbsp;OCCURRENCES&nbsp;OF&nbsp;CL_ABAP_CHAR_UTILITIES=&gtHORIZONTAL_TAB&nbsp;IN&nbsp;LS_EXCEL-MATNR&nbsp;WITH&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;LS_EXCEL-MATNR&nbsp;NO-GAPS.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;자재번호&nbsp;컨버전&nbsp;루틴&nbsp;추가&nbsp;(0채우기)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_MATN1_INPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;=&nbsp;LS_EXCEL-MATNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUTPUT&nbsp;=&nbsp;LS_EXCEL-MATNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;공급업체&nbsp;컨버전&nbsp;(LIFNR&nbsp;10자리&nbsp;DB에&nbsp;맞춰&nbsp;0&nbsp;채우기)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INPUT&nbsp;&nbsp;=&nbsp;LS_EXCEL-LIFNR<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUTPUT&nbsp;=&nbsp;LS_EXCEL-LIFNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;GS_DATA.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-LIFNR&nbsp;&nbsp;=&nbsp;LS_EXCEL-LIFNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-PDATE&nbsp;&nbsp;=&nbsp;LS_EXCEL-PDATE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-MATNR&nbsp;&nbsp;=&nbsp;LS_EXCEL-MATNR.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-QCHARG&nbsp;=&nbsp;LS_EXCEL-QCHARG.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-ZSTATS&nbsp;=&nbsp;LS_EXCEL-ZSTATS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-REMARK&nbsp;=&nbsp;LS_EXCEL-REMARK.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;GS_DATA-MODE&nbsp;&nbsp;&nbsp;=&nbsp;'I'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;MAKTX&nbsp;INTO&nbsp;GS_DATA-MAKTX&nbsp;FROM&nbsp;MAKT&nbsp;WHERE&nbsp;MATNR&nbsp;=&nbsp;GS_DATA-MATNR&nbsp;AND&nbsp;SPRAS&nbsp;=&nbsp;SY-LANGU.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;NAME1&nbsp;INTO&nbsp;GS_DATA-LIFNR_NM&nbsp;FROM&nbsp;LFA1&nbsp;WHERE&nbsp;LIFNR&nbsp;=&nbsp;GS_DATA-LIFNR.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_CELL_STYLE&nbsp;USING&nbsp;'MATNR'&nbsp;&nbsp;CL_GUI_ALV_GRID=&gtMC_STYLE_ENABLED&nbsp;CHANGING&nbsp;GS_DATA-CELLSTYLES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;SET_CELL_STYLE&nbsp;USING&nbsp;'QCHARG'&nbsp;CL_GUI_ALV_GRID=&gtMC_STYLE_ENABLED&nbsp;CHANGING&nbsp;GS_DATA-CELLSTYLES.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;GS_DATA&nbsp;TO&nbsp;GT_DATA.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;화면&nbsp;갱신&nbsp;및&nbsp;완료&nbsp;메시지<br />
+&nbsp;&nbsp;PERFORM&nbsp;REFRESH_GRID.<br />
+&nbsp;&nbsp;MESSAGE&nbsp;S000(00)&nbsp;WITH&nbsp;'엑셀&nbsp;데이터가&nbsp;화면에&nbsp;로드되었습니다.&nbsp;확인&nbsp;후&nbsp;[저장]을&nbsp;눌러주세요.'.<br />
+ENDFORM.                    "EXCEL_UPLOAD<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;ALV&nbsp;세팅&nbsp;관련&nbsp;Form<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_LAYOUT.<br />
+&nbsp;&nbsp;CLEAR&nbsp;GS_LAYOUT.<br />
+<br />
+&nbsp;&nbsp;GS_LAYOUT-SEL_MODE&nbsp;&nbsp;&nbsp;=&nbsp;'D'.<br />
+&nbsp;&nbsp;GS_LAYOUT-ZEBRA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;GS_LAYOUT-CWIDTH_OPT&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;GS_LAYOUT-STYLEFNAME&nbsp;=&nbsp;'CELLSTYLES'.<br />
+ENDFORM.                    "SET_LAYOUT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_FIELDCAT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_FIELDCAT.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_FCAT&nbsp;TYPE&nbsp;LVC_S_FCAT.<br />
+<br />
+&nbsp;&nbsp;DEFINE&nbsp;_ADD_FCAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LS_FCAT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-FIELDNAME&nbsp;=&nbsp;&1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-COLTEXT&nbsp;&nbsp;&nbsp;=&nbsp;&2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-EDIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&3.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-REF_TABLE&nbsp;=&nbsp;&4.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-REF_FIELD&nbsp;=&nbsp;&5.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_FCAT&nbsp;TO&nbsp;GT_FCAT.<br />
+&nbsp;&nbsp;END-OF-DEFINITION.<br />
+<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'LIFNR'&nbsp;&nbsp;&nbsp;&nbsp;'공급업체'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'LFA1'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'LIFNR'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'LIFNR_NM'&nbsp;'공급업체명'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'PDATE'&nbsp;&nbsp;&nbsp;&nbsp;'입고일자'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'ZSDT5053'&nbsp;'PDATE'.<br />
+<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'MATNR'&nbsp;&nbsp;&nbsp;&nbsp;'자재번호'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'MARA'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'MATNR'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'MAKTX'&nbsp;&nbsp;&nbsp;&nbsp;'자재명'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''.<br />
+<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'QCHARG'&nbsp;&nbsp;&nbsp;'제조번호'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'ZSDT5053'&nbsp;'QCHARG'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'ZSTATS'&nbsp;&nbsp;&nbsp;'상태'&nbsp;''&nbsp;'ZSDT5053'&nbsp;'ZSTATS'.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;비활성화<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'STATS_NM'&nbsp;'상태명'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'REMARK'&nbsp;&nbsp;&nbsp;'비고'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'X'&nbsp;'ZSDT5053'&nbsp;'REMARK'.<br />
+<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'VBELN'&nbsp;&nbsp;&nbsp;&nbsp;'판매문서'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'ZSDT5053'&nbsp;'VBELN'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'POSNR'&nbsp;&nbsp;&nbsp;&nbsp;'판매품목'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'ZSDT5053'&nbsp;'POSNR'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'VKBUR'&nbsp;&nbsp;&nbsp;&nbsp;'영업소'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'ZSDT5053'&nbsp;'VKBUR'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'VKBUR_NM'&nbsp;'영업소명'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'KUNNR'&nbsp;&nbsp;&nbsp;&nbsp;'판매처'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'ZSDT5053'&nbsp;'KUNNR'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'KUNNR_NM'&nbsp;'판매처명'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;''&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'MENGE'&nbsp;&nbsp;&nbsp;&nbsp;'수량'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'ZSDT5053'&nbsp;'MENGE'.<br />
+&nbsp;&nbsp;_ADD_FCAT&nbsp;'MEINS'&nbsp;&nbsp;&nbsp;&nbsp;'단위'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;''&nbsp;&nbsp;'ZSDT5053'&nbsp;'MEINS'.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;=====================================================================<br />
+&nbsp;&nbsp;"&nbsp;수량(MENGE)&nbsp;필드&nbsp;소수점&nbsp;안보이게&nbsp;처리<br />
+&nbsp;&nbsp;"&nbsp;=====================================================================<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;GT_FCAT&nbsp;INTO&nbsp;LS_FCAT&nbsp;WITH&nbsp;KEY&nbsp;FIELDNAME&nbsp;=&nbsp;'MENGE'.<br />
+&nbsp;&nbsp;IF&nbsp;SY-SUBRC&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR:&nbsp;LS_FCAT-REF_TABLE,&nbsp;LS_FCAT-REF_FIELD.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;데이터&nbsp;타입을&nbsp;수량(QUAN)에서&nbsp;일반&nbsp;소수(DEC)로&nbsp;변경하여&nbsp;단위&nbsp;종속성을&nbsp;끊습니다.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-DATATYPE&nbsp;&nbsp;&nbsp;=&nbsp;'DEC'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-DECIMALS&nbsp;&nbsp;&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-DECIMALS_O&nbsp;=&nbsp;'0'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;수량이&nbsp;0일&nbsp;때&nbsp;0.000&nbsp;대신&nbsp;빈칸으로&nbsp;보이길&nbsp;원하시면&nbsp;아래&nbsp;주석을&nbsp;해제하세요.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LS_FCAT-NO_ZERO&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;'X'.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;GT_FCAT&nbsp;FROM&nbsp;LS_FCAT&nbsp;INDEX&nbsp;SY-TABIX.<br />
+&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;"&nbsp;=====================================================================<br />
+<br />
+ENDFORM.                    "SET_FIELDCAT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;SET_EVENT<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM SET_EVENT.<br />
+&nbsp;&nbsp;CREATE&nbsp;OBJECT&nbsp;GV_EVENT_RECEIVER.<br />
+&nbsp;&nbsp;SET&nbsp;HANDLER&nbsp;GV_EVENT_RECEIVER-&gtHANDLE_DATA_CHANGED&nbsp;FOR&nbsp;GV_GRID.<br />
+ENDFORM.                    "SET_EVENT<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;REFRESH_GRID<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM REFRESH_GRID.<br />
+&nbsp;&nbsp;DATA:&nbsp;LS_STBL&nbsp;TYPE&nbsp;LVC_S_STBL.<br />
+&nbsp;&nbsp;LS_STBL-ROW&nbsp;=&nbsp;'X'.&nbsp;LS_STBL-COL&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;GV_GRID-&gtREFRESH_TABLE_DISPLAY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS_STABLE&nbsp;=&nbsp;LS_STBL.<br />
+ENDFORM.                    "REFRESH_GRID<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

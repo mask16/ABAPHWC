@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZEX_CUSTOMS_EXP_DOWN</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZEX_CUSTOMS_EXP_DOWN</h2>
+<h3> Description: 관세환급_수출신고필증_DOWNLOAD</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION ZEX_CUSTOMS_EXP_DOWN.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  EXPORTING<br />
+*"     REFERENCE(P_ERRX) TYPE  CHAR1<br />
+*"     REFERENCE(P_ERRTEXT) TYPE  CHAR100<br />
+*"  TABLES<br />
+*"      P_ITAB STRUCTURE  ZEXST_406<br />
+*"----------------------------------------------------------------------<br />
+*  IT_CUSTOMS_EXP[] = P_ITAB[].<br />
+*<br />
+** LOOP<br />
+*  PERFORM CUSTOMS_RETURN_FILEID_SET USING CUSTOMS_RETURN_FILDID.<br />
+*<br />
+*  LOOP AT IT_CUSTOMS_EXP WHERE CHECK = 'X'.<br />
+*    SELECT * FROM ZEX406 WHERE ZEXDCL = IT_CUSTOMS_EXP-ZEXDCL.<br />
+*      IF ZEX406-ZCUSTX = 'X'.<br />
+*        MOVE 'X' TO IT_CUSTOMS_EXP-PROCX.<br />
+*        MODIFY IT_CUSTOMS_EXP.<br />
+*        CONTINUE.<br />
+*      ENDIF.<br />
+*<br />
+*      MOVE-CORRESPONDING ZEX406 TO IT_DOWN_EXP.<br />
+*<br />
+**     란<br />
+*      SELECT * FROM ZEX407 WHERE ZEXDCL = ZEX406-ZEXDCL.<br />
+*        MOVE-CORRESPONDING ZEX407 TO IT_DOWN_EXP.<br />
+*<br />
+*        WRITE ZEX407-ZDCKMT       TO CUSTOMS_NUM CURRENCY ZEX407-ZCRKRW.<br />
+*        PERFORM WRITE_FIELD_NO_MASK  USING CUSTOMS_NUM.<br />
+*        WRITE CUSTOMS_NUM         TO IT_DOWN_EXP-ZDCKMT   RIGHT-JUSTIFIED.<br />
+*<br />
+**       란별행<br />
+*        SELECT * FROM ZEX408 WHERE ZEXDCL = ZEX407-ZEXDCL<br />
+*                               AND ZRANNO = ZEX407-ZRANNO.<br />
+*<br />
+*          MOVE-CORRESPONDING ZEX408 TO IT_DOWN_EXP.<br />
+*          MOVE ZEX407-ZGOODNM       TO IT_DOWN_EXP-ZGOODNM.<br />
+*<br />
+*          WRITE ZEX408-NETWR        TO CUSTOMS_NUM CURRENCY ZEX408-WAERK.<br />
+*          PERFORM WRITE_FIELD_NO_MASK USING CUSTOMS_NUM.<br />
+*          WRITE CUSTOMS_NUM         TO IT_DOWN_EXP-NETWR    RIGHT-JUSTIFIED.<br />
+*<br />
+*          WRITE ZEX408-KWMENG       TO CUSTOMS_NUM.<br />
+*          PERFORM WRITE_FIELD_NO_MASK  USING CUSTOMS_NUM.<br />
+*          WRITE CUSTOMS_NUM         TO IT_DOWN_EXP-KWMENG   RIGHT-JUSTIFIED.<br />
+*<br />
+*          APPEND IT_DOWN_EXP.<br />
+*          V_TABIX = SY-TABIX.<br />
+*        ENDSELECT.<br />
+*      ENDSELECT.<br />
+*<br />
+*      READ TABLE IT_DOWN_EXP INDEX V_TABIX.<br />
+*      MOVE '}}~~' TO IT_DOWN_EXP-ENDXX2.<br />
+*      MODIFY IT_DOWN_EXP INDEX V_TABIX.<br />
+*    ENDSELECT.<br />
+*  ENDLOOP.<br />
+*<br />
+** ERROR CHECK<br />
+*  LOOP AT IT_DOWN_EXP.<br />
+*    PERFORM CUSTOMS_SPECIAL_CHAR_CHECK USING IT_DOWN_EXP-ZGOODNM P_ERRTEXT.<br />
+*    IF NOT P_ERRTEXT IS INITIAL.<br />
+*      CONCATENATE IT_DOWN_EXP-ZEXDCL ':란-&gt품명-&gt특수문자:' P_ERRTEXT INTO P_ERRTEXT.<br />
+*      MOVE 'X' TO P_ERRX. EXIT.<br />
+*    ENDIF.<br />
+*    PERFORM CUSTOMS_SPECIAL_CHAR_CHECK USING IT_DOWN_EXP-ZIDGR1 P_ERRTEXT.<br />
+*    IF NOT P_ERRTEXT IS INITIAL.<br />
+*      CONCATENATE IT_DOWN_EXP-ZEXDCL ':란-&gt규격명세-&gt성분1-&gt특수문자:' P_ERRTEXT INTO P_ERRTEXT.<br />
+*      MOVE 'X' TO P_ERRX. EXIT.<br />
+*    ENDIF.<br />
+*  ENDLOOP.<br />
+*  IF P_ERRX = 'X'.<br />
+*    EXIT.<br />
+*  ENDIF.<br />
+*<br />
+** END<br />
+*  PERFORM CUSTOMS_RETURN_FILE_SAVE USING P_ERRX P_ERRTEXT.<br />
+*  P_ITAB[] = IT_CUSTOMS_EXP[].<br />
+
+<div class="codeComment">*       <a href ="global-zex_customs_exp_down.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*Messages<br />
+*----------------------------------------------------------<br />
+*<br />
+* Message class: ZEX01<br />
+*000   &<br />
+*015   문서범주는 동일해야 합니다<br />
+*027   관리번호 [&]은(는) 다른 사용자가 처리중입니다. 사용자 : &<br />
+*039   Incoterms는 동일해야 합니다.<br />
+*040   판매처는 동일해야 합니다.<br />
+*041   인도처는 동일해야 합니다.<br />
+*<br />
+* Message class: ZIM01<br />
+*019   Long Text [&]은(는) 최대 [&]라인 입력 가능. [&]라인 이후는 삭제됩니다.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

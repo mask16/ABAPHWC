@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZPPR9003</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZPPR9003</h2>
+<h3> Description: 테이블데이터 업로드</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+************************************************************************<br />
+*&nbsp;Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<br />
+*&nbsp;Abstract&nbsp;&nbsp;:&nbsp;&nbsp;Table에&nbsp;Data&nbsp;Upload하는&nbsp;Program<br />
+*&nbsp;Input&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;Upload시킬&nbsp;Table,&nbsp;Upload&nbsp;File<br />
+*&nbsp;Output&nbsp;&nbsp;&nbsp;&nbsp;:<br />
+*&nbsp;SAP&nbsp;Functions:<br />
+*&nbsp;Modification&nbsp;Log:<br />
+*&nbsp;Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Programmer&nbsp;&nbsp;&nbsp;Description(Reason)<br />
+*<br />
+************************************************************************<br />
+   </div>
+   <div class="code">
+REPORT ZPPR9003 MESSAGE-ID  zmm01 NO STANDARD PAGE HEADING.<br />
+<br />
+TABLES: dd03l, " 테이블필드<br />
+dd01l, " 도메인<br />
+dd02t, " R/3-DD: SAP 테이블 텍스트<br />
+dd17s, " R/3 S_SECINDEX: 보조 인덱스, 필드<br />
+dd12t, " DD12L에 대한 텍스트 테이블<br />
+dd04t. " R/3 DD: Data element 텍스트<br />
+<br />
+DATA: BEGIN OF struct OCCURS 10,<br />
+position LIKE dd03l-position,<br />
+fieldname(30),<br />
+inttype TYPE c,<br />
+intlen TYPE i,<br />
+END OF struct.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;The&nbsp;dynamic&nbsp;program&nbsp;source&nbsp;table<br />
+   </div>
+   <div class="code">
+DATA: BEGIN OF inctabl OCCURS 10,<br />
+line(72),<br />
+END OF inctabl.<br />
+DATA: lng TYPE i,<br />
+typestring(20),<br />
+typestring2(20).<br />
+<br />
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-100.<br />
+PARAMETERS tab_name LIKE dd03l-tabname OBLIGATORY<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MEMORY&nbsp;ID&nbsp;DTB.<br />
+PARAMETERS : p_mod  RADIOBUTTON GROUP r1 DEFAULT 'X',<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_del&nbsp;&nbsp;RADIOBUTTON&nbsp;GROUP&nbsp;r1.<br />
+SELECTION-SCREEN END OF BLOCK b1.<br />
+<br />
+AT SELECTION-SCREEN.   "standard table은 못하게 막음<br />
+&nbsp;&nbsp;CONDENSE&nbsp;tab_name&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;IF&nbsp;tab_name(1)&nbsp;=&nbsp;'Z'.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MESSAGE&nbsp;e001&nbsp;WITH&nbsp;'CBO&nbsp;Table만&nbsp;Upload가능합니다!'.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+START-OF-SELECTION.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Dynamic&nbsp;internal&nbsp;table&nbsp;stucture<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;select_field_from_table.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Create&nbsp;the&nbsp;dynamic&nbsp;internal&nbsp;table&nbsp;definition&nbsp;in&nbsp;the&nbsp;dyn.&nbsp;program<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;PERFORM&nbsp;make_prg.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Create&nbsp;the&nbsp;code&nbsp;processes&nbsp;the&nbsp;dynamic&nbsp;internal&nbsp;table<br />
+<br />
+*&nbsp;Create&nbsp;and&nbsp;run&nbsp;the&nbsp;dynamic&nbsp;program<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;INSERT&nbsp;REPORT&nbsp;'ZDYNPRO'(001)&nbsp;FROM&nbsp;inctabl.<br />
+&nbsp;&nbsp;SUBMIT&nbsp;zdynpro&nbsp;VIA&nbsp;SELECTION-SCREEN.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;Internal&nbsp;Table&nbsp;DownLoad.<br />
+*&nbsp;PERFORM&nbsp;download_result.<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+*&&nbsp;Form&nbsp;SELECT_FIELD_FROM_TABLE<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+*&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+*&nbsp;--&gt&nbsp;p1&nbsp;text<br />
+*&nbsp;&lt--&nbsp;p2&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM select_field_from_table.<br />
+&nbsp;&nbsp;CLEAR&nbsp;dd03l.<br />
+&nbsp;&nbsp;SELECT&nbsp;position&nbsp;fieldname&nbsp;inttype&nbsp;intlen<br />
+&nbsp;&nbsp;INTO&nbsp;(dd03l-position,dd03l-fieldname,<br />
+&nbsp;&nbsp;dd03l-inttype,dd03l-intlen)<br />
+&nbsp;&nbsp;FROM&nbsp;dd03l<br />
+&nbsp;&nbsp;WHERE&nbsp;as4local&nbsp;=&nbsp;'A'<br />
+&nbsp;&nbsp;AND&nbsp;tabname&nbsp;=&nbsp;tab_name.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MOVE-CORRESPONDING&nbsp;dd03l&nbsp;TO&nbsp;struct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;struct.<br />
+&nbsp;&nbsp;ENDSELECT.<br />
+&nbsp;&nbsp;DELETE&nbsp;struct&nbsp;WHERE&nbsp;position&nbsp;=&nbsp;1.<br />
+&nbsp;&nbsp;SORT&nbsp;struct&nbsp;BY&nbsp;position.<br />
+ENDFORM. " SELECT_FIELD_FROM_TABLE<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+<br />
+*&&nbsp;Form&nbsp;DOWNLOAD_RESULT<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+*&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+*&nbsp;--&gt&nbsp;p1&nbsp;text<br />
+*&nbsp;&lt--&nbsp;p2&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM download_result.<br />
+&nbsp;&nbsp;CALL FUNCTION 'DOWNLOAD'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;=&nbsp;'C:SAPworkdirZLGHTEST.txt'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filetype&nbsp;=&nbsp;'DAT'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_tab&nbsp;=&nbsp;inctabl.<br />
+<br />
+ENDFORM. " DOWNLOAD_RESULT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+<br />
+*&&nbsp;Form&nbsp;MAKE_ITAB<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+*&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+*&nbsp;--&gt&nbsp;p1&nbsp;text<br />
+*&nbsp;&lt--&nbsp;p2&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM make_itab.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'data:&nbsp;begin&nbsp;of&nbsp;dyntab&nbsp;occurs&nbsp;10,'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;struct.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;:&nbsp;typestring,&nbsp;typestring2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;struct-fieldname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lng&nbsp;=&nbsp;STRLEN(&nbsp;struct-fieldname&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;NOT&nbsp;struct-intlen&nbsp;IS&nbsp;INITIAL&nbsp;.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;struct-inttype&nbsp;=&nbsp;'P'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typestring2&nbsp;=&nbsp;'(13),'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line+lng&nbsp;=&nbsp;typestring2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSEIF&nbsp;struct-inttype&nbsp;=&nbsp;'D'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typestring2&nbsp;=&nbsp;'(10),'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line+lng&nbsp;=&nbsp;typestring2.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typestring(1)&nbsp;=&nbsp;'('.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typestring+1(4)&nbsp;=&nbsp;struct-intlen.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typestring+10&nbsp;=&nbsp;'),'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONDENSE&nbsp;typestring&nbsp;NO-GAPS.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line+lng&nbsp;=&nbsp;typestring.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;inctabl-line+15&nbsp;=&nbsp;','.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;inctabl-line+lng&nbsp;=&nbsp;TYPESTRING.<br />
+*&nbsp;inctabl-line+15&nbsp;=&nbsp;','.&nbsp;APPEND&nbsp;inctabl.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;inctabl-line+15&nbsp;=&nbsp;'type&nbsp;'.<br />
+*&nbsp;inctabl-line+21&nbsp;=&nbsp;struct-inttype.<br />
+*&nbsp;inctabl-line+22&nbsp;=&nbsp;','.&nbsp;APPEND&nbsp;inctabl.<br />
+*&nbsp;inctabl-line+15&nbsp;=&nbsp;','.&nbsp;APPEND&nbsp;inctabl.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'end&nbsp;of&nbsp;dyntab.&nbsp;'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+ENDFORM. " MAKE_ITAB<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+<br />
+*&&nbsp;Form&nbsp;MAKE_PRG<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+*&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+*&nbsp;--&gt&nbsp;p1&nbsp;text<br />
+*&nbsp;&lt--&nbsp;p2&nbsp;text<br />
+*----------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+FORM make_prg.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'REPORT&nbsp;ZDYNPRO&nbsp;MESSAGE-ID&nbsp;ZMM01.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;PERFORM&nbsp;make_itab.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;'DATA&nbsp;CP_TAB&nbsp;LIKE&nbsp;'&nbsp;tab_name&nbsp;INTO&nbsp;inctabl-line<br />
+&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;CONCATENATE&nbsp;inctabl-line&nbsp;'OCCURS&nbsp;0&nbsp;WITH&nbsp;HEADER&nbsp;LINE.'<br />
+&nbsp;&nbsp;INTO&nbsp;inctabl-line&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'DATA&nbsp;:&nbsp;file&nbsp;LIKE&nbsp;rlgrap-filename,CNT&nbsp;TYPE&nbsp;I.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=<br />
+&nbsp;&nbsp;'SELECTION-SCREEN&nbsp;BEGIN&nbsp;OF&nbsp;BLOCK&nbsp;b1&nbsp;WITH&nbsp;FRAME&nbsp;TITLE&nbsp;text-100.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=<br />
+'PARAMETERS p_fname(128) TYPE c LOWER CASE DEFAULT ''c:w'' OBLIGATORY.'.<br />
+<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'SELECTION-SCREEN&nbsp;END&nbsp;OF&nbsp;BLOCK&nbsp;b1.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'AT&nbsp;SELECTION-SCREEN&nbsp;ON&nbsp;VALUE-REQUEST&nbsp;FOR&nbsp;p_fname.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'&nbsp;PERFORM&nbsp;call_ws_filename_get.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'START-OF-SELECTION.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'PERFORM&nbsp;data_uploading.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'PERFORM&nbsp;insert_data_to_table.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'FORM&nbsp;call_ws_filename_get.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'CALL&nbsp;FUNCTION&nbsp;''WS_FILENAME_GET'''.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'EXPORTING'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'def_filename&nbsp;=&nbsp;file'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'def_path&nbsp;=&nbsp;''c:SAPworkdir'''.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'mask&nbsp;=&nbsp;'',*.txt,*.TXT.'''.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'mode&nbsp;=&nbsp;''O'''.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'title&nbsp;=&nbsp;''Upload할&nbsp;파일을&nbsp;선택하십시요'''.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'IMPORTING'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'filename&nbsp;=&nbsp;p_fname'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'EXCEPTIONS'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'inv_winsys&nbsp;=&nbsp;1'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'no_batch&nbsp;=&nbsp;2'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'selection_cancel&nbsp;=&nbsp;3'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'selection_error&nbsp;=&nbsp;4'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'OTHERS&nbsp;=&nbsp;5.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'ENDFORM.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'FORM&nbsp;data_uploading.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'CLEAR:&nbsp;dyntab,dyntab[].'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'CALL&nbsp;FUNCTION&nbsp;''WS_UPLOAD'''.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'EXPORTING'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'codepage&nbsp;=&nbsp;''&nbsp;'''.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'filename&nbsp;=&nbsp;p_fname'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'filetype&nbsp;=&nbsp;''DAT'''.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'TABLES'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'data_tab&nbsp;=&nbsp;dyntab'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'EXCEPTIONS'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'conversion_error&nbsp;=&nbsp;1'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'file_open_error&nbsp;=&nbsp;2'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'file_read_error&nbsp;=&nbsp;3'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'invalid_type&nbsp;=&nbsp;4'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'no_batch&nbsp;=&nbsp;5'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'unknown_error&nbsp;=&nbsp;6'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'Invalid_table_width&nbsp;=&nbsp;7'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'gui_refuse_filetransfer&nbsp;=&nbsp;8'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'customer_error&nbsp;=&nbsp;9.'.APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'CASE&nbsp;sy-subrc.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'WHEN&nbsp;1.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''CONVERSION&nbsp;ERR''.STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'WHEN&nbsp;2.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''FILE&nbsp;OPEN&nbsp;ERR''.STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'WHEN&nbsp;3.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''FILE&nbsp;READ&nbsp;ERR''.STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'WHEN&nbsp;4.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''INVALID&nbsp;TYPE&nbsp;ERR''.STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'WHEN&nbsp;5.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''NO&nbsp;BATCH&nbsp;ERROR''.&nbsp;STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'WHEN&nbsp;6.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''UNKNOWN&nbsp;ERROR''.STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=<br />
+&nbsp;&nbsp;'WHEN&nbsp;7.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''INALID&nbsp;TABLE&nbsp;WIDTH''.STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=<br />
+&nbsp;&nbsp;'WHEN&nbsp;8.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''GUI&nbsp;REFUSE&nbsp;FILETRANSFER''.STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'WHEN&nbsp;9.&nbsp;MESSAGE&nbsp;i000&nbsp;WITH&nbsp;''CUSTOMER&nbsp;ERROR''.&nbsp;STOP.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'&nbsp;ENDCASE.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'ENDFORM.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'FORM&nbsp;insert_data_to_table.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'LOOP&nbsp;AT&nbsp;dyntab.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'MOVE-CORRESPONDING&nbsp;dyntab&nbsp;TO&nbsp;cp_tab.'.<br />
+&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'append&nbsp;cp_tab.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'ENDLOOP.'.&nbsp;APPEND&nbsp;inctabl.<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;&nbsp;CONCATENATE&nbsp;'DELETE&nbsp;&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;'&nbsp;tab_name&nbsp;'.'&nbsp;&nbsp;INTO<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line<br />
+*&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+*&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+<br />
+*&nbsp;&nbsp;Modify,&nbsp;Delete&nbsp;선택&nbsp;처리<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;p_mod&nbsp;=&nbsp;'X'.&nbsp;&nbsp;&nbsp;&nbsp;"Modify<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'MODIFY'&nbsp;tab_name&nbsp;INTO&nbsp;inctabl-line&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;inctabl-line&nbsp;'FROM&nbsp;TABLE&nbsp;CP_TAB.'&nbsp;INTO&nbsp;inctabl-line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'if&nbsp;sy-subrc&nbsp;=&nbsp;0.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'message&nbsp;s010.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'else.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'message&nbsp;e021.'.&nbsp;&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'endif.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'ENDFORM.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;ELSE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Delete<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;'DELETE'&nbsp;tab_name&nbsp;INTO&nbsp;inctabl-line&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;inctabl-line&nbsp;'FROM&nbsp;TABLE&nbsp;CP_TAB.'&nbsp;INTO&nbsp;inctabl-line<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SEPARATED&nbsp;BY&nbsp;space.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'if&nbsp;sy-subrc&nbsp;=&nbsp;0.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'commit&nbsp;work.&nbsp;message&nbsp;s010.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'elseif&nbsp;sy-subrc&nbsp;=&nbsp;4.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'rollback&nbsp;work.&nbsp;message&nbsp;w021.'.&nbsp;&nbsp;&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'endif.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;inctabl-line&nbsp;=&nbsp;'ENDFORM.'.&nbsp;APPEND&nbsp;inctabl.<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDFORM. "MAKE_PRG<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

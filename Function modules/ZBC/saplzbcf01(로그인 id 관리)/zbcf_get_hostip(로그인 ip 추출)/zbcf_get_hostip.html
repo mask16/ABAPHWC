@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZBCF_GET_HOSTIP</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZBCF_GET_HOSTIP</h2>
+<h3> Description: 로그인 IP 추출</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zbcf_get_hostip.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  EXPORTING<br />
+*"     REFERENCE(E_IP) TYPE  NI_NODEADDR<br />
+*"----------------------------------------------------------------------<br />
+*----------------------------------------------------------------------*<br />
+* Change History<br />
+*----------------------------------------------------------------------*<br />
+* Date          Developer        Description<br />
+*----------------------------------------------------------------------*<br />
+* 2017/08/24    천준필              Initial Released<br />
+*----------------------------------------------------------------------*<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zbcf_get_hostip.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;desti&nbsp;OCCURS&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;msxxlist.<br />
+&nbsp;&nbsp;DATA:&nbsp;END&nbsp;OF&nbsp;desti.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;usr_list&nbsp;OCCURS&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDE&nbsp;STRUCTURE&nbsp;uinfo.<br />
+&nbsp;&nbsp;DATA:&nbsp;END&nbsp;OF&nbsp;usr_list.<br />
+<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;serverp&nbsp;OCCURS&nbsp;0,&nbsp;"&nbsp;Presentationserver<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s(32),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sl(15),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x(4)&nbsp;TYPE&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;l(5),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h(5),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m(5),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pro(4),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;commu,<br />
+&nbsp;&nbsp;END&nbsp;OF&nbsp;serverp.<br />
+<br />
+&nbsp;&nbsp;CLEAR:&nbsp;e_ip.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&gtServer IP address<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;REFRESH&nbsp;desti.<br />
+&nbsp;&nbsp;CALL FUNCTION 'RFC_GET_LOCAL_SERVERS'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hosts&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;desti<br />
+&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_available&nbsp;=&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;desti&nbsp;WITH&nbsp;KEY&nbsp;host&nbsp;=&nbsp;sy-host.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;REFRESH&nbsp;usr_list.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'THUSRINFO' DESTINATION desti-name<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TABLES<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;usr_tabl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;usr_list<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;communication_failure&nbsp;=&nbsp;17.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;'17'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serverp-commu&nbsp;=&nbsp;'P'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serverp-commu&nbsp;=&nbsp;'&nbsp;'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;usr_list&nbsp;WITH&nbsp;KEY&nbsp;bname&nbsp;=&nbsp;sy-uname.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;EQ&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;serverp-s.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serverp-s&nbsp;=&nbsp;usr_list-term.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serverp-x&nbsp;=&nbsp;usr_list-hostadr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;ip_hex2ascii_n&nbsp;USING&nbsp;serverp-x&nbsp;CHANGING&nbsp;serverp-sl.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e_ip&nbsp;&nbsp;&nbsp;=&nbsp;serverp-sl.<br />
+   </div>
+   <div class="codeComment">
+* TERM = SERVERP-S.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CALL&nbsp;METHOD&nbsp;cl_gui_frontend_services=&gtget_ip_address<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECEIVING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ip_address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;e_ip<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cntl_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_no_gui&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_supported_by_gui&nbsp;=&nbsp;3<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* CALL FUNCTION 'TMP_GUI_GET_COMPUTERNAME'<br />
+* IMPORTING<br />
+* COMPUTERNAME = TERM<br />
+* EXCEPTIONS<br />
+* FAILED = 1<br />
+* OTHERS = 2.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFUNCTION.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*& Form IP_HEX2ASCII_N<br />
+*&---------------------------------------------------------------------*<br />
+* text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM ip_hex2ascii_n USING desi CHANGING ergebnis.<br />
+&nbsp;&nbsp;DATA:&nbsp;t&nbsp;TYPE&nbsp;x,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tt(3)&nbsp;TYPE&nbsp;c,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;help&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;help1&nbsp;TYPE&nbsp;i&nbsp;VALUE&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;desti_x(8)&nbsp;TYPE&nbsp;x&nbsp;,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;desi_hlp&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h_type.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* unicode<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;FIELD&nbsp;desi&nbsp;LENGTH&nbsp;desi_hlp&nbsp;IN&nbsp;BYTE&nbsp;MODE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* non-unicode BYTE CHARACTER<br />
+* DESCRIBE FIELD DESI LENGTH DESI_HLP IN CHARACTER MODE.<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DESCRIBE&nbsp;FIELD&nbsp;desi&nbsp;TYPE&nbsp;h_type.<br />
+<br />
+&nbsp;&nbsp;IF&nbsp;desi_hlp&nbsp;&lt&gt&nbsp;4&nbsp;AND&nbsp;desi_hlp&nbsp;&lt&gt&nbsp;8.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'Length&nbsp;of&nbsp;processed&nbsp;IP-address&nbsp;is'(026),&nbsp;desi_hlp,&nbsp;'.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WRITE:&nbsp;/&nbsp;'It&nbsp;should&nbsp;be&nbsp;of&nbsp;length&nbsp;4&nbsp;or&nbsp;8&nbsp;!'(027).<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;h_type&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;desti_x&nbsp;=&nbsp;desi.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;desi_hlp&nbsp;=&nbsp;desi_hlp&nbsp;-&nbsp;1.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;ergebnis.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DO&nbsp;desi_hlp&nbsp;TIMES.&nbsp;"&nbsp;4&nbsp;or&nbsp;8&nbsp;Bytes&nbsp;?3&nbsp;or&nbsp;7&nbsp;times<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t&nbsp;=&nbsp;desti_x+help1(1).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;hex2ascii&nbsp;USING&nbsp;t&nbsp;CHANGING&nbsp;tt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;help&nbsp;=&nbsp;strlen(&nbsp;ergebnis&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ergebnis+help&nbsp;=&nbsp;tt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;help&nbsp;=&nbsp;strlen(&nbsp;ergebnis&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ergebnis+help&nbsp;=&nbsp;'.'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;help1&nbsp;=&nbsp;help1&nbsp;+&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDDO.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;t&nbsp;=&nbsp;desti_x+help1(1).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;hex2ascii&nbsp;USING&nbsp;t&nbsp;CHANGING&nbsp;tt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;help&nbsp;=&nbsp;strlen(&nbsp;ergebnis&nbsp;).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ergebnis+help&nbsp;=&nbsp;tt.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM. " IP_HEX2ASCII_N<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*& Form HEX2ASCII<br />
+*&---------------------------------------------------------------------*<br />
+* text<br />
+*----------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM hex2ascii USING t CHANGING v.<br />
+&nbsp;&nbsp;DATA:&nbsp;h&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e(3)&nbsp;TYPE&nbsp;c.<br />
+&nbsp;&nbsp;CLEAR&nbsp;v.<br />
+&nbsp;&nbsp;h&nbsp;=&nbsp;t.<br />
+&nbsp;&nbsp;e&nbsp;=&nbsp;h.<br />
+&nbsp;&nbsp;CONDENSE&nbsp;e.<br />
+&nbsp;&nbsp;v&nbsp;=&nbsp;e.<br />
+ENDFORM. "hex2ascii<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

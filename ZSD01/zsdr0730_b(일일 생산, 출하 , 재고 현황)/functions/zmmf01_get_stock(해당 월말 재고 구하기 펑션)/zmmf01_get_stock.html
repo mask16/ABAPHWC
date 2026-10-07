@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZMMF01_GET_STOCK</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for function ZMMF01_GET_STOCK</h2>
+<h3> Description: 해당 월말 재고 구하기 펑션</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="code">
+FUNCTION zmmf01_get_stock.<br />
+   </div>
+   <div class="codeComment">
+*"----------------------------------------------------------------------<br />
+*"*"Local interface:<br />
+*"  IMPORTING<br />
+*"     REFERENCE(I_MATNR) TYPE  MATNR<br />
+*"     REFERENCE(I_WERKS) TYPE  WERKS_D<br />
+*"     REFERENCE(I_LGORT) TYPE  LGORT_D<br />
+*"     REFERENCE(I_SDATE) TYPE  SPMON<br />
+*"     REFERENCE(I_MTART) TYPE  MTART OPTIONAL<br />
+*"  EXPORTING<br />
+*"     REFERENCE(O_LABST) TYPE  LABST<br />
+*"     REFERENCE(O_VPRSV) TYPE  VPRSV<br />
+*"     REFERENCE(O_VERPR) TYPE  VERPR<br />
+*"     REFERENCE(O_STPRS) TYPE  STPRS<br />
+*"     REFERENCE(O_DMBTR) TYPE  DMBTR<br />
+*"     REFERENCE(O_SALK3) TYPE  DMBTR<br />
+*"     REFERENCE(O_LBKUM) TYPE  LBKUM<br />
+*"  TABLES<br />
+*"      T_MARD STRUCTURE  MARDH OPTIONAL<br />
+*"----------------------------------------------------------------------<br />
+<br />
+<br />
+
+<div class="codeComment">*       <a href ="global-zmmf01_get_stock.html">Global data declarations</a></div><br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;DATA&nbsp;tmp_spmon&nbsp;TYPE&nbsp;spmon.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;p_matnr&nbsp;TYPE&nbsp;matnr,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_werks&nbsp;TYPE&nbsp;werks_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_lgort&nbsp;TYPE&nbsp;lgort_d,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p_sdate&nbsp;TYPE&nbsp;spmon.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;v_sdate&nbsp;&nbsp;TYPE&nbsp;sy-datum.<br />
+<br />
+&nbsp;&nbsp;DATA&nbsp;v_icnt0&nbsp;TYPE&nbsp;i.<br />
+<br />
+&nbsp;&nbsp;CLEAR&nbsp;o_labst.<br />
+&nbsp;&nbsp;p_matnr&nbsp;&nbsp;&nbsp;=&nbsp;i_matnr.<br />
+&nbsp;&nbsp;p_werks&nbsp;&nbsp;&nbsp;=&nbsp;i_werks.<br />
+&nbsp;&nbsp;p_lgort&nbsp;&nbsp;&nbsp;=&nbsp;i_lgort.<br />
+&nbsp;&nbsp;p_sdate&nbsp;&nbsp;&nbsp;=&nbsp;i_sdate.<br />
+<br />
+&nbsp;&nbsp;v_sdate&nbsp;=&nbsp;&nbsp;p_sdate.<br />
+&nbsp;&nbsp;v_sdate+6(2)&nbsp;=&nbsp;'01'.<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 구하는 월 &gt= 현재월 일때는 MARD 에서만 읽음 된다....<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;i_sdate&nbsp;&gt=&nbsp;sy-datum+0(6).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;labst&nbsp;INTO&nbsp;o_labst<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mard<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;matnr&nbsp;=&nbsp;p_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;=&nbsp;p_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;=&nbsp;p_lgort.<br />
+&nbsp;&nbsp;ELSE.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;lfgja&nbsp;lfmon&nbsp;labst&nbsp;insme&nbsp;speme<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;t_mard<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mard<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;matnr&nbsp;=&nbsp;p_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;=&nbsp;p_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;=&nbsp;p_lgort.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;lfgja&nbsp;lfmon&nbsp;labst&nbsp;insme&nbsp;speme<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;t_mard<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mardh<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;matnr&nbsp;=&nbsp;p_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;=&nbsp;p_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;lgort&nbsp;=&nbsp;p_lgort.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SORT&nbsp;t_mard&nbsp;BY&nbsp;lfgja&nbsp;DESCENDING&nbsp;&nbsp;lfmon&nbsp;DESCENDING.<br />
+<br />
+<br />
+   </div>
+   <div class="codeComment">
+* 구하는 월이 존재할 경우 해당 Record 를 읽는다<br />
+<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;t_mard&nbsp;WITH&nbsp;KEY&nbsp;lfgja&nbsp;=&nbsp;p_sdate+0(4)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lfmon&nbsp;=&nbsp;p_sdate+4(2).<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+   </div>
+   <div class="codeComment">
+*          o_labst = t_mard-labst.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o_labst&nbsp;=&nbsp;t_mard-labst&nbsp;+&nbsp;t_mard-insme&nbsp;+&nbsp;t_mard-speme.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ELSE.<br />
+<br />
+   </div>
+   <div class="codeComment">
+** 구하는 월이 MARD 날짜 최신 날짜 보다 크면 그 Record 를 가져온다<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;t_mard&nbsp;INDEX&nbsp;1.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CONCATENATE&nbsp;t_mard-lfgja&nbsp;&nbsp;&nbsp;t_mard-lfmon&nbsp;INTO&nbsp;tmp_spmon&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;i_sdate&nbsp;&gt&nbsp;tmp_spmon&nbsp;.<br />
+   </div>
+   <div class="codeComment">
+*             o_labst = t_mard-labst.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o_labst&nbsp;=&nbsp;t_mard-labst&nbsp;+&nbsp;t_mard-insme&nbsp;+&nbsp;t_mard-speme.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+   </div>
+   <div class="codeComment">
+* 구하는 월에 해당하는 Record 가 없으면 + 1개월씩하면서 구한다<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DO&nbsp;12&nbsp;TIMES.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CALL FUNCTION 'MONTH_PLUS_DETERMINE'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;months&nbsp;&nbsp;=&nbsp;1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;olddate&nbsp;=&nbsp;v_sdate<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IMPORTING<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;newdate&nbsp;=&nbsp;v_sdate.<br />
+<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;v_sdate+0(6)&nbsp;=&nbsp;sy-datum+0(6).<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;t_mard&nbsp;INDEX&nbsp;1.<br />
+   </div>
+   <div class="codeComment">
+*             o_labst = t_mard-labst.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o_labst&nbsp;=&nbsp;t_mard-labst&nbsp;+&nbsp;t_mard-insme&nbsp;+&nbsp;t_mard-speme.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;t_mard&nbsp;WITH&nbsp;KEY&nbsp;lfgja&nbsp;=&nbsp;v_sdate+0(4)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lfmon&nbsp;=&nbsp;v_sdate+4(2)&nbsp;&nbsp;.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*            o_labst = t_mard-labst.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o_labst&nbsp;=&nbsp;t_mard-labst&nbsp;+&nbsp;t_mard-insme&nbsp;+&nbsp;t_mard-speme.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDDO.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+<br />
+<br />
+ENDFUNCTION.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>

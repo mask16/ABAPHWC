@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=EUC-KR" />
+<title>ZNYG_TESTPRG2</title>
+<style type="text/css">
+.code{ font-family:"Courier New", Courier, monospace; color:#000; font-size:14px; background-color:#F2F4F7 }
+  .codeComment {font-family:"Courier New", Courier, monospace; color:#0000F0; font-size:14px; background-color:#F2F4F7 }
+  .normalBold{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; font-weight:800 }
+  .normalBoldLarge{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+</style>
+<style type="text/css">
+  .normal{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px }
+  .footer{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:12px; text-align: center }
+  h2{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:16px; font-weight:800 }
+  h3{ font-family:Arial, Helvetica, sans-serif; color:#000; font-size:14px; font-weight:800 }
+  .outerTable{
+   background-color:#E0E7ED;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-right-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+  .innerTable{
+   background-color:#F2F4F7;
+   width:100%;
+   border-top-width: thin;
+   border-right-width: thin;
+   border-bottom-width: thin;
+   border-left-width: thin;
+   border-top-style: solid;
+   border-right-style: solid;
+   border-bottom-style: solid;
+   border-left-style: solid;
+  }
+</style>
+</head>
+<body>
+<table class="outerTable">
+  <tr class="normalBoldLarge">
+     <td><h2>Code listing for: ZNYG_TESTPRG2</h2>
+<h3> Description: ZNYG_TEST_PRG</h3></td>
+   </tr>
+  <tr>
+     <td>
+     <table class="innerTable">
+       <tr>
+          <td>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;Report&nbsp;&nbsp;ZNYG_TESTPRG<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+*&<br />
+*&<br />
+*&---------------------------------------------------------------------*<br />
+<br />
+   </div>
+   <div class="code">
+REPORT ZNYG_TESTPRG2.<br />
+<br />
+<br />
+DATA : LS_0170 LIKE ZPPT0170,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_0170&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;LS_0170.<br />
+<br />
+DATA : LS_0170_B LIKE ZPPT0170,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LT_0170_B&nbsp;LIKE&nbsp;TABLE&nbsp;OF&nbsp;LS_0170_B.<br />
+<br />
+RANGES : LR_WERKS FOR ZPPT0170-WERKS.<br />
+<br />
+CONSTANTS: LC_CHUNK_SIZE TYPE I VALUE 10000.<br />
+<br />
+LR_WERKS-SIGN = 'I'.<br />
+LR_WERKS-OPTION = 'EQ'.<br />
+LR_WERKS-LOW = '1010'.<br />
+APPEND LR_WERKS. CLEAR LR_WERKS.<br />
+<br />
+LR_WERKS-SIGN = 'I'.<br />
+LR_WERKS-OPTION = 'EQ'.<br />
+LR_WERKS-LOW = '1020'.<br />
+APPEND LR_WERKS.<br />
+<br />
+SELECT * INTO  CORRESPONDING FIELDS OF TABLE LT_0170<br />
+&nbsp;&nbsp;&nbsp;FROM&nbsp;ZPPT0170<br />
+&nbsp;WHERE&nbsp;WERKS&nbsp;IN&nbsp;LR_WERKS.<br />
+<br />
+IF LT_0170 IS NOT INITIAL.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;LT_0170&nbsp;INTO&nbsp;LS_0170.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;임시&nbsp;테이블에&nbsp;데이터&nbsp;하나씩&nbsp;쌓기<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;LS_0170&nbsp;TO&nbsp;LT_0170_B.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;4.&nbsp;임시&nbsp;테이블에&nbsp;쌓인&nbsp;데이터가&nbsp;기준&nbsp;건수(1만&nbsp;건)에&nbsp;도달하면&nbsp;DB&nbsp;반영<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;LINES(&nbsp;LT_0170_B&nbsp;)&nbsp;&gt=&nbsp;LC_CHUNK_SIZE.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;ZPPT0170_BACK&nbsp;FROM&nbsp;TABLE&nbsp;LT_0170_B.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;DB&nbsp;반영&nbsp;후&nbsp;확정&nbsp;지어주고&nbsp;메모리를&nbsp;비움&nbsp;(매우&nbsp;중요!)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK&nbsp;AND&nbsp;WAIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LT_0170_B.<br />
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;"&nbsp;5.&nbsp;루프가&nbsp;다&nbsp;끝난&nbsp;후,&nbsp;1만&nbsp;건&nbsp;단위로&nbsp;안&nbsp;떨어져서&nbsp;남아있는&nbsp;'나머지&nbsp;데이터'&nbsp;처리<br />
+&nbsp;&nbsp;IF&nbsp;LT_0170_B&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;MODIFY&nbsp;ZPPT0170_BACK&nbsp;FROM&nbsp;TABLE&nbsp;LT_0170_B.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COMMIT&nbsp;WORK&nbsp;AND&nbsp;WAIT.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;LT_0170_B..<br />
+&nbsp;&nbsp;ENDIF.<br />
+ENDIF.<br />
+            </div>
+          </td>
+        </tr>
+      </table>
+      </td>
+      </tr>
+   <tr>
+<td class="footer">Extracted by Mass Download version 1.4.3 -ABAP.KO.2026. Sap Release 731</td>
+   </tr>
+</table>
+</body>
+</html>
