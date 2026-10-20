@@ -2501,6 +2501,7 @@ ENDFORM.                    " GET_PCA<br />
    </div>
    <div class="code">
 FORM get_pa .<br />
+&nbsp;&nbsp;DATA&nbsp;lv_sd_valid&nbsp;TYPE&nbsp;c.<br />
 <br />
 &nbsp;&nbsp;CLEAR&nbsp;:&nbsp;gt_pa,&nbsp;gt_pa[],<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_vbeln,&nbsp;gt_vbeln[],&nbsp;gt_vbak,&nbsp;gt_vbak[].<br />
@@ -2519,6 +2520,7 @@ FORM get_pa .<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;bukrs&nbsp;&nbsp;&nbsp;&nbsp;IN&nbsp;so_bukrs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;&nbsp;&nbsp;&nbsp;IN&nbsp;so_werks.<br />
 <br />
+&nbsp;&nbsp;PERFORM&nbsp;exclude_cancelled_billing.<br />
 <br />
 &nbsp;&nbsp;SORT&nbsp;gt_pa&nbsp;BY&nbsp;perio.<br />
 <br />
@@ -2561,14 +2563,20 @@ FORM get_pa .<br />
 &nbsp;&nbsp;DELETE&nbsp;ADJACENT&nbsp;DUPLICATES&nbsp;FROM&nbsp;gt_vbeln.<br />
 <br />
 &nbsp;&nbsp;IF&nbsp;gt_vbeln[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;vbeln&nbsp;auart&nbsp;kunnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;a~vbeln&nbsp;a~auart&nbsp;a~kunnr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;gt_vbak<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;vbak<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;vbak&nbsp;AS&nbsp;a<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;vbuk&nbsp;AS&nbsp;b<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;b~vbeln&nbsp;=&nbsp;a~vbeln<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;gt_vbeln<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;vbeln&nbsp;=&nbsp;gt_vbeln-vbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;a~vbeln&nbsp;=&nbsp;gt_vbeln-vbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~abstk&nbsp;&lt&gt&nbsp;'C'.<br />
 &nbsp;&nbsp;ENDIF.<br />
 <br />
 &nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_vbak.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;delivery_still_valid&nbsp;USING&nbsp;gt_vbak-vbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;lv_sd_valid.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK&nbsp;lv_sd_valid&nbsp;=&nbsp;'X'.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_pa&nbsp;WHERE&nbsp;kaufn&nbsp;=&nbsp;gt_vbak-vbeln.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_pa-auart&nbsp;=&nbsp;gt_vbak-auart.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gt_pa-triso&nbsp;=&nbsp;'X'.<br />
@@ -2814,14 +2822,123 @@ FORM get_gt_pca USING p_kdauf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_kunnr.<br />
 <br />
 &nbsp;&nbsp;CLEAR:&nbsp;p_kunnr.<br />
+&nbsp;&nbsp;DATA&nbsp;lv_sd_valid&nbsp;TYPE&nbsp;c.<br />
 <br />
-&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;kunnr<br />
+&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;a~kunnr<br />
 &nbsp;&nbsp;INTO&nbsp;p_kunnr<br />
-&nbsp;&nbsp;FROM&nbsp;vbak<br />
-&nbsp;&nbsp;WHERE&nbsp;vbeln&nbsp;=&nbsp;&nbsp;p_kdauf.<br />
+&nbsp;&nbsp;FROM&nbsp;vbak&nbsp;AS&nbsp;a<br />
+&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;vbuk&nbsp;AS&nbsp;b<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;b~vbeln&nbsp;=&nbsp;a~vbeln<br />
+&nbsp;&nbsp;WHERE&nbsp;a~vbeln&nbsp;=&nbsp;p_kdauf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~abstk&nbsp;&lt&gt&nbsp;'C'.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;PERFORM&nbsp;delivery_still_valid&nbsp;USING&nbsp;p_kdauf<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;lv_sd_valid.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lv_sd_valid&nbsp;IS&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;p_kunnr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
 <br />
 <br />
 ENDFORM.                    " GET_MATNR_TEXT<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;DELIVERY_STILL_VALID<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;VBAK/VBUK&nbsp;: reject fully cancelled sales orders (ABSTK = C).<br />
+*&nbsp;LIKP&nbsp;: SPE_LOEKZ is the deletion indicator. KZAZU is order<br />
+*&nbsp;combination, not an archive flag. KZAZK is not a LIKP/VBAK field.<br />
+*&nbsp;Archived documents are already removed from LIKP/VBAK.<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM delivery_still_valid USING p_vbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHANGING&nbsp;p_valid.<br />
+&nbsp;&nbsp;DATA:&nbsp;lv_all&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_act&nbsp;TYPE&nbsp;i.<br />
+<br />
+&nbsp;&nbsp;p_valid&nbsp;=&nbsp;'X'.<br />
+&nbsp;&nbsp;CHECK&nbsp;p_vbeln&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;COUNT(*)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;lips&nbsp;AS&nbsp;p<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;likp&nbsp;AS&nbsp;k<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;k~vbeln&nbsp;=&nbsp;p~vbeln<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;p~vgbel&nbsp;=&nbsp;p_vbeln.<br />
+&nbsp;&nbsp;lv_all&nbsp;=&nbsp;sy-dbcnt.<br />
+&nbsp;&nbsp;CHECK&nbsp;lv_all&nbsp;&gt&nbsp;0.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;COUNT(*)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;lips&nbsp;AS&nbsp;p<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INNER&nbsp;JOIN&nbsp;likp&nbsp;AS&nbsp;k<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;k~vbeln&nbsp;=&nbsp;p~vbeln<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;p~vgbel&nbsp;=&nbsp;p_vbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;k~spe_loekz&nbsp;=&nbsp;space.<br />
+&nbsp;&nbsp;lv_act&nbsp;=&nbsp;sy-dbcnt.<br />
+&nbsp;&nbsp;IF&nbsp;lv_act&nbsp;=&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;CLEAR&nbsp;p_valid.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
+ENDFORM.                    " DELIVERY_STILL_VALID<br />
+   </div>
+   <div class="codeComment">
+*&---------------------------------------------------------------------*<br />
+*&&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Form&nbsp;&nbsp;EXCLUDE_CANCELLED_BILLING<br />
+*&---------------------------------------------------------------------*<br />
+*&nbsp;CE11000-RBELN&nbsp;is&nbsp;the&nbsp;billing&nbsp;document&nbsp;for&nbsp;VRGAR&nbsp;F.<br />
+*&nbsp;Drop&nbsp;PA&nbsp;lines&nbsp;when&nbsp;VBRK-FKSTO&nbsp;=&nbsp;X&nbsp;(cancelled),<br />
+*&nbsp;when&nbsp;VBRK-SFAKN&nbsp;is&nbsp;filled&nbsp;(cancellation&nbsp;document),<br />
+*&nbsp;or&nbsp;when&nbsp;the&nbsp;billing&nbsp;document&nbsp;is&nbsp;no&nbsp;longer&nbsp;in&nbsp;VBRK.<br />
+*&---------------------------------------------------------------------*<br />
+   </div>
+   <div class="code">
+FORM exclude_cancelled_billing.<br />
+&nbsp;&nbsp;DATA:&nbsp;BEGIN&nbsp;OF&nbsp;lt_rbeln&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rbeln&nbsp;LIKE&nbsp;vbrk-vbeln,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;lt_rbeln,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;lt_vbrk&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vbeln&nbsp;LIKE&nbsp;vbrk-vbeln,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fksto&nbsp;LIKE&nbsp;vbrk-fksto,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sfakn&nbsp;LIKE&nbsp;vbrk-sfakn,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;lt_vbrk,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEGIN&nbsp;OF&nbsp;lt_idx&nbsp;OCCURS&nbsp;0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;idx&nbsp;TYPE&nbsp;i,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;END&nbsp;OF&nbsp;lt_idx.<br />
+&nbsp;&nbsp;DATA&nbsp;lv_tabix&nbsp;TYPE&nbsp;sy-tabix.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_pa&nbsp;WHERE&nbsp;rbeln&nbsp;&lt&gt&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lt_rbeln-rbeln&nbsp;=&nbsp;gt_pa-rbeln.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;COLLECT&nbsp;lt_rbeln.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;CHECK&nbsp;lt_rbeln[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+<br />
+&nbsp;&nbsp;SELECT&nbsp;vbeln&nbsp;fksto&nbsp;sfakn<br />
+&nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_vbrk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;vbrk<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;lt_rbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;vbeln&nbsp;=&nbsp;lt_rbeln-rbeln.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;lt_vbrk&nbsp;BY&nbsp;vbeln.<br />
+<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;gt_pa&nbsp;WHERE&nbsp;rbeln&nbsp;&lt&gt&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lv_tabix&nbsp;=&nbsp;sy-tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;READ&nbsp;TABLE&nbsp;lt_vbrk&nbsp;WITH&nbsp;KEY&nbsp;vbeln&nbsp;=&nbsp;gt_pa-rbeln<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BINARY&nbsp;SEARCH.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt&gt&nbsp;0<br />
+&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;lt_vbrk-fksto&nbsp;=&nbsp;'X'<br />
+&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;lt_vbrk-sfakn&nbsp;&lt&gt&nbsp;''.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lt_idx-idx&nbsp;=&nbsp;lv_tabix.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPEND&nbsp;lt_idx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+&nbsp;&nbsp;SORT&nbsp;lt_idx&nbsp;BY&nbsp;idx&nbsp;DESCENDING.<br />
+&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;lt_idx.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;gt_pa&nbsp;INDEX&nbsp;lt_idx-idx.<br />
+&nbsp;&nbsp;ENDLOOP.<br />
+<br />
+ENDFORM.                    " EXCLUDE_CANCELLED_BILLING<br />
             </div>
           </td>
         </tr>
