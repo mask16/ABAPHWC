@@ -14,7 +14,7 @@ ENDCLASS.
 CLASS lcl_event_receiver IMPLEMENTATION.
   METHOD handle_double_click.
     READ TABLE gt_data INTO gs_data INDEX e_row-index.
-    CHECK sy-subrc = 0.
+    CHECK sy-subrc = 0 AND gs_data-matnr IS NOT INITIAL.
     IF e_column-fieldname = 'MATNR'.
       SET PARAMETER ID 'MAT' FIELD gs_data-matnr.
       CALL TRANSACTION 'MM03' AND SKIP FIRST SCREEN.

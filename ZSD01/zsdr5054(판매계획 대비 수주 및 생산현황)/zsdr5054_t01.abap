@@ -2,16 +2,27 @@
 *& Include ZSDR5054_T01
 *&---------------------------------------------------------------------*
 *& 판매계획 : ZSDR0400 이 생성하고 ZSDR0410 이 수정하는 ZSDT0400
-*& 수주/생산/출하/재고 : ZSDR0065 수불 계산을 조회월에 맞춰 사용
-*& 화면 열은 첨부 양식과 같다.
+*& 행 기준은 사무소 + 영업사원 + 거래처 + 자재 + 플랜트 + 저장위치
+*& 판매계획은 플랜트까지. 같은 계획수량은 저장위치 행 중 한 행만 표시
+*& 납품문서에는 저장위치가 없다
+*& 수주 : VBAP 플랜트 + 저장위치
+*& 출하 : 납품은 플랜트만 있다. 플랜트는 LIPS-WERKS, 저장위치는 오더품목 VBAP-LGORT
+*& 생산, 기초재고, 기말재고 : 자재 + 플랜트 + 저장위치당 한 행
+*& 저장위치 조건을 비우면 수량이 있는 저장위치만 조회한다
+*& 같은 품목이 포항1, 포항2에 있으면 행을 나눈다
+*& 판매계획이 없는 공장 행은 계획수량 0
+*& 기초/기말재고 : 그 행의 플랜트 + 저장위치. ZMMF01_GET_STOCK
 *&---------------------------------------------------------------------*
 
 TYPES: BEGIN OF ty_data,
          matnr        TYPE matnr,
          spmon        TYPE spmon,
          werks        TYPE werks_d,
+         lgort        TYPE lgort_d,
          dispo_txt    TYPE char40,
-         name1        TYPE name1_gp,
+         vkbtx        TYPE tvkbt-bezei,
+         pertx        TYPE name1_gp,
+         kuntx        TYPE name1_gp,
          maktx        TYPE maktx,
          plan_qty     TYPE kwmeng,
          open_qty     TYPE kwmeng,
@@ -20,14 +31,18 @@ TYPES: BEGIN OF ty_data,
          gi_qty       TYPE kwmeng,
          ord_rem      TYPE kwmeng,
          gr_qty       TYPE kwmeng,
-         stock_qty    TYPE labst,
+         open_stk     TYPE labst,
+         end_stk      TYPE labst,
          rate_prod    TYPE char10,
          rate_plan_ord TYPE char10,
          rate_plan_gi TYPE char10,
          rate_ord_gi  TYPE char10,
          dispo        TYPE dispo,
+         vkbur        TYPE vkbur,
+         person       TYPE kunnr,
          kunnr        TYPE kunnr,
          meins        TYPE meins,
+         rowcol       TYPE char4,
          celltab      TYPE lvc_t_styl,
        END OF ty_data.
 
