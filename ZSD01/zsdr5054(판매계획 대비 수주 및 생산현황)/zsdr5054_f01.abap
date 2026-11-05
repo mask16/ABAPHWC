@@ -2,12 +2,30 @@
 *& Include ZSDR5054_F01
 *&---------------------------------------------------------------------*
 *& 판매계획     : 사무소 + 영업사원 + 거래처 + 자재 + 플랜트. ZSDT0400-SPMNG
-*& 전월 미출하  : ZSDR1100 미결수량. 일정선별 확정수량 - 품목 납품수량
-*& 당월 수주량  : ZSDR1100 오더수량. 일정선별 확정수량 VBEP-BMENG
-*& 수주 합계    : 미결수량 + 오더수량
-*& 출하량       : ZSDR5002 출하요청수량. 플랜트는 납품, 저장위치는 오더품목
+*& 전월 미출하  : ZSDR1100 미결수량.
+*&                출하지점/입고지점은 화면값. 비우면 전체.
+*&                판매 VBAP-VSTEL, 재고운송 EKPO-RESLO.
+*&                납품일은 전월 1일의 10년 전 ~ 전월 말일.
+*&                2026.11 이면 2016.10.01 ~ 2026.10.31.
+*&                2026.12 이면 2016.11.01 ~ 2026.11.30.
+*&                승인완료만. ZSDT1150-STEPS = 'F'.
+*&                일정선 확정수량 - 품목 납품수량. 0 이하면 더하지 않는다.
+*&                납품수량은 ZSDR1100 과 같이 LIPS-LFIMG. 조건은 VGBEL + VGPOS.
+*&                납품완료(VBUP-LFSTA/LFGSA C, EKPO-ELIKZ X)는 0.
+*& 당월 수주량  : ZSDR1100 오더수량. 화면 참조는 VBAP-KWMENG.
+*&                ZSDR1100 이 그 칸에 넣는 값은 일정선 확정수량 VBEP-BMENG.
+*&                출하예정일이 조회월인 일정선만. 승인완료만. ZSDT1150-STEPS = 'F'.
+*&                재고운송은 EKKO-RESWK, EKPO-RESLO, 품목수량 EKPO-MENGE 한 번.
+*&                납품일이 조회월이고 승인완료면 오더수량.
+*& 수주 합계    : 전월 미출하 + 당월 수주량.
+*& 출하량       : ZSDR5002 [적송]출하수량. 납품요청일 LIKP-LFDAT.
+*&                저장위치 LIPS-LGORT 가 9000 또는 CY00 인 LIPS-LFIMG.
+*&                플랜트 LIPS-WERKS, 판매처 LIKP-KUNAG. 반품오더는 음수.
 *& 수주 잔량    : 수주합계 - 출하량
-*& 당월 생산량  : ZSDR0065 생산(구매)입고. 자재 + 플랜트 + 저장위치당 한 행
+*& 당월 생산량  : ZSDR0065 생산(구매)입고(MENGE_GR_NOR). 전기일 MKPF-BUDAT.
+*&                101/102/131/132 는 차변 가산, 대변 차감.
+*&                911 은 차변만 입고, 912 는 대변만 입고취소.
+*&                자재 + 플랜트 + 저장위치당 한 행. 기타입고는 넣지 않는다.
 *& 판매계획     : 플랜트 단위. 같은 계획의 저장위치 행에는 한 번만 표시
 *& 기초/기말재고: 자재 + 플랜트 + 저장위치당 한 행. 저장위치는 MARD
 *& 저장위치 조건을 비우면 수량이 있는 저장위치만 남긴다
@@ -73,6 +91,7 @@ FORM set_date_range.
   ENDIF.
 ENDFORM.
 
+*& ZSDR0065 생산(구매)입고. 정상입고 101/102/131/132, 입고 911, 입고취소 912.
 FORM set_bwart.
   DATA ls_bwart LIKE LINE OF r_gr.
   REFRESH: r_gr, r_gi.
@@ -95,10 +114,10 @@ FORM get_data.
   ENDIF.
   PERFORM fill_filter.
   PERFORM expand_lgort.
-  PERFORM fill_order.
   PERFORM fill_stock.
   PERFORM fill_sd_stock.
   PERFORM keep_loc_once.
+  PERFORM fill_order.
   PERFORM drop_empty_loc.
   PERFORM fill_rate.
   PERFORM fill_sum_rows.
@@ -352,7 +371,29 @@ FORM expand_lgort.
            kunnr  TYPE kunnr,
            lgort  TYPE lgort_d,
            lgso   TYPE lgort_d,
-         END OF ty_sh.
+         END OF ty_sh,
+         BEGIN OF ty_mk,
+           matnr TYPE matnr,
+           kunnr TYPE kunnr,
+         END OF ty_mk,
+         BEGIN OF ty_sv,
+           matnr TYPE matnr,
+           vkbur TYPE vkbur,
+           kunnr TYPE kunnr,
+         END OF ty_sv,
+         BEGIN OF ty_ix,
+           matnr TYPE matnr,
+           kunnr TYPE kunnr,
+           werks TYPE werks_d,
+           lgort TYPE lgort_d,
+         END OF ty_ix,
+         BEGIN OF ty_gx,
+           matnr TYPE matnr,
+           vkbur TYPE vkbur,
+           kunnr TYPE kunnr,
+           werks TYPE werks_d,
+           lgort TYPE lgort_d,
+         END OF ty_gx.
   DATA: lt_base TYPE STANDARD TABLE OF ty_data,
         lt_pack TYPE STANDARD TABLE OF ty_data,
         lt_key  TYPE STANDARD TABLE OF ty_pl,
@@ -378,6 +419,18 @@ FORM expand_lgort.
         lv_plan TYPE c,
         lv_biz  TYPE c,
         ls_row  TYPE ty_data,
+        lt_mk   TYPE STANDARD TABLE OF ty_mk,
+        ls_mk   TYPE ty_mk,
+        lt_mpk  TYPE STANDARD TABLE OF ty_mk,
+        lt_sv   TYPE STANDARD TABLE OF ty_sv,
+        ls_sv   TYPE ty_sv,
+        lt_spk  TYPE STANDARD TABLE OF ty_sv,
+        lt_ix   TYPE SORTED TABLE OF ty_ix
+                  WITH UNIQUE KEY matnr kunnr werks lgort,
+        ls_ix   TYPE ty_ix,
+        lt_gx   TYPE SORTED TABLE OF ty_gx
+                  WITH UNIQUE KEY matnr vkbur kunnr werks lgort,
+        ls_gx   TYPE ty_gx,
         lv_from TYPE i,
         lv_to   TYPE i,
         lv_lines TYPE i.
@@ -388,15 +441,30 @@ FORM expand_lgort.
 
   lt_base[] = gt_data[].
 
-  DESCRIBE TABLE lt_base LINES lv_lines.
+* 같은 자재·거래처는 한 번만 읽는다. 전월과 당월 일정을 한 조회로 가져온다.
+  LOOP AT lt_base INTO gs_data.
+    ls_mk-matnr = gs_data-matnr.
+    ls_mk-kunnr = gs_data-kunnr.
+    APPEND ls_mk TO lt_mk.
+    ls_sv-matnr = gs_data-matnr.
+    ls_sv-vkbur = gs_data-vkbur.
+    ls_sv-kunnr = gs_data-kunnr.
+    APPEND ls_sv TO lt_sv.
+  ENDLOOP.
+  SORT lt_mk BY matnr kunnr.
+  DELETE ADJACENT DUPLICATES FROM lt_mk COMPARING matnr kunnr.
+  SORT lt_sv BY matnr vkbur kunnr.
+  DELETE ADJACENT DUPLICATES FROM lt_sv COMPARING matnr vkbur kunnr.
+
+  DESCRIBE TABLE lt_mk LINES lv_lines.
   lv_from = 1.
   WHILE lv_from <= lv_lines.
-    lv_to = lv_from + 399.
+    lv_to = lv_from + 499.
     IF lv_to > lv_lines.
       lv_to = lv_lines.
     ENDIF.
-    REFRESH lt_pack.
-    APPEND LINES OF lt_base FROM lv_from TO lv_to TO lt_pack.
+    REFRESH lt_mpk.
+    APPEND LINES OF lt_mk FROM lv_from TO lv_to TO lt_mpk.
 
     REFRESH lt_ol.
     SELECT b~matnr b~werks c~vkbur c~kunnr b~lgort
@@ -409,12 +477,12 @@ FORM expand_lgort.
         ON e~vbeln = b~vbeln
        AND e~posnr = b~posnr
       INTO CORRESPONDING FIELDS OF TABLE lt_ol
-      FOR ALL ENTRIES IN lt_pack
-      WHERE b~matnr = lt_pack-matnr
+      FOR ALL ENTRIES IN lt_mpk
+      WHERE b~matnr = lt_mpk-matnr
         AND b~werks IN so_werks
-        AND c~kunnr = lt_pack-kunnr
+        AND c~kunnr = lt_mpk-kunnr
         AND b~lgort IN so_lgort
-        AND c~erdat < gv_first
+        AND e~edatu <= gv_last
         AND b~abgru = space
         AND c~auart <> 'ZCR'
         AND c~auart <> 'ZDR'
@@ -427,69 +495,93 @@ FORM expand_lgort.
     ENDLOOP.
 
     REFRESH lt_ol.
-    SELECT b~matnr b~werks c~vkbur c~kunnr b~lgort
-      FROM vbak AS c
-      INNER JOIN vbap AS b
-        ON b~vbeln = c~vbeln
-      INNER JOIN vbuk AS h
-        ON h~vbeln = c~vbeln
-      INNER JOIN vbep AS e
-        ON e~vbeln = b~vbeln
-       AND e~posnr = b~posnr
+    SELECT b~matnr a~reswk AS werks d~kunnr b~reslo AS lgort
+      FROM ekko AS a
+      INNER JOIN ekpo AS b
+        ON b~ebeln = a~ebeln
+      INNER JOIN eket AS c
+        ON c~ebeln = b~ebeln
+       AND c~ebelp = b~ebelp
+      INNER JOIN ekpv AS d
+        ON d~ebeln = b~ebeln
+       AND d~ebelp = b~ebelp
       INTO CORRESPONDING FIELDS OF TABLE lt_ol
-      FOR ALL ENTRIES IN lt_pack
-      WHERE b~matnr = lt_pack-matnr
-        AND b~werks IN so_werks
-        AND c~kunnr = lt_pack-kunnr
-        AND b~lgort IN so_lgort
-        AND c~erdat BETWEEN gv_first AND gv_last
-        AND b~abgru = space
-        AND c~auart <> 'ZCR'
-        AND c~auart <> 'ZDR'
-        AND c~auart <> 'ZTH'
-        AND c~auart <> 'ZRH'
-        AND h~cmgst IN (space, 'A', 'D')
-        AND e~bmeng <> 0.
+      FOR ALL ENTRIES IN lt_mpk
+      WHERE b~matnr = lt_mpk-matnr
+        AND a~reswk IN so_werks
+        AND d~kunnr = lt_mpk-kunnr
+        AND b~reslo IN so_lgort
+        AND c~eindt <= gv_last
+        AND a~memorytype = space
+        AND b~loekz = space
+        AND b~menge <> 0.
     LOOP AT lt_ol INTO ls_ol.
       INSERT ls_ol INTO TABLE lt_ordl.
     ENDLOOP.
 
+    lv_from = lv_to + 1.
+  ENDWHILE.
+
+  DESCRIBE TABLE lt_sv LINES lv_lines.
+  lv_from = 1.
+  WHILE lv_from <= lv_lines.
+    lv_to = lv_from + 499.
+    IF lv_to > lv_lines.
+      lv_to = lv_lines.
+    ENDIF.
+    REFRESH lt_spk.
+    APPEND LINES OF lt_sv FROM lv_from TO lv_to TO lt_spk.
     REFRESH lt_ship.
-    SELECT b~matnr b~werks c~vkbur d~kunnr AS person c~kunnr
-           g~lgort AS lgso
-      FROM lips AS b
-      INNER JOIN likp AS a
-        ON a~vbeln = b~vbeln
-      INNER JOIN vbak AS c
-        ON c~vbeln = b~vgbel
-      INNER JOIN vbap AS g
-        ON g~vbeln = b~vgbel
-       AND g~posnr = b~vgpos
-      INNER JOIN vbpa AS d
-        ON d~vbeln = c~vbeln
+    SELECT b~matnr b~werks b~lgort b~vkbur
+           d~kunnr AS person a~kunag AS kunnr
+      FROM likp AS a
+      INNER JOIN lips AS b
+        ON b~vbeln = a~vbeln
+      INNER JOIN knvv AS k
+        ON k~kunnr = a~kunnr
+       AND k~vkorg = a~vkorg
+       AND k~vtweg = '10'
+       AND k~spart = '10'
+      LEFT JOIN vbpa AS d
+        ON d~vbeln = a~vbeln
        AND d~posnr = space
        AND d~parvw = 'S1'
       INTO CORRESPONDING FIELDS OF TABLE lt_ship
-      FOR ALL ENTRIES IN lt_pack
-      WHERE b~matnr = lt_pack-matnr
+      FOR ALL ENTRIES IN lt_spk
+      WHERE b~matnr = lt_spk-matnr
         AND b~werks IN so_werks
-        AND c~vkbur = lt_pack-vkbur
-        AND c~kunnr = lt_pack-kunnr
-        AND a~wadat BETWEEN gv_first AND gv_last.
+        AND b~lgort IN so_lgort
+        AND b~vkbur = lt_spk-vkbur
+        AND a~kunag = lt_spk-kunnr
+        AND a~lfdat BETWEEN gv_first AND gv_last.
     LOOP AT lt_ship INTO ls_ship.
-      CHECK ls_ship-lgso IN so_lgort.
       CLEAR ls_ol.
       ls_ol-matnr  = ls_ship-matnr.
       ls_ol-werks  = ls_ship-werks.
       ls_ol-vkbur  = ls_ship-vkbur.
       ls_ol-person = ls_ship-person.
       ls_ol-kunnr  = ls_ship-kunnr.
-      ls_ol-lgort  = ls_ship-lgso.
+      ls_ol-lgort  = ls_ship-lgort.
       INSERT ls_ol INTO TABLE lt_gil.
     ENDLOOP.
-
     lv_from = lv_to + 1.
   ENDWHILE.
+
+  LOOP AT lt_ordl INTO ls_ol.
+    ls_ix-matnr = ls_ol-matnr.
+    ls_ix-kunnr = ls_ol-kunnr.
+    ls_ix-werks = ls_ol-werks.
+    ls_ix-lgort = ls_ol-lgort.
+    INSERT ls_ix INTO TABLE lt_ix.
+  ENDLOOP.
+  LOOP AT lt_gil INTO ls_ol.
+    ls_gx-matnr = ls_ol-matnr.
+    ls_gx-vkbur = ls_ol-vkbur.
+    ls_gx-kunnr = ls_ol-kunnr.
+    ls_gx-werks = ls_ol-werks.
+    ls_gx-lgort = ls_ol-lgort.
+    INSERT ls_gx INTO TABLE lt_gx.
+  ENDLOOP.
 
   LOOP AT lt_base INTO gs_data.
     ls_key-matnr = gs_data-matnr.
@@ -544,21 +636,21 @@ FORM expand_lgort.
   REFRESH gt_data.
   LOOP AT lt_base INTO gs_data.
     CLEAR lt_wl.
-    LOOP AT lt_ordl INTO ls_ol
+    LOOP AT lt_ix INTO ls_ix
       WHERE matnr = gs_data-matnr
         AND kunnr = gs_data-kunnr.
       CLEAR ls_wl.
-      ls_wl-werks = ls_ol-werks.
-      ls_wl-lgort = ls_ol-lgort.
+      ls_wl-werks = ls_ix-werks.
+      ls_wl-lgort = ls_ix-lgort.
       INSERT ls_wl INTO TABLE lt_wl.
     ENDLOOP.
-    LOOP AT lt_gil INTO ls_ol
+    LOOP AT lt_gx INTO ls_gx
       WHERE matnr = gs_data-matnr
         AND vkbur = gs_data-vkbur
         AND kunnr = gs_data-kunnr.
       CLEAR ls_wl.
-      ls_wl-werks = ls_ol-werks.
-      ls_wl-lgort = ls_ol-lgort.
+      ls_wl-werks = ls_gx-werks.
+      ls_wl-lgort = ls_gx-lgort.
       INSERT ls_wl INTO TABLE lt_wl.
     ENDLOOP.
     LOOP AT lt_prl INTO ls_mv
@@ -620,486 +712,718 @@ FORM expand_lgort.
   ENDLOOP.
 ENDFORM.
 
-*& 전월 미출하 = ZSDR1100 미결수량.
-*& 일정선마다 확정수량에서 품목의 납품수량을 빼고, 0 미만은 0.
-*& 당월 수주 = ZSDR1100 오더수량. 일정선의 확정수량 VBEP-BMENG.
+*& 전월 미출하 = ZSDR1100 미결. 출하지점, 전월말까지 10년, 승인완료.
+*& 당월 수주량 = ZSDR1100 오더수량. 조회월 일정선, 승인완료.
 FORM fill_order.
-  TYPES:          BEGIN OF ty_qty,
-           matnr  TYPE matnr,
-           werks  TYPE werks_d,
-           lgort  TYPE lgort_d,
-           vkbur  TYPE vkbur,
-           person TYPE kunnr,
-           kunnr  TYPE kunnr,
+  TYPES: BEGIN OF ty_mat,
+           matnr TYPE matnr,
+         END OF ty_mat,
+         BEGIN OF ty_sal,
            vbeln  TYPE vbeln_va,
            posnr  TYPE posnr_va,
            etenr  TYPE etenr,
-           kwmeng TYPE kwmeng,
-         END OF ty_qty,
-         BEGIN OF ty_itm,
            matnr  TYPE matnr,
            werks  TYPE werks_d,
            lgort  TYPE lgort_d,
-           vkbur  TYPE vkbur,
-           person TYPE kunnr,
-           kunnr  TYPE kunnr,
+           edatu  TYPE edatu,
+           bmeng  TYPE bmeng,
+         END OF ty_sal,
+         BEGIN OF ty_opn,
            vbeln  TYPE vbeln_va,
            posnr  TYPE posnr_va,
            etenr  TYPE etenr,
-           kwmeng TYPE kwmeng,
-         END OF ty_itm,
-         BEGIN OF ty_dlv,
-           dlv   TYPE vbeln_vl,
-           dlp   TYPE posnr_vl,
+           matnr  TYPE matnr,
+           werks  TYPE werks_d,
+           lgort  TYPE lgort_d,
+           vstel  TYPE vstel,
+           edatu  TYPE edatu,
+           bmeng  TYPE bmeng,
+         END OF ty_opn,
+         BEGIN OF ty_sto,
+           ebeln TYPE ebeln,
+           ebelp TYPE ebelp,
+           matnr TYPE matnr,
+           werks TYPE werks_d,
+           lgort TYPE lgort_d,
+           edatu TYPE eindt,
+           menge TYPE bstmg,
+         END OF ty_sto,
+         BEGIN OF ty_one,
            vbeln TYPE vbeln_va,
            posnr TYPE posnr_va,
+           matnr TYPE matnr,
+           werks TYPE werks_d,
+           lgort TYPE lgort_d,
+           menge TYPE kwmeng,
+           month TYPE c,
+         END OF ty_one,
+         BEGIN OF ty_item,
+           vbeln TYPE vbeln_va,
+           posnr TYPE posnr_va,
+         END OF ty_item,
+         BEGIN OF ty_doc,
+           vbeln TYPE vbeln_va,
+         END OF ty_doc,
+         BEGIN OF ty_dlv,
+           vgbel TYPE vgbel,
+           vgpos TYPE vgpos,
            lfimg TYPE lfimg,
          END OF ty_dlv,
-         BEGIN OF ty_sch,
-           vbeln TYPE vbeln_va,
-           posnr TYPE posnr_va,
-           etenr TYPE etenr,
-         END OF ty_sch,
-         BEGIN OF ty_dd,
+         BEGIN OF ty_flow,
+           vbelv TYPE vbfa-vbelv,
+           posnv TYPE vbfa-posnv,
+           rfmng TYPE vbfa-rfmng,
+         END OF ty_flow,
+         BEGIN OF ty_lf,
            vbeln TYPE vbeln_va,
            posnr TYPE posnr_va,
            lfimg TYPE lfimg,
-         END OF ty_dd,
+         END OF ty_lf,
+         BEGIN OF ty_ek,
+           ebeln TYPE ebeln,
+           ebelp TYPE ebelp,
+           wamng TYPE bstmg,
+           elikz TYPE elikz,
+         END OF ty_ek,
+         BEGIN OF ty_appr,
+           vbeln TYPE vbeln_va,
+           posnr TYPE posnr_va,
+         END OF ty_appr,
+         BEGIN OF ty_stp,
+           vbeln TYPE vbeln_va,
+           posnr TYPE posnr_va,
+           steps TYPE zsdt1150-steps,
+         END OF ty_stp,
          BEGIN OF ty_sum,
-           matnr  TYPE matnr,
-           werks  TYPE werks_d,
-           lgort  TYPE lgort_d,
-           vkbur  TYPE vkbur,
-           person TYPE kunnr,
-           kunnr  TYPE kunnr,
-           menge  TYPE kwmeng,
+           matnr    TYPE matnr,
+           werks    TYPE werks_d,
+           lgort    TYPE lgort_d,
+           open_qty TYPE kwmeng,
+           ord_qty  TYPE kwmeng,
          END OF ty_sum.
-  DATA: lt_pack TYPE STANDARD TABLE OF ty_data,
-        lt_qty  TYPE STANDARD TABLE OF ty_qty,
-        ls_qty  TYPE ty_qty,
-        lt_itm  TYPE STANDARD TABLE OF ty_itm,
-        ls_itm  TYPE ty_itm,
+  DATA: lt_mat  TYPE STANDARD TABLE OF ty_mat,
+        ls_mat  TYPE ty_mat,
+        lt_mpk  TYPE STANDARD TABLE OF ty_mat,
+        lt_sal  TYPE STANDARD TABLE OF ty_sal,
+        lt_sale TYPE STANDARD TABLE OF ty_sal,
+        lt_opn  TYPE STANDARD TABLE OF ty_opn,
+        lt_open TYPE STANDARD TABLE OF ty_opn,
+        ls_opn  TYPE ty_opn,
+        ls_sal  TYPE ty_sal,
+        ls_hold TYPE ty_sto,
+        lt_sto  TYPE STANDARD TABLE OF ty_sto,
+        ls_sto  TYPE ty_sto,
+        lt_stoa TYPE STANDARD TABLE OF ty_sto,
+        lt_stoo TYPE STANDARD TABLE OF ty_sto,
+        lt_one  TYPE STANDARD TABLE OF ty_one,
+        ls_one  TYPE ty_one,
+        lt_item TYPE STANDARD TABLE OF ty_item,
+        ls_item TYPE ty_item,
+        lt_appr TYPE SORTED TABLE OF ty_appr
+                  WITH UNIQUE KEY vbeln posnr,
+        ls_appr TYPE ty_appr,
+        lt_stp  TYPE STANDARD TABLE OF ty_stp,
+        ls_stp  TYPE ty_stp,
+        lt_ipk  TYPE STANDARD TABLE OF ty_item,
+        lt_doc  TYPE STANDARD TABLE OF ty_doc,
+        ls_doc  TYPE ty_doc,
         lt_dlv  TYPE STANDARD TABLE OF ty_dlv,
         ls_dlv  TYPE ty_dlv,
-        lt_dd   TYPE SORTED TABLE OF ty_dd WITH UNIQUE KEY vbeln posnr,
-        ls_dd   TYPE ty_dd,
-        lt_one  TYPE SORTED TABLE OF ty_itm WITH UNIQUE KEY vbeln posnr,
-        ls_one  TYPE ty_itm,
-        lt_open TYPE SORTED TABLE OF ty_sum
-                  WITH UNIQUE KEY matnr werks lgort vkbur person kunnr,
-        lt_ord  TYPE SORTED TABLE OF ty_sum
-                  WITH UNIQUE KEY matnr werks lgort vkbur person kunnr,
+        lt_flow TYPE STANDARD TABLE OF ty_flow,
+        ls_flow TYPE ty_flow,
+        lt_lf   TYPE SORTED TABLE OF ty_lf WITH UNIQUE KEY vbeln posnr,
+        ls_lf   TYPE ty_lf,
+        lt_ship TYPE SORTED TABLE OF ty_lf WITH UNIQUE KEY vbeln posnr,
+        lt_add  TYPE SORTED TABLE OF ty_lf WITH UNIQUE KEY vbeln posnr,
+        lt_done TYPE SORTED TABLE OF ty_item WITH UNIQUE KEY vbeln posnr,
+        lt_ek   TYPE STANDARD TABLE OF ty_ek,
+        ls_ek   TYPE ty_ek,
+        lv_del  TYPE kwmeng,
+        lt_sum  TYPE SORTED TABLE OF ty_sum
+                  WITH UNIQUE KEY matnr werks lgort,
         ls_sum  TYPE ty_sum,
-        lt_seen TYPE SORTED TABLE OF ty_dd WITH UNIQUE KEY vbeln posnr,
-        ls_seen TYPE ty_dd,
-        lt_sch  TYPE SORTED TABLE OF ty_sch WITH UNIQUE KEY vbeln posnr etenr,
-        ls_sch  TYPE ty_sch,
-        lt_fin  TYPE SORTED TABLE OF ty_dd WITH UNIQUE KEY vbeln posnr,
-        lv_open TYPE kwmeng,
+        ls_src  TYPE ty_data,
         lv_from TYPE i,
         lv_to   TYPE i,
         lv_lines TYPE i,
-        lv_tabix TYPE sy-tabix.
+        lv_tabix TYPE sy-tabix,
+        lv_open TYPE kwmeng,
+        lv_ord  TYPE kwmeng,
+        lv_open_from TYPE datum,
+        lv_open_to TYPE datum,
+        lv_year TYPE n LENGTH 4,
+        lv_posnr TYPE posnr_va,
+        lv_vstel TYPE vstel,
+        lv_ebeln TYPE ebeln,
+        lv_ebelp TYPE ebelp,
+        lv_month TYPE c,
+        lv_hit TYPE c.
 
   IF gt_data[] IS INITIAL.
     RETURN.
   ENDIF.
 
-  DESCRIBE TABLE gt_data LINES lv_lines.
+* 전월 1일의 10년 전 ~ 전월 말일.
+* 2026.11 이면 2016.10.01 ~ 2026.10.31.
+* 2026.12 이면 2016.11.01 ~ 2026.11.30.
+  lv_open_to = gv_first - 1.
+  lv_year = lv_open_to(4).
+  lv_year = lv_year - 10.
+  CONCATENATE lv_year lv_open_to+4(2) '01' INTO lv_open_from.
+
+  LOOP AT gt_data INTO gs_data.
+    CHECK gs_data-matnr IS NOT INITIAL.
+    ls_mat-matnr = gs_data-matnr.
+    APPEND ls_mat TO lt_mat.
+  ENDLOOP.
+  SORT lt_mat BY matnr.
+  DELETE ADJACENT DUPLICATES FROM lt_mat COMPARING matnr.
+
+  DESCRIBE TABLE lt_mat LINES lv_lines.
   lv_from = 1.
   WHILE lv_from <= lv_lines.
     lv_to = lv_from + 399.
     IF lv_to > lv_lines.
       lv_to = lv_lines.
     ENDIF.
-    REFRESH lt_pack.
-    APPEND LINES OF gt_data FROM lv_from TO lv_to TO lt_pack.
+    REFRESH lt_mpk.
+    APPEND LINES OF lt_mat FROM lv_from TO lv_to TO lt_mpk.
 
-    REFRESH lt_itm.
-    SELECT b~matnr b~werks b~lgort c~vkbur c~kunnr
-           b~vbeln b~posnr e~etenr e~bmeng AS kwmeng
+    REFRESH lt_sal.
+    SELECT b~vbeln b~posnr e~etenr
+           b~matnr b~werks b~lgort
+           e~edatu e~bmeng
       FROM vbak AS c
       INNER JOIN vbap AS b
         ON b~vbeln = c~vbeln
-      INNER JOIN vbuk AS f
-        ON f~vbeln = c~vbeln
+      INNER JOIN vbuk AS h
+        ON h~vbeln = c~vbeln
       INNER JOIN vbep AS e
         ON e~vbeln = b~vbeln
        AND e~posnr = b~posnr
-      INTO CORRESPONDING FIELDS OF TABLE lt_itm
-      FOR ALL ENTRIES IN lt_pack
-      WHERE b~matnr = lt_pack-matnr
-        AND b~werks = lt_pack-werks
-        AND c~kunnr = lt_pack-kunnr
+      INTO TABLE lt_sal
+      FOR ALL ENTRIES IN lt_mpk
+      WHERE b~matnr = lt_mpk-matnr
+        AND b~werks IN so_werks
         AND b~lgort IN so_lgort
-        AND c~erdat < gv_first
+        AND c~kunnr IN so_kunnr
+        AND e~edatu <> '00000000'
         AND b~abgru = space
         AND c~auart <> 'ZCR'
         AND c~auart <> 'ZDR'
         AND c~auart <> 'ZTH'
         AND c~auart <> 'ZRH'
-        AND f~cmgst IN (space, 'A', 'D')
+        AND h~cmgst IN (space, 'A', 'D')
         AND e~bmeng <> 0.
+    SORT lt_sal BY vbeln posnr etenr.
+    DELETE ADJACENT DUPLICATES FROM lt_sal COMPARING vbeln posnr etenr.
+    APPEND LINES OF lt_sal TO lt_sale.
 
-    REFRESH lt_dd.
-    IF lt_itm[] IS NOT INITIAL.
-      REFRESH lt_dlv.
-      SELECT a~vbeln AS dlv b~posnr AS dlp
-             b~vgbel AS vbeln b~vgpos AS posnr b~lfimg
-        FROM lips AS b
-        INNER JOIN likp AS a
-          ON a~vbeln = b~vbeln
-        INTO CORRESPONDING FIELDS OF TABLE lt_dlv
-        FOR ALL ENTRIES IN lt_itm
-        WHERE b~vgbel = lt_itm-vbeln
-          AND b~vgpos = lt_itm-posnr.
-      LOOP AT lt_dlv INTO ls_dlv.
-        READ TABLE lt_dd INTO ls_dd
-          WITH KEY vbeln = ls_dlv-vbeln
-                   posnr = ls_dlv-posnr.
-        IF sy-subrc = 0.
-          ls_dd-lfimg = ls_dd-lfimg + ls_dlv-lfimg.
-          MODIFY lt_dd FROM ls_dd INDEX sy-tabix.
-        ELSE.
-          CLEAR ls_dd.
-          ls_dd-vbeln = ls_dlv-vbeln.
-          ls_dd-posnr = ls_dlv-posnr.
-          ls_dd-lfimg = ls_dlv-lfimg.
-          INSERT ls_dd INTO TABLE lt_dd.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
-
-    LOOP AT lt_itm INTO ls_itm.
-      READ TABLE lt_sch WITH KEY vbeln = ls_itm-vbeln
-                                 posnr = ls_itm-posnr
-                                 etenr = ls_itm-etenr
-        TRANSPORTING NO FIELDS.
-      IF sy-subrc = 0.
-        CONTINUE.
-      ENDIF.
-      CLEAR ls_sch.
-      ls_sch-vbeln = ls_itm-vbeln.
-      ls_sch-posnr = ls_itm-posnr.
-      ls_sch-etenr = ls_itm-etenr.
-      INSERT ls_sch INTO TABLE lt_sch.
-      lv_open = ls_itm-kwmeng.
-      READ TABLE lt_dd INTO ls_dd
-        WITH KEY vbeln = ls_itm-vbeln
-                 posnr = ls_itm-posnr.
-      IF sy-subrc = 0.
-        lv_open = lv_open - ls_dd-lfimg.
-      ENDIF.
-      IF lv_open < 0.
-        lv_open = 0.
-      ENDIF.
-      IF lv_open = 0.
-        CONTINUE.
-      ENDIF.
-      CLEAR ls_itm-person.
-      READ TABLE lt_open INTO ls_sum
-        WITH KEY matnr  = ls_itm-matnr
-                 werks  = ls_itm-werks
-                 lgort  = ls_itm-lgort
-                 vkbur  = ls_itm-vkbur
-                 person = ls_itm-person
-                 kunnr  = ls_itm-kunnr.
-      IF sy-subrc = 0.
-        ls_sum-menge = ls_sum-menge + lv_open.
-        MODIFY lt_open FROM ls_sum INDEX sy-tabix.
-      ELSE.
-        CLEAR ls_sum.
-        ls_sum-matnr  = ls_itm-matnr.
-        ls_sum-werks  = ls_itm-werks.
-        ls_sum-lgort  = ls_itm-lgort.
-        ls_sum-vkbur  = ls_itm-vkbur.
-        ls_sum-kunnr  = ls_itm-kunnr.
-        ls_sum-menge  = lv_open.
-        INSERT ls_sum INTO TABLE lt_open.
-      ENDIF.
-    ENDLOOP.
-
-    REFRESH lt_qty.
-    SELECT b~matnr b~werks b~lgort c~vkbur c~kunnr
-           b~vbeln b~posnr e~etenr e~bmeng AS kwmeng
+*   전월 미출하. 출하지점과 납품일만. 플랜트·저장위치는 걸지 않는다.
+    REFRESH lt_opn.
+    SELECT b~vbeln b~posnr e~etenr
+           b~matnr b~werks b~lgort b~vstel
+           e~edatu e~bmeng
       FROM vbak AS c
       INNER JOIN vbap AS b
         ON b~vbeln = c~vbeln
-      INNER JOIN vbuk AS f
-        ON f~vbeln = c~vbeln
+      INNER JOIN vbuk AS h
+        ON h~vbeln = c~vbeln
       INNER JOIN vbep AS e
         ON e~vbeln = b~vbeln
        AND e~posnr = b~posnr
-      INTO CORRESPONDING FIELDS OF TABLE lt_qty
-      FOR ALL ENTRIES IN lt_pack
-      WHERE b~matnr = lt_pack-matnr
-        AND b~werks = lt_pack-werks
-        AND c~kunnr = lt_pack-kunnr
-        AND b~lgort IN so_lgort
-        AND c~erdat BETWEEN gv_first AND gv_last
+      INTO TABLE lt_opn
+      FOR ALL ENTRIES IN lt_mpk
+      WHERE b~matnr = lt_mpk-matnr
+        AND b~vstel IN so_vstel
+        AND c~kunnr IN so_kunnr
+        AND e~edatu >= lv_open_from
+        AND e~edatu <= lv_open_to
         AND b~abgru = space
         AND c~auart <> 'ZCR'
         AND c~auart <> 'ZDR'
         AND c~auart <> 'ZTH'
         AND c~auart <> 'ZRH'
-        AND f~cmgst IN (space, 'A', 'D')
+        AND h~cmgst IN (space, 'A', 'D')
         AND e~bmeng <> 0.
-    LOOP AT lt_qty INTO ls_qty.
-      READ TABLE lt_fin WITH KEY vbeln = ls_qty-vbeln
-                                posnr = ls_qty-posnr
-        TRANSPORTING NO FIELDS.
-      IF sy-subrc = 0.
-        CONTINUE.
-      ENDIF.
-      READ TABLE lt_ord INTO ls_sum
-        WITH KEY matnr  = ls_qty-matnr
-                 werks  = ls_qty-werks
-                 lgort  = ls_qty-lgort
-                 vkbur  = ls_qty-vkbur
-                 person = ls_qty-person
-                 kunnr  = ls_qty-kunnr.
-      IF sy-subrc = 0.
-        ls_sum-menge = ls_sum-menge + ls_qty-kwmeng.
-        MODIFY lt_ord FROM ls_sum INDEX sy-tabix.
-      ELSE.
-        CLEAR ls_sum.
-        ls_sum-matnr  = ls_qty-matnr.
-        ls_sum-werks  = ls_qty-werks.
-        ls_sum-lgort  = ls_qty-lgort.
-        ls_sum-vkbur  = ls_qty-vkbur.
-        ls_sum-person = ls_qty-person.
-        ls_sum-kunnr  = ls_qty-kunnr.
-        ls_sum-menge  = ls_qty-kwmeng.
-        INSERT ls_sum INTO TABLE lt_ord.
-      ENDIF.
-    ENDLOOP.
-    LOOP AT lt_qty INTO ls_qty.
-      CLEAR ls_seen.
-      ls_seen-vbeln = ls_qty-vbeln.
-      ls_seen-posnr = ls_qty-posnr.
-      INSERT ls_seen INTO TABLE lt_fin.
-    ENDLOOP.
+    APPEND LINES OF lt_opn TO lt_open.
 
-*   재고운송오더. ZSDR1100 은 오더수량에 구매수량, 미결수량에 구매수량 - 납품수량을 넣는다.
-    REFRESH lt_itm.
-    SELECT b~matnr a~reswk AS werks b~reslo AS lgort d~kunnr
-           b~ebeln AS vbeln b~ebelp AS posnr b~menge AS kwmeng
+    REFRESH lt_sto.
+    SELECT a~ebeln b~ebelp b~matnr
+           a~reswk AS werks
+           b~reslo AS lgort
+           c~eindt AS edatu
+           b~menge AS menge
       FROM ekko AS a
       INNER JOIN ekpo AS b
         ON b~ebeln = a~ebeln
+      INNER JOIN eket AS c
+        ON c~ebeln = b~ebeln
+       AND c~ebelp = b~ebelp
       INNER JOIN ekpv AS d
         ON d~ebeln = b~ebeln
        AND d~ebelp = b~ebelp
-      INTO CORRESPONDING FIELDS OF TABLE lt_itm
-      FOR ALL ENTRIES IN lt_pack
-      WHERE b~matnr = lt_pack-matnr
-        AND a~reswk = lt_pack-werks
-        AND d~kunnr = lt_pack-kunnr
+      INTO TABLE lt_sto
+      FOR ALL ENTRIES IN lt_mpk
+      WHERE b~matnr = lt_mpk-matnr
+        AND a~reswk IN so_werks
         AND b~reslo IN so_lgort
-        AND a~aedat < gv_first
+        AND d~kunnr IN so_kunnr
+        AND c~eindt <> '00000000'
         AND a~memorytype = space
         AND b~loekz = space
         AND b~menge <> 0.
-    IF lt_itm[] IS NOT INITIAL.
-      REFRESH lt_dlv.
-      SELECT a~vbeln AS dlv b~posnr AS dlp
-             b~vgbel AS vbeln b~vgpos AS posnr b~lfimg
-        FROM lips AS b
-        INNER JOIN likp AS a
-          ON a~vbeln = b~vbeln
-        INTO CORRESPONDING FIELDS OF TABLE lt_dlv
-        FOR ALL ENTRIES IN lt_itm
-        WHERE b~vgbel = lt_itm-vbeln
-          AND b~vgpos = lt_itm-posnr.
-      REFRESH lt_dd.
-      LOOP AT lt_dlv INTO ls_dlv.
-        READ TABLE lt_dd INTO ls_dd
-          WITH KEY vbeln = ls_dlv-vbeln
-                   posnr = ls_dlv-posnr.
-        IF sy-subrc = 0.
-          ls_dd-lfimg = ls_dd-lfimg + ls_dlv-lfimg.
-          MODIFY lt_dd FROM ls_dd INDEX sy-tabix.
-        ELSE.
-          CLEAR ls_dd.
-          ls_dd-vbeln = ls_dlv-vbeln.
-          ls_dd-posnr = ls_dlv-posnr.
-          ls_dd-lfimg = ls_dlv-lfimg.
-          INSERT ls_dd INTO TABLE lt_dd.
-        ENDIF.
-      ENDLOOP.
-      LOOP AT lt_itm INTO ls_itm.
-        READ TABLE lt_sch WITH KEY vbeln = ls_itm-vbeln
-                                   posnr = ls_itm-posnr
-                                   etenr = space
-          TRANSPORTING NO FIELDS.
-        IF sy-subrc = 0.
-          CONTINUE.
-        ENDIF.
-        CLEAR ls_sch.
-        ls_sch-vbeln = ls_itm-vbeln.
-        ls_sch-posnr = ls_itm-posnr.
-        INSERT ls_sch INTO TABLE lt_sch.
-        lv_open = ls_itm-kwmeng.
-        READ TABLE lt_dd INTO ls_dd
-          WITH KEY vbeln = ls_itm-vbeln
-                   posnr = ls_itm-posnr.
-        IF sy-subrc = 0.
-          lv_open = lv_open - ls_dd-lfimg.
-        ENDIF.
-        IF lv_open < 0.
-          lv_open = 0.
-        ENDIF.
-        IF lv_open = 0.
-          CONTINUE.
-        ENDIF.
-        READ TABLE lt_open INTO ls_sum
-          WITH KEY matnr  = ls_itm-matnr
-                   werks  = ls_itm-werks
-                   lgort  = ls_itm-lgort
-                   vkbur  = space
-                   person = space
-                   kunnr  = ls_itm-kunnr.
-        IF sy-subrc = 0.
-          ls_sum-menge = ls_sum-menge + lv_open.
-          MODIFY lt_open FROM ls_sum INDEX sy-tabix.
-        ELSE.
-          CLEAR ls_sum.
-          ls_sum-matnr = ls_itm-matnr.
-          ls_sum-werks = ls_itm-werks.
-          ls_sum-lgort = ls_itm-lgort.
-          ls_sum-kunnr = ls_itm-kunnr.
-          ls_sum-menge = lv_open.
-          INSERT ls_sum INTO TABLE lt_open.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
+    APPEND LINES OF lt_sto TO lt_stoa.
 
-    REFRESH lt_qty.
-    SELECT b~matnr a~reswk AS werks b~reslo AS lgort d~kunnr
-           b~ebeln AS vbeln b~ebelp AS posnr b~menge AS kwmeng
+*   전월 미출하 재고운송. 입고지점은 EKPO-RESLO.
+    REFRESH lt_sto.
+    SELECT a~ebeln b~ebelp b~matnr
+           a~reswk AS werks
+           b~reslo AS lgort
+           c~eindt AS edatu
+           b~menge AS menge
       FROM ekko AS a
       INNER JOIN ekpo AS b
         ON b~ebeln = a~ebeln
+      INNER JOIN eket AS c
+        ON c~ebeln = b~ebeln
+       AND c~ebelp = b~ebelp
       INNER JOIN ekpv AS d
         ON d~ebeln = b~ebeln
        AND d~ebelp = b~ebelp
-      INTO CORRESPONDING FIELDS OF TABLE lt_qty
-      FOR ALL ENTRIES IN lt_pack
-      WHERE b~matnr = lt_pack-matnr
-        AND a~reswk = lt_pack-werks
-        AND d~kunnr = lt_pack-kunnr
-        AND b~reslo IN so_lgort
-        AND a~aedat BETWEEN gv_first AND gv_last
+      INTO TABLE lt_sto
+      FOR ALL ENTRIES IN lt_mpk
+      WHERE b~matnr = lt_mpk-matnr
+        AND b~reslo IN so_vstel
+        AND d~kunnr IN so_kunnr
+        AND c~eindt >= lv_open_from
+        AND c~eindt <= lv_open_to
         AND a~memorytype = space
         AND b~loekz = space
         AND b~menge <> 0.
-    LOOP AT lt_qty INTO ls_qty.
-      READ TABLE lt_fin WITH KEY vbeln = ls_qty-vbeln
-                                posnr = ls_qty-posnr
-        TRANSPORTING NO FIELDS.
-      IF sy-subrc = 0.
-        CONTINUE.
-      ENDIF.
-      CLEAR ls_seen.
-      ls_seen-vbeln = ls_qty-vbeln.
-      ls_seen-posnr = ls_qty-posnr.
-      INSERT ls_seen INTO TABLE lt_fin.
-      READ TABLE lt_ord INTO ls_sum
-        WITH KEY matnr  = ls_qty-matnr
-                 werks  = ls_qty-werks
-                 lgort  = ls_qty-lgort
-                 vkbur  = space
-                 person = space
-                 kunnr  = ls_qty-kunnr.
-      IF sy-subrc = 0.
-        ls_sum-menge = ls_sum-menge + ls_qty-kwmeng.
-        MODIFY lt_ord FROM ls_sum INDEX sy-tabix.
-      ELSE.
-        CLEAR ls_sum.
-        ls_sum-matnr = ls_qty-matnr.
-        ls_sum-werks = ls_qty-werks.
-        ls_sum-lgort = ls_qty-lgort.
-        ls_sum-kunnr = ls_qty-kunnr.
-        ls_sum-menge = ls_qty-kwmeng.
-        INSERT ls_sum INTO TABLE lt_ord.
-      ENDIF.
-    ENDLOOP.
+    APPEND LINES OF lt_sto TO lt_stoo.
 
     lv_from = lv_to + 1.
   ENDWHILE.
 
-  LOOP AT gt_data INTO gs_data.
-    lv_tabix = sy-tabix.
-    CLEAR: gs_data-open_qty, gs_data-ord_qty.
-    READ TABLE lt_open INTO ls_sum
-      WITH KEY matnr  = gs_data-matnr
-               werks  = gs_data-werks
-               lgort  = gs_data-lgort
-               vkbur  = gs_data-vkbur
-               person = space
-               kunnr  = gs_data-kunnr.
-    IF sy-subrc = 0.
-      gs_data-open_qty = ls_sum-menge.
-      DELETE TABLE lt_open WITH TABLE KEY matnr  = gs_data-matnr
-                                          werks  = gs_data-werks
-                                          lgort  = gs_data-lgort
-                                          vkbur  = gs_data-vkbur
-                                          person = space
-                                          kunnr  = gs_data-kunnr.
+  SORT lt_stoa BY ebeln ebelp edatu.
+  CLEAR: lv_ebeln, lv_ebelp, lv_month.
+  LOOP AT lt_stoa INTO ls_sto.
+    IF ls_sto-ebeln <> lv_ebeln OR ls_sto-ebelp <> lv_ebelp.
+      IF lv_ebeln IS NOT INITIAL AND lv_month = 'X'.
+        CLEAR ls_one.
+        ls_one-vbeln = lv_ebeln.
+        ls_one-posnr = lv_ebelp.
+        ls_one-matnr = ls_hold-matnr.
+        ls_one-werks = ls_hold-werks.
+        ls_one-lgort = ls_hold-lgort.
+        ls_one-menge = ls_hold-menge.
+        ls_one-month = lv_month.
+        APPEND ls_one TO lt_one.
+      ENDIF.
+      lv_ebeln = ls_sto-ebeln.
+      lv_ebelp = ls_sto-ebelp.
+      ls_hold = ls_sto.
+      CLEAR lv_month.
     ENDIF.
-    READ TABLE lt_ord INTO ls_sum
-      WITH KEY matnr  = gs_data-matnr
-               werks  = gs_data-werks
-               lgort  = gs_data-lgort
-               vkbur  = gs_data-vkbur
-               person = space
-               kunnr  = gs_data-kunnr.
-    IF sy-subrc = 0.
-      gs_data-ord_qty = ls_sum-menge.
-      DELETE TABLE lt_ord WITH TABLE KEY matnr  = gs_data-matnr
-                                         werks  = gs_data-werks
-                                         lgort  = gs_data-lgort
-                                         vkbur  = gs_data-vkbur
-                                         person = space
-                                         kunnr  = gs_data-kunnr.
+    IF ls_sto-edatu >= gv_first AND ls_sto-edatu <= gv_last.
+      lv_month = 'X'.
     ENDIF.
-    MODIFY gt_data FROM gs_data INDEX lv_tabix.
+  ENDLOOP.
+  IF lv_ebeln IS NOT INITIAL AND lv_month = 'X'.
+    CLEAR ls_one.
+    ls_one-vbeln = lv_ebeln.
+    ls_one-posnr = lv_ebelp.
+    ls_one-matnr = ls_hold-matnr.
+    ls_one-werks = ls_hold-werks.
+    ls_one-lgort = ls_hold-lgort.
+    ls_one-menge = ls_hold-menge.
+    ls_one-month = lv_month.
+    APPEND ls_one TO lt_one.
+  ENDIF.
+
+  LOOP AT lt_open INTO ls_opn.
+    ls_item-vbeln = ls_opn-vbeln.
+    ls_item-posnr = ls_opn-posnr.
+    APPEND ls_item TO lt_item.
+  ENDLOOP.
+  LOOP AT lt_stoo INTO ls_sto.
+    lv_posnr = ls_sto-ebelp.
+    ls_item-vbeln = ls_sto-ebeln.
+    ls_item-posnr = lv_posnr.
+    APPEND ls_item TO lt_item.
+  ENDLOOP.
+  LOOP AT lt_sale INTO ls_sal.
+    CHECK ls_sal-edatu >= gv_first AND ls_sal-edatu <= gv_last.
+    ls_item-vbeln = ls_sal-vbeln.
+    ls_item-posnr = ls_sal-posnr.
+    APPEND ls_item TO lt_item.
+  ENDLOOP.
+  LOOP AT lt_one INTO ls_one.
+    ls_item-vbeln = ls_one-vbeln.
+    ls_item-posnr = ls_one-posnr.
+    APPEND ls_item TO lt_item.
+  ENDLOOP.
+  SORT lt_item BY vbeln posnr.
+  DELETE ADJACENT DUPLICATES FROM lt_item COMPARING vbeln posnr.
+  DELETE lt_item WHERE vbeln = space.
+
+  IF lt_item[] IS NOT INITIAL.
+    DESCRIBE TABLE lt_item LINES lv_lines.
+    lv_from = 1.
+    WHILE lv_from <= lv_lines.
+      lv_to = lv_from + 399.
+      IF lv_to > lv_lines.
+        lv_to = lv_lines.
+      ENDIF.
+      REFRESH lt_ipk.
+      APPEND LINES OF lt_item FROM lv_from TO lv_to TO lt_ipk.
+      REFRESH: lt_doc, lt_dlv.
+      LOOP AT lt_ipk INTO ls_item.
+        ls_doc-vbeln = ls_item-vbeln.
+        APPEND ls_doc TO lt_doc.
+      ENDLOOP.
+      SORT lt_doc BY vbeln.
+      DELETE ADJACENT DUPLICATES FROM lt_doc COMPARING vbeln.
+*     납품수량은 계산 때 ZSDR1100 과 같이 VGBEL + VGPOS 로 읽는다.
+*     납품완료는 미결 0.
+      IF lt_doc[] IS NOT INITIAL.
+        REFRESH: lt_flow, lt_add.
+        SELECT vbelv posnv rfmng
+          FROM vbfa
+          INTO TABLE lt_flow
+          FOR ALL ENTRIES IN lt_doc
+          WHERE vbelv = lt_doc-vbeln
+            AND vbtyp_n = 'J'.
+        LOOP AT lt_flow INTO ls_flow.
+          CLEAR ls_lf.
+          ls_lf-vbeln = ls_flow-vbelv.
+          lv_posnr = ls_flow-posnv.
+          ls_lf-posnr = lv_posnr.
+          ls_lf-lfimg = ls_flow-rfmng.
+          COLLECT ls_lf INTO lt_add.
+        ENDLOOP.
+        LOOP AT lt_add INTO ls_lf.
+          lv_del = ls_lf-lfimg.
+          lv_ebeln = ls_lf-vbeln.
+          lv_posnr = ls_lf-posnr.
+          READ TABLE lt_lf INTO ls_lf
+            WITH TABLE KEY vbeln = lv_ebeln
+                           posnr = lv_posnr.
+          IF sy-subrc <> 0.
+            CLEAR ls_lf.
+            ls_lf-vbeln = lv_ebeln.
+            ls_lf-posnr = lv_posnr.
+            ls_lf-lfimg = lv_del.
+            INSERT ls_lf INTO TABLE lt_lf.
+          ELSEIF lv_del > ls_lf-lfimg.
+            ls_lf-lfimg = lv_del.
+            MODIFY lt_lf FROM ls_lf INDEX sy-tabix.
+          ENDIF.
+        ENDLOOP.
+        REFRESH: lt_ek, lt_add.
+        SELECT ebeln ebelp wamng
+          FROM eket
+          INTO CORRESPONDING FIELDS OF TABLE lt_ek
+          FOR ALL ENTRIES IN lt_doc
+          WHERE ebeln = lt_doc-vbeln.
+        LOOP AT lt_ek INTO ls_ek.
+          CLEAR ls_lf.
+          ls_lf-vbeln = ls_ek-ebeln.
+          lv_posnr = ls_ek-ebelp.
+          ls_lf-posnr = lv_posnr.
+          ls_lf-lfimg = ls_ek-wamng.
+          COLLECT ls_lf INTO lt_add.
+        ENDLOOP.
+        LOOP AT lt_add INTO ls_lf.
+          lv_del = ls_lf-lfimg.
+          lv_ebeln = ls_lf-vbeln.
+          lv_posnr = ls_lf-posnr.
+          READ TABLE lt_lf INTO ls_lf
+            WITH TABLE KEY vbeln = lv_ebeln
+                           posnr = lv_posnr.
+          IF sy-subrc <> 0.
+            CLEAR ls_lf.
+            ls_lf-vbeln = lv_ebeln.
+            ls_lf-posnr = lv_posnr.
+            ls_lf-lfimg = lv_del.
+            INSERT ls_lf INTO TABLE lt_lf.
+          ELSEIF lv_del > ls_lf-lfimg.
+            ls_lf-lfimg = lv_del.
+            MODIFY lt_lf FROM ls_lf INDEX sy-tabix.
+          ENDIF.
+        ENDLOOP.
+        SELECT vbeln posnr lfsta
+          FROM vbup
+          INTO TABLE lt_stp
+          FOR ALL ENTRIES IN lt_ipk
+          WHERE vbeln = lt_ipk-vbeln
+            AND posnr = lt_ipk-posnr
+            AND ( lfsta = 'C' OR lfgsa = 'C' ).
+        LOOP AT lt_stp INTO ls_stp.
+          CLEAR ls_item.
+          ls_item-vbeln = ls_stp-vbeln.
+          ls_item-posnr = ls_stp-posnr.
+          INSERT ls_item INTO TABLE lt_done.
+        ENDLOOP.
+        REFRESH lt_ek.
+        SELECT ebeln ebelp elikz
+          FROM ekpo
+          INTO CORRESPONDING FIELDS OF TABLE lt_ek
+          FOR ALL ENTRIES IN lt_doc
+          WHERE ebeln = lt_doc-vbeln
+            AND elikz = 'X'.
+        LOOP AT lt_ek INTO ls_ek.
+          CLEAR ls_item.
+          ls_item-vbeln = ls_ek-ebeln.
+          lv_posnr = ls_ek-ebelp.
+          ls_item-posnr = lv_posnr.
+          INSERT ls_item INTO TABLE lt_done.
+        ENDLOOP.
+      ENDIF.
+      REFRESH lt_stp.
+      SELECT vbeln posnr steps
+        FROM zsdt1150
+        INTO TABLE lt_stp
+        FOR ALL ENTRIES IN lt_ipk
+        WHERE vbeln = lt_ipk-vbeln
+          AND posnr = lt_ipk-posnr.
+      LOOP AT lt_stp INTO ls_stp.
+        CHECK ls_stp-steps = 'F'.
+        CLEAR ls_appr.
+        ls_appr-vbeln = ls_stp-vbeln.
+        ls_appr-posnr = ls_stp-posnr.
+        INSERT ls_appr INTO TABLE lt_appr.
+      ENDLOOP.
+      lv_from = lv_to + 1.
+    ENDWHILE.
+  ENDIF.
+
+  REFRESH lt_sum.
+  LOOP AT lt_sale INTO ls_sal.
+    CLEAR lv_ord.
+    IF ls_sal-edatu >= gv_first AND ls_sal-edatu <= gv_last.
+      READ TABLE lt_appr TRANSPORTING NO FIELDS
+        WITH KEY vbeln = ls_sal-vbeln
+                 posnr = ls_sal-posnr.
+      IF sy-subrc = 0.
+        lv_ord = ls_sal-bmeng.
+      ENDIF.
+    ENDIF.
+    IF lv_ord = 0.
+      CONTINUE.
+    ENDIF.
+    READ TABLE lt_sum INTO ls_sum
+      WITH KEY matnr = ls_sal-matnr
+               werks = ls_sal-werks
+               lgort = ls_sal-lgort.
+    IF sy-subrc <> 0.
+      CLEAR ls_sum.
+      ls_sum-matnr = ls_sal-matnr.
+      ls_sum-werks = ls_sal-werks.
+      ls_sum-lgort = ls_sal-lgort.
+      INSERT ls_sum INTO TABLE lt_sum.
+      READ TABLE lt_sum INTO ls_sum
+        WITH KEY matnr = ls_sal-matnr
+                 werks = ls_sal-werks
+                 lgort = ls_sal-lgort.
+    ENDIF.
+    ls_sum-ord_qty = ls_sum-ord_qty + lv_ord.
+    MODIFY lt_sum FROM ls_sum INDEX sy-tabix.
   ENDLOOP.
 
-  LOOP AT lt_open INTO ls_sum.
-    CLEAR lv_tabix.
+  LOOP AT lt_one INTO ls_one.
+    CLEAR lv_ord.
+    IF ls_one-month = 'X'.
+      READ TABLE lt_appr TRANSPORTING NO FIELDS
+        WITH KEY vbeln = ls_one-vbeln
+                 posnr = ls_one-posnr.
+      IF sy-subrc = 0.
+        lv_ord = ls_one-menge.
+      ENDIF.
+    ENDIF.
+    IF lv_ord = 0.
+      CONTINUE.
+    ENDIF.
+    READ TABLE lt_sum INTO ls_sum
+      WITH KEY matnr = ls_one-matnr
+               werks = ls_one-werks
+               lgort = ls_one-lgort.
+    IF sy-subrc <> 0.
+      CLEAR ls_sum.
+      ls_sum-matnr = ls_one-matnr.
+      ls_sum-werks = ls_one-werks.
+      ls_sum-lgort = ls_one-lgort.
+      INSERT ls_sum INTO TABLE lt_sum.
+      READ TABLE lt_sum INTO ls_sum
+        WITH KEY matnr = ls_one-matnr
+                 werks = ls_one-werks
+                 lgort = ls_one-lgort.
+    ENDIF.
+    ls_sum-ord_qty = ls_sum-ord_qty + lv_ord.
+    MODIFY lt_sum FROM ls_sum INDEX sy-tabix.
+  ENDLOOP.
+
+  LOOP AT lt_open INTO ls_opn.
+    READ TABLE lt_appr TRANSPORTING NO FIELDS
+      WITH KEY vbeln = ls_opn-vbeln
+               posnr = ls_opn-posnr.
+    IF sy-subrc <> 0.
+      CONTINUE.
+    ENDIF.
+    IF ls_opn-vstel NOT IN so_vstel.
+      CONTINUE.
+    ENDIF.
+    READ TABLE lt_done TRANSPORTING NO FIELDS
+      WITH TABLE KEY vbeln = ls_opn-vbeln
+                     posnr = ls_opn-posnr.
+    IF sy-subrc = 0.
+      CONTINUE.
+    ENDIF.
+    CLEAR ls_lf.
+    READ TABLE lt_ship INTO ls_lf
+      WITH TABLE KEY vbeln = ls_opn-vbeln
+                     posnr = ls_opn-posnr.
+    IF sy-subrc <> 0.
+      CLEAR ls_lf.
+      ls_lf-vbeln = ls_opn-vbeln.
+      ls_lf-posnr = ls_opn-posnr.
+      SELECT SUM( lfimg )
+        FROM lips
+        INTO ls_lf-lfimg
+        WHERE vgbel = ls_opn-vbeln
+          AND vgpos = ls_opn-posnr.
+      IF sy-subrc <> 0.
+        CLEAR ls_lf-lfimg.
+      ENDIF.
+      INSERT ls_lf INTO TABLE lt_ship.
+    ENDIF.
+    lv_open = ls_opn-bmeng - ls_lf-lfimg.
+    IF lv_open <= 0.
+      CONTINUE.
+    ENDIF.
+    READ TABLE lt_sum INTO ls_sum
+      WITH KEY matnr = ls_opn-matnr
+               werks = ls_opn-werks
+               lgort = ls_opn-lgort.
+    IF sy-subrc <> 0.
+      CLEAR ls_sum.
+      ls_sum-matnr = ls_opn-matnr.
+      ls_sum-werks = ls_opn-werks.
+      ls_sum-lgort = ls_opn-lgort.
+      INSERT ls_sum INTO TABLE lt_sum.
+      READ TABLE lt_sum INTO ls_sum
+        WITH KEY matnr = ls_opn-matnr
+                 werks = ls_opn-werks
+                 lgort = ls_opn-lgort.
+    ENDIF.
+    ls_sum-open_qty = ls_sum-open_qty + lv_open.
+    MODIFY lt_sum FROM ls_sum INDEX sy-tabix.
+  ENDLOOP.
+
+  LOOP AT lt_stoo INTO ls_sto.
+    CLEAR lv_open.
+    lv_posnr = ls_sto-ebelp.
+    READ TABLE lt_appr TRANSPORTING NO FIELDS
+      WITH KEY vbeln = ls_sto-ebeln
+               posnr = lv_posnr.
+    IF sy-subrc <> 0.
+      CONTINUE.
+    ENDIF.
+    lv_vstel = ls_sto-lgort.
+    IF lv_vstel NOT IN so_vstel.
+      CONTINUE.
+    ENDIF.
+    READ TABLE lt_done TRANSPORTING NO FIELDS
+      WITH TABLE KEY vbeln = ls_sto-ebeln
+                     posnr = lv_posnr.
+    IF sy-subrc = 0.
+      CONTINUE.
+    ENDIF.
+    CLEAR ls_lf.
+    READ TABLE lt_ship INTO ls_lf
+      WITH TABLE KEY vbeln = ls_sto-ebeln
+                     posnr = lv_posnr.
+    IF sy-subrc <> 0.
+      CLEAR ls_lf.
+      ls_lf-vbeln = ls_sto-ebeln.
+      ls_lf-posnr = lv_posnr.
+      SELECT SUM( lfimg )
+        FROM lips
+        INTO ls_lf-lfimg
+        WHERE vgbel = ls_sto-ebeln
+          AND vgpos = lv_posnr.
+      IF sy-subrc <> 0.
+        CLEAR ls_lf-lfimg.
+      ENDIF.
+      INSERT ls_lf INTO TABLE lt_ship.
+    ENDIF.
+    lv_open = ls_sto-menge - ls_lf-lfimg.
+    IF lv_open <= 0.
+      CONTINUE.
+    ENDIF.
+    READ TABLE lt_sum INTO ls_sum
+      WITH KEY matnr = ls_sto-matnr
+               werks = ls_sto-werks
+               lgort = ls_sto-lgort.
+    IF sy-subrc <> 0.
+      CLEAR ls_sum.
+      ls_sum-matnr = ls_sto-matnr.
+      ls_sum-werks = ls_sto-werks.
+      ls_sum-lgort = ls_sto-lgort.
+      INSERT ls_sum INTO TABLE lt_sum.
+      READ TABLE lt_sum INTO ls_sum
+        WITH KEY matnr = ls_sto-matnr
+                 werks = ls_sto-werks
+                 lgort = ls_sto-lgort.
+    ENDIF.
+    ls_sum-open_qty = ls_sum-open_qty + lv_open.
+    MODIFY lt_sum FROM ls_sum INDEX sy-tabix.
+  ENDLOOP.
+
+  LOOP AT lt_sum INTO ls_sum.
+    CLEAR lv_hit.
     LOOP AT gt_data INTO gs_data
       WHERE matnr = ls_sum-matnr
         AND werks = ls_sum-werks
-        AND lgort = ls_sum-lgort
-        AND kunnr = ls_sum-kunnr.
+        AND lgort = ls_sum-lgort.
       lv_tabix = sy-tabix.
+      gs_data-open_qty = ls_sum-open_qty.
+      gs_data-ord_qty = ls_sum-ord_qty.
+      MODIFY gt_data FROM gs_data INDEX lv_tabix.
+      lv_hit = 'X'.
       EXIT.
     ENDLOOP.
-    IF lv_tabix > 0.
-      gs_data-open_qty = gs_data-open_qty + ls_sum-menge.
-      MODIFY gt_data FROM gs_data INDEX lv_tabix.
+    IF lv_hit = 'X'.
+      CONTINUE.
     ENDIF.
-  ENDLOOP.
-
-  LOOP AT lt_ord INTO ls_sum.
-    CLEAR lv_tabix.
-    LOOP AT gt_data INTO gs_data
-      WHERE matnr = ls_sum-matnr
-        AND werks = ls_sum-werks
-        AND lgort = ls_sum-lgort
-        AND kunnr = ls_sum-kunnr.
-      lv_tabix = sy-tabix.
-      EXIT.
-    ENDLOOP.
-    IF lv_tabix > 0.
-      gs_data-ord_qty = gs_data-ord_qty + ls_sum-menge.
-      MODIFY gt_data FROM gs_data INDEX lv_tabix.
+    CLEAR gs_data.
+    READ TABLE gt_data INTO ls_src
+      WITH KEY matnr = ls_sum-matnr
+               werks = ls_sum-werks.
+    IF sy-subrc <> 0.
+      READ TABLE gt_data INTO ls_src
+        WITH KEY matnr = ls_sum-matnr.
     ENDIF.
+    gs_data-matnr     = ls_sum-matnr.
+    gs_data-spmon     = p_spmon.
+    gs_data-werks     = ls_sum-werks.
+    gs_data-lgort     = ls_sum-lgort.
+    gs_data-open_qty  = ls_sum-open_qty.
+    gs_data-ord_qty   = ls_sum-ord_qty.
+    gs_data-maktx     = ls_src-maktx.
+    gs_data-meins     = ls_src-meins.
+    gs_data-dispo     = ls_src-dispo.
+    gs_data-dispo_txt = ls_src-dispo_txt.
+    IF gs_data-meins IS INITIAL.
+      gs_data-meins = 'KG'.
+    ENDIF.
+    APPEND gs_data TO gt_data.
   ENDLOOP.
 ENDFORM.
 
-*& 생산량은 자재+플랜트+저장위치. 출하는 납품 출하요청수량.
+*& 생산량은 ZSDR0065 생산(구매)입고. 자재+플랜트+저장위치. 전기일 조회월.
+*& 출하량은 ZSDR5002 [적송]출하수량. 저장위치 9000, CY00. 납품요청일 LIKP-LFDAT.
 FORM fill_stock.
   TYPES: BEGIN OF ty_key,
            matnr TYPE matnr,
@@ -1133,6 +1457,8 @@ FORM fill_stock.
            menge TYPE menge_d,
          END OF ty_mvg,
          BEGIN OF ty_shp,
+           vbeln  TYPE vbeln_vl,
+           posnr  TYPE posnr_vl,
            matnr  TYPE matnr,
            werks  TYPE werks_d,
            lgort  TYPE lgort_d,
@@ -1146,10 +1472,19 @@ FORM fill_stock.
          BEGIN OF ty_drv,
            matnr  TYPE matnr,
            werks  TYPE werks_d,
+           lgort  TYPE lgort_d,
            vkbur  TYPE vkbur,
            person TYPE kunnr,
            kunnr  TYPE kunnr,
-         END OF ty_drv.
+         END OF ty_drv,
+         BEGIN OF ty_nm,
+           kunnr TYPE kunnr,
+           name1 TYPE name1_gp,
+         END OF ty_nm,
+         BEGIN OF ty_vk,
+           vkbur TYPE vkbur,
+           bezei TYPE tvkbt-bezei,
+         END OF ty_vk.
   DATA: lt_key  TYPE STANDARD TABLE OF ty_key,
         ls_key  TYPE ty_key,
         lt_kpk  TYPE STANDARD TABLE OF ty_key,
@@ -1161,6 +1496,13 @@ FORM fill_stock.
         lt_drv  TYPE STANDARD TABLE OF ty_drv,
         ls_drv  TYPE ty_drv,
         lt_dpk  TYPE STANDARD TABLE OF ty_drv,
+        lt_new  TYPE STANDARD TABLE OF ty_gi,
+        lt_nm   TYPE STANDARD TABLE OF ty_nm,
+        ls_nm   TYPE ty_nm,
+        lt_kna  TYPE SORTED TABLE OF ty_nm WITH UNIQUE KEY kunnr,
+        lt_vk   TYPE SORTED TABLE OF ty_vk WITH UNIQUE KEY vkbur,
+        ls_vk   TYPE ty_vk,
+        ls_src  TYPE ty_data,
         lt_gr   TYPE SORTED TABLE OF ty_gr WITH UNIQUE KEY matnr werks lgort,
         ls_gr   TYPE ty_gr,
         lt_gi   TYPE SORTED TABLE OF ty_gi
@@ -1177,25 +1519,26 @@ FORM fill_stock.
     RETURN.
   ENDIF.
 
+* 자재문서의 플랜트·저장위치별로 읽는다. 계획 행의 저장위치에 묶지 않는다.
+  REFRESH lt_drv.
   LOOP AT gt_data INTO gs_data.
-    ls_key-matnr = gs_data-matnr.
-    ls_key-werks = gs_data-werks.
-    ls_key-lgort = gs_data-lgort.
-    APPEND ls_key TO lt_key.
+    CLEAR ls_drv.
+    ls_drv-matnr = gs_data-matnr.
+    APPEND ls_drv TO lt_drv.
   ENDLOOP.
-  SORT lt_key BY matnr werks lgort.
-  DELETE ADJACENT DUPLICATES FROM lt_key COMPARING matnr werks lgort.
+  SORT lt_drv BY matnr.
+  DELETE ADJACENT DUPLICATES FROM lt_drv COMPARING matnr.
 
-  IF lt_key[] IS NOT INITIAL.
-    DESCRIBE TABLE lt_key LINES lv_lines.
+  IF lt_drv[] IS NOT INITIAL.
+    DESCRIBE TABLE lt_drv LINES lv_lines.
     lv_from = 1.
     WHILE lv_from <= lv_lines.
       lv_to = lv_from + 399.
       IF lv_to > lv_lines.
         lv_to = lv_lines.
       ENDIF.
-      REFRESH lt_kpk.
-      APPEND LINES OF lt_key FROM lv_from TO lv_to TO lt_kpk.
+      REFRESH lt_dpk.
+      APPEND LINES OF lt_drv FROM lv_from TO lv_to TO lt_dpk.
       REFRESH lt_mvg.
 *     문서번호를 함께 읽는다. 수량이 같은 입고를 한 건으로 지우지 않기 위함.
       SELECT b~mblnr b~mjahr b~zeile
@@ -1205,10 +1548,10 @@ FORM fill_stock.
           ON a~mblnr = b~mblnr
          AND a~mjahr = b~mjahr
         INTO TABLE lt_mvg
-        FOR ALL ENTRIES IN lt_kpk
-        WHERE b~matnr = lt_kpk-matnr
-          AND b~werks = lt_kpk-werks
-          AND b~lgort = lt_kpk-lgort
+        FOR ALL ENTRIES IN lt_dpk
+        WHERE b~matnr = lt_dpk-matnr
+          AND b~werks IN so_werks
+          AND b~lgort IN so_lgort
           AND b~bwart IN r_gr
           AND a~budat BETWEEN gv_first AND gv_last.
       LOOP AT lt_mvg INTO ls_mvg.
@@ -1227,8 +1570,16 @@ FORM fill_stock.
                      werks = ls_mvg-werks
                      lgort = ls_mvg-lgort.
         ENDIF.
+*       ZSDR0065 FORM data_modify 의 생산(구매)입고와 같은 부호.
         CLEAR lv_qty.
-        IF ls_mvg-bwart = '911'.
+        IF ls_mvg-bwart = '101' OR ls_mvg-bwart = '102'
+        OR ls_mvg-bwart = '131' OR ls_mvg-bwart = '132'.
+          IF ls_mvg-shkzg = 'S'.
+            lv_qty = ls_mvg-menge.
+          ELSEIF ls_mvg-shkzg = 'H'.
+            lv_qty = 0 - ls_mvg-menge.
+          ENDIF.
+        ELSEIF ls_mvg-bwart = '911'.
           IF ls_mvg-shkzg = 'S'.
             lv_qty = ls_mvg-menge.
           ENDIF.
@@ -1236,10 +1587,6 @@ FORM fill_stock.
           IF ls_mvg-shkzg = 'H'.
             lv_qty = 0 - ls_mvg-menge.
           ENDIF.
-        ELSEIF ls_mvg-shkzg = 'S'.
-          lv_qty = ls_mvg-menge.
-        ELSE.
-          lv_qty = 0 - ls_mvg-menge.
         ENDIF.
         ls_gr-menge = ls_gr-menge + lv_qty.
         MODIFY lt_gr FROM ls_gr INDEX sy-tabix.
@@ -1250,15 +1597,12 @@ FORM fill_stock.
 
   REFRESH lt_drv.
   LOOP AT gt_data INTO gs_data.
-    ls_drv-matnr  = gs_data-matnr.
-    ls_drv-werks  = gs_data-werks.
-    ls_drv-vkbur  = gs_data-vkbur.
-    ls_drv-kunnr  = gs_data-kunnr.
+    CLEAR ls_drv.
+    ls_drv-matnr = gs_data-matnr.
     APPEND ls_drv TO lt_drv.
   ENDLOOP.
-  SORT lt_drv BY matnr werks vkbur kunnr.
-  DELETE ADJACENT DUPLICATES FROM lt_drv
-    COMPARING matnr werks vkbur kunnr.
+  SORT lt_drv BY matnr.
+  DELETE ADJACENT DUPLICATES FROM lt_drv COMPARING matnr.
 
   DESCRIBE TABLE lt_drv LINES lv_lines.
   lv_from = 1.
@@ -1270,30 +1614,38 @@ FORM fill_stock.
     REFRESH lt_dpk.
     APPEND LINES OF lt_drv FROM lv_from TO lv_to TO lt_dpk.
     REFRESH lt_shp.
-    SELECT b~matnr b~werks g~lgort AS lgso
-           c~vkbur d~kunnr AS person c~kunnr b~lfimg c~auart
-      FROM lips AS b
-      INNER JOIN likp AS a
-        ON a~vbeln = b~vbeln
-      INNER JOIN vbak AS c
-        ON c~vbeln = b~vgbel
-      INNER JOIN vbap AS g
-        ON g~vbeln = b~vgbel
-       AND g~posnr = b~vgpos
-      INNER JOIN vbpa AS d
-        ON d~vbeln = c~vbeln
+*   납품번호, 품목을 같이 읽는다. FOR ALL ENTRIES 는 같은 결과 행을 한 건으로 지운다.
+    SELECT b~vbeln b~posnr
+           b~matnr b~werks b~lgort
+           b~vkbur d~kunnr AS person a~kunag AS kunnr
+           b~lfimg f~auart
+      FROM likp AS a
+      INNER JOIN lips AS b
+        ON b~vbeln = a~vbeln
+      INNER JOIN knvv AS k
+        ON k~kunnr = a~kunnr
+       AND k~vkorg = a~vkorg
+       AND k~vtweg = '10'
+       AND k~spart = '10'
+      LEFT JOIN vbpa AS d
+        ON d~vbeln = a~vbeln
        AND d~posnr = space
        AND d~parvw = 'S1'
+      LEFT JOIN vbak AS f
+        ON f~vbeln = b~vgbel
       INTO CORRESPONDING FIELDS OF TABLE lt_shp
       FOR ALL ENTRIES IN lt_dpk
       WHERE b~matnr = lt_dpk-matnr
-        AND b~werks = lt_dpk-werks
-        AND c~vkbur = lt_dpk-vkbur
-        AND c~kunnr = lt_dpk-kunnr
-        AND a~wadat BETWEEN gv_first AND gv_last.
+        AND b~werks IN so_werks
+        AND b~lgort IN so_lgort
+        AND a~kunag IN so_kunnr
+        AND a~lfdat BETWEEN gv_first AND gv_last.
     LOOP AT lt_shp INTO ls_shp.
-      lv_lgort = ls_shp-lgso.
-      CHECK lv_lgort IN so_lgort.
+      lv_lgort = ls_shp-lgort.
+*     ZSDR5002 [적송]출하수량. 저장위치 9000, CY00 만 출하요청수량을 쓴다.
+      IF lv_lgort <> '9000' AND lv_lgort <> 'CY00'.
+        CONTINUE.
+      ENDIF.
       IF ls_shp-auart = 'ZRE' OR ls_shp-auart = 'ZK2'
       OR ls_shp-auart = 'ZK4' OR ls_shp-auart = 'ZKA'
       OR ls_shp-auart = 'ZKR'.
@@ -1372,11 +1724,148 @@ FORM fill_stock.
     IF lv_tabix > 0.
       gs_data-gi_qty = gs_data-gi_qty + ls_gi-menge.
       MODIFY gt_data FROM gs_data INDEX lv_tabix.
+    ELSE.
+      APPEND ls_gi TO lt_new.
     ENDIF.
+  ENDLOOP.
+
+* 판매계획에 없는 판매처의 출하요청수량도 행으로 남긴다.
+  IF lt_new[] IS NOT INITIAL.
+    LOOP AT lt_new INTO ls_gi.
+      ls_nm-kunnr = ls_gi-kunnr.
+      APPEND ls_nm TO lt_nm.
+      ls_nm-kunnr = ls_gi-person.
+      APPEND ls_nm TO lt_nm.
+    ENDLOOP.
+    SORT lt_nm BY kunnr.
+    DELETE ADJACENT DUPLICATES FROM lt_nm COMPARING kunnr.
+    DELETE lt_nm WHERE kunnr = space.
+    IF lt_nm[] IS NOT INITIAL.
+      SELECT kunnr name1
+        FROM kna1
+        INTO TABLE lt_kna
+        FOR ALL ENTRIES IN lt_nm
+        WHERE kunnr = lt_nm-kunnr.
+    ENDIF.
+    SELECT vkbur bezei
+      FROM tvkbt
+      INTO TABLE lt_vk
+      FOR ALL ENTRIES IN lt_new
+      WHERE spras = sy-langu
+        AND vkbur = lt_new-vkbur.
+    LOOP AT lt_new INTO ls_gi.
+      CLEAR gs_data.
+      READ TABLE gt_data INTO ls_src
+        WITH KEY matnr = ls_gi-matnr
+                 werks = ls_gi-werks.
+      IF sy-subrc <> 0.
+        READ TABLE gt_data INTO ls_src
+          WITH KEY matnr = ls_gi-matnr.
+      ENDIF.
+      gs_data-matnr     = ls_gi-matnr.
+      gs_data-spmon     = p_spmon.
+      gs_data-werks     = ls_gi-werks.
+      gs_data-lgort     = ls_gi-lgort.
+      gs_data-vkbur     = ls_gi-vkbur.
+      gs_data-person    = ls_gi-person.
+      gs_data-kunnr     = ls_gi-kunnr.
+      gs_data-gi_qty    = ls_gi-menge.
+      gs_data-maktx     = ls_src-maktx.
+      gs_data-meins     = ls_src-meins.
+      gs_data-dispo     = ls_src-dispo.
+      gs_data-dispo_txt = ls_src-dispo_txt.
+      READ TABLE lt_vk INTO ls_vk
+        WITH KEY vkbur = ls_gi-vkbur.
+      IF sy-subrc = 0.
+        gs_data-vkbtx = ls_vk-bezei.
+      ENDIF.
+      READ TABLE lt_kna INTO ls_nm
+        WITH KEY kunnr = ls_gi-kunnr.
+      IF sy-subrc = 0.
+        gs_data-kuntx = ls_nm-name1.
+      ENDIF.
+      READ TABLE lt_kna INTO ls_nm
+        WITH KEY kunnr = ls_gi-person.
+      IF sy-subrc = 0.
+        gs_data-pertx = ls_nm-name1.
+      ENDIF.
+      APPEND gs_data TO gt_data.
+    ENDLOOP.
+  ENDIF.
+
+* 생산(구매)입고가 있는 플랜트·저장위치는 행마다 같은 수량을 둔다.
+* 행이 없으면 그 플랜트·저장위치 행을 만든다.
+  LOOP AT lt_gr INTO ls_gr.
+    IF ls_gr-menge = 0.
+      CONTINUE.
+    ENDIF.
+    CLEAR lv_tabix.
+    LOOP AT gt_data INTO gs_data
+      WHERE matnr = ls_gr-matnr
+        AND werks = ls_gr-werks
+        AND lgort = ls_gr-lgort.
+      lv_tabix = sy-tabix.
+      gs_data-gr_qty = ls_gr-menge.
+      MODIFY gt_data FROM gs_data INDEX lv_tabix.
+    ENDLOOP.
+    IF lv_tabix > 0.
+      CONTINUE.
+    ENDIF.
+    CLEAR gs_data.
+    READ TABLE gt_data INTO ls_src
+      WITH KEY matnr = ls_gr-matnr
+               werks = ls_gr-werks.
+    IF sy-subrc <> 0.
+      READ TABLE gt_data INTO ls_src
+        WITH KEY matnr = ls_gr-matnr.
+    ENDIF.
+    gs_data-matnr     = ls_gr-matnr.
+    gs_data-spmon     = p_spmon.
+    gs_data-werks     = ls_gr-werks.
+    gs_data-lgort     = ls_gr-lgort.
+    gs_data-gr_qty    = ls_gr-menge.
+    gs_data-maktx     = ls_src-maktx.
+    gs_data-meins     = ls_src-meins.
+    gs_data-dispo     = ls_src-dispo.
+    gs_data-dispo_txt = ls_src-dispo_txt.
+    APPEND gs_data TO gt_data.
   ENDLOOP.
 ENDFORM.
 
-*& 기초/기말재고는 행의 플랜트와 저장위치. ZMMF01_GET_STOCK.
+*& 기초/기말재고는 행의 플랜트와 저장위치.
+*& ZMMF01_GET_STOCK 과 같은 계산을 MARD, MARDH 한 번 조회로 한다.
+TYPES: BEGIN OF ty_srow,
+         matnr TYPE matnr,
+         werks TYPE werks_d,
+         lgort TYPE lgort_d,
+         lfgja TYPE lfgja,
+         lfmon TYPE lfmon,
+         labst TYPE labst,
+         insme TYPE insme,
+         speme TYPE speme,
+       END OF ty_srow,
+       BEGIN OF ty_sper,
+         matnr TYPE matnr,
+         werks TYPE werks_d,
+         lgort TYPE lgort_d,
+         spmon TYPE spmon,
+         labst TYPE labst,
+         insme TYPE insme,
+         speme TYPE speme,
+       END OF ty_sper,
+       BEGIN OF ty_scur,
+         matnr TYPE matnr,
+         werks TYPE werks_d,
+         lgort TYPE lgort_d,
+         labst TYPE labst,
+       END OF ty_scur.
+DATA: gt_s_per TYPE SORTED TABLE OF ty_sper
+                WITH UNIQUE KEY matnr werks lgort spmon,
+      gt_s_lat TYPE SORTED TABLE OF ty_sper
+                WITH UNIQUE KEY matnr werks lgort,
+      gt_s_cur TYPE SORTED TABLE OF ty_scur
+                WITH UNIQUE KEY matnr werks lgort.
+
 FORM fill_sd_stock.
   TYPES: BEGIN OF ty_key,
            matnr TYPE matnr,
@@ -1392,12 +1881,18 @@ FORM fill_sd_stock.
          END OF ty_stk.
   DATA: lt_key TYPE SORTED TABLE OF ty_key WITH UNIQUE KEY matnr werks lgort,
         ls_key TYPE ty_key,
+        lt_bat TYPE STANDARD TABLE OF ty_key,
+        lt_raw TYPE STANDARD TABLE OF ty_srow,
+        ls_raw TYPE ty_srow,
         lt_stk TYPE SORTED TABLE OF ty_stk WITH UNIQUE KEY matnr werks lgort,
         ls_stk TYPE ty_stk,
         lv_prev TYPE datum,
         lv_ym   TYPE spmon,
         lv_labst TYPE labst,
-        lv_tabix TYPE sy-tabix.
+        lv_tabix TYPE sy-tabix,
+        lv_from TYPE i,
+        lv_to   TYPE i,
+        lv_lines TYPE i.
 
   IF gt_data[] IS INITIAL.
     RETURN.
@@ -1422,39 +1917,60 @@ FORM fill_sd_stock.
     INSERT ls_key INTO TABLE lt_key.
   ENDLOOP.
 
+  REFRESH: gt_s_per, gt_s_lat, gt_s_cur.
+  DESCRIBE TABLE lt_key LINES lv_lines.
+  lv_from = 1.
+  WHILE lv_from <= lv_lines.
+    lv_to = lv_from + 499.
+    IF lv_to > lv_lines.
+      lv_to = lv_lines.
+    ENDIF.
+    REFRESH lt_bat.
+    APPEND LINES OF lt_key FROM lv_from TO lv_to TO lt_bat.
+    IF lt_bat[] IS INITIAL.
+      lv_from = lv_to + 1.
+      CONTINUE.
+    ENDIF.
+    SELECT matnr werks lgort lfgja lfmon labst insme speme
+      FROM mard
+      INTO TABLE lt_raw
+      FOR ALL ENTRIES IN lt_bat
+      WHERE matnr = lt_bat-matnr
+        AND werks = lt_bat-werks
+        AND lgort = lt_bat-lgort.
+    LOOP AT lt_raw INTO ls_raw.
+      PERFORM add_scur USING ls_raw-matnr ls_raw-werks ls_raw-lgort
+                             ls_raw-labst.
+      PERFORM add_sper USING ls_raw-matnr ls_raw-werks ls_raw-lgort
+                             ls_raw-lfgja ls_raw-lfmon
+                             ls_raw-labst ls_raw-insme ls_raw-speme.
+    ENDLOOP.
+    SELECT matnr werks lgort lfgja lfmon labst insme speme
+      FROM mardh
+      INTO TABLE lt_raw
+      FOR ALL ENTRIES IN lt_bat
+      WHERE matnr = lt_bat-matnr
+        AND werks = lt_bat-werks
+        AND lgort = lt_bat-lgort.
+    LOOP AT lt_raw INTO ls_raw.
+      PERFORM add_sper USING ls_raw-matnr ls_raw-werks ls_raw-lgort
+                             ls_raw-lfgja ls_raw-lfmon
+                             ls_raw-labst ls_raw-insme ls_raw-speme.
+    ENDLOOP.
+    lv_from = lv_to + 1.
+  ENDWHILE.
+
   LOOP AT lt_key INTO ls_key.
     CLEAR ls_stk.
     ls_stk-matnr = ls_key-matnr.
     ls_stk-werks = ls_key-werks.
     ls_stk-lgort = ls_key-lgort.
-    CLEAR lv_labst.
-    CALL FUNCTION 'ZMMF01_GET_STOCK'
-      EXPORTING
-        i_matnr = ls_key-matnr
-        i_werks = ls_key-werks
-        i_lgort = ls_key-lgort
-        i_sdate = lv_ym
-      IMPORTING
-        o_labst = lv_labst
-      EXCEPTIONS
-        OTHERS  = 1.
-    IF sy-subrc = 0.
-      ls_stk-openq = lv_labst.
-    ENDIF.
-    CLEAR lv_labst.
-    CALL FUNCTION 'ZMMF01_GET_STOCK'
-      EXPORTING
-        i_matnr = ls_key-matnr
-        i_werks = ls_key-werks
-        i_lgort = ls_key-lgort
-        i_sdate = p_spmon
-      IMPORTING
-        o_labst = lv_labst
-      EXCEPTIONS
-        OTHERS  = 1.
-    IF sy-subrc = 0.
-      ls_stk-endq = lv_labst.
-    ENDIF.
+    PERFORM stock_at USING ls_key-matnr ls_key-werks ls_key-lgort lv_ym
+                     CHANGING lv_labst.
+    ls_stk-openq = lv_labst.
+    PERFORM stock_at USING ls_key-matnr ls_key-werks ls_key-lgort p_spmon
+                     CHANGING lv_labst.
+    ls_stk-endq = lv_labst.
     INSERT ls_stk INTO TABLE lt_stk.
   ENDLOOP.
 
@@ -1471,6 +1987,131 @@ FORM fill_sd_stock.
     ENDIF.
     MODIFY gt_data FROM gs_data INDEX lv_tabix.
   ENDLOOP.
+ENDFORM.
+
+FORM add_scur USING p_matnr TYPE matnr
+                    p_werks TYPE werks_d
+                    p_lgort TYPE lgort_d
+                    p_labst TYPE labst.
+  DATA ls_cur TYPE ty_scur.
+  READ TABLE gt_s_cur TRANSPORTING NO FIELDS
+    WITH KEY matnr = p_matnr
+             werks = p_werks
+             lgort = p_lgort.
+  IF sy-subrc = 0.
+    RETURN.
+  ENDIF.
+  ls_cur-matnr = p_matnr.
+  ls_cur-werks = p_werks.
+  ls_cur-lgort = p_lgort.
+  ls_cur-labst = p_labst.
+  INSERT ls_cur INTO TABLE gt_s_cur.
+ENDFORM.
+
+FORM add_sper USING p_matnr TYPE matnr
+                    p_werks TYPE werks_d
+                    p_lgort TYPE lgort_d
+                    p_lfgja TYPE lfgja
+                    p_lfmon TYPE lfmon
+                    p_labst TYPE labst
+                    p_insme TYPE insme
+                    p_speme TYPE speme.
+  DATA: ls_per TYPE ty_sper,
+        ls_lat TYPE ty_sper.
+  ls_per-matnr = p_matnr.
+  ls_per-werks = p_werks.
+  ls_per-lgort = p_lgort.
+  CONCATENATE p_lfgja p_lfmon INTO ls_per-spmon.
+  ls_per-labst = p_labst.
+  ls_per-insme = p_insme.
+  ls_per-speme = p_speme.
+  READ TABLE gt_s_per TRANSPORTING NO FIELDS
+    WITH KEY matnr = ls_per-matnr
+             werks = ls_per-werks
+             lgort = ls_per-lgort
+             spmon = ls_per-spmon.
+  IF sy-subrc <> 0.
+    INSERT ls_per INTO TABLE gt_s_per.
+  ENDIF.
+  READ TABLE gt_s_lat INTO ls_lat
+    WITH KEY matnr = ls_per-matnr
+             werks = ls_per-werks
+             lgort = ls_per-lgort.
+  IF sy-subrc <> 0.
+    INSERT ls_per INTO TABLE gt_s_lat.
+  ELSEIF ls_per-spmon > ls_lat-spmon.
+    ls_lat-spmon = ls_per-spmon.
+    ls_lat-labst = ls_per-labst.
+    ls_lat-insme = ls_per-insme.
+    ls_lat-speme = ls_per-speme.
+    MODIFY gt_s_lat FROM ls_lat INDEX sy-tabix.
+  ENDIF.
+ENDFORM.
+
+*& ZMMF01_GET_STOCK 과 같은 월말재고.
+FORM stock_at USING p_matnr TYPE matnr
+                    p_werks TYPE werks_d
+                    p_lgort TYPE lgort_d
+                    p_spmon TYPE spmon
+              CHANGING p_labst TYPE labst.
+  DATA: ls_per TYPE ty_sper,
+        ls_lat TYPE ty_sper,
+        ls_cur TYPE ty_scur,
+        lv_date TYPE datum.
+  CLEAR p_labst.
+  IF p_spmon >= sy-datum(6).
+    READ TABLE gt_s_cur INTO ls_cur
+      WITH KEY matnr = p_matnr
+               werks = p_werks
+               lgort = p_lgort.
+    IF sy-subrc = 0.
+      p_labst = ls_cur-labst.
+    ENDIF.
+    RETURN.
+  ENDIF.
+  READ TABLE gt_s_per INTO ls_per
+    WITH KEY matnr = p_matnr
+             werks = p_werks
+             lgort = p_lgort
+             spmon = p_spmon.
+  IF sy-subrc = 0.
+    p_labst = ls_per-labst + ls_per-insme + ls_per-speme.
+    RETURN.
+  ENDIF.
+  READ TABLE gt_s_lat INTO ls_lat
+    WITH KEY matnr = p_matnr
+             werks = p_werks
+             lgort = p_lgort.
+  IF sy-subrc <> 0.
+    RETURN.
+  ENDIF.
+  IF p_spmon > ls_lat-spmon.
+    p_labst = ls_lat-labst + ls_lat-insme + ls_lat-speme.
+    RETURN.
+  ENDIF.
+  lv_date = p_spmon.
+  lv_date+6(2) = '01'.
+  DO 12 TIMES.
+    CALL FUNCTION 'MONTH_PLUS_DETERMINE'
+      EXPORTING
+        months  = 1
+        olddate = lv_date
+      IMPORTING
+        newdate = lv_date.
+    IF lv_date(6) = sy-datum(6).
+      p_labst = ls_lat-labst + ls_lat-insme + ls_lat-speme.
+      RETURN.
+    ENDIF.
+    READ TABLE gt_s_per INTO ls_per
+      WITH KEY matnr = p_matnr
+               werks = p_werks
+               lgort = p_lgort
+               spmon = lv_date(6).
+    IF sy-subrc = 0.
+      p_labst = ls_per-labst + ls_per-insme + ls_per-speme.
+      RETURN.
+    ENDIF.
+  ENDDO.
 ENDFORM.
 
 *& 판매계획은 같은 계획키의 첫 저장위치 행만 남긴다.
@@ -1521,6 +2162,7 @@ FORM keep_loc_once.
     lv_kunnr  = gs_data-kunnr.
   ENDLOOP.
 
+* 생산, 재고는 자재+플랜트+저장위치당 한 행.
   SORT gt_data BY matnr werks lgort vkbur person kunnr.
   CLEAR lv_on.
   LOOP AT gt_data INTO gs_data.
@@ -1572,12 +2214,20 @@ FORM fill_rate.
 ENDFORM.
 
 *& 사무소 소계, 전체 합계.
-*& 당월 생산량, 기초재고, 기말재고는 자재+플랜트+저장위치당 한 번만 더한다.
+*& 생산량, 기초재고, 기말재고는 자재+플랜트+저장위치당 한 번만 더한다.
+*& 사무소명 정렬 때문에 수량이 0인 행이 먼저 나와도 실제 수량을 더한다.
+*& 같은 수량이 거래처 행마다 반복되면 다시 더하지 않는다.
 FORM fill_sum_rows.
   TYPES: BEGIN OF ty_grk,
-           matnr TYPE matnr,
-           werks TYPE werks_d,
-           lgort TYPE lgort_d,
+           matnr    TYPE matnr,
+           werks    TYPE werks_d,
+           lgort    TYPE lgort_d,
+           gr_qty   TYPE kwmeng,
+           open_stk TYPE labst,
+           end_stk  TYPE labst,
+           gr_set   TYPE c,
+           op_set   TYPE c,
+           en_set   TYPE c,
          END OF ty_grk,
          BEGIN OF ty_pln,
            matnr  TYPE matnr,
@@ -1592,13 +2242,25 @@ FORM fill_sum_rows.
         lt_gr  TYPE SORTED TABLE OF ty_grk WITH UNIQUE KEY matnr werks lgort,
         lt_all TYPE SORTED TABLE OF ty_grk WITH UNIQUE KEY matnr werks lgort,
         ls_gr  TYPE ty_grk,
+        ls_all TYPE ty_grk,
         lt_pln TYPE SORTED TABLE OF ty_pln
                  WITH UNIQUE KEY matnr werks vkbur person kunnr,
         lt_plna TYPE SORTED TABLE OF ty_pln
                   WITH UNIQUE KEY matnr werks vkbur person kunnr,
         ls_pln TYPE ty_pln,
         lv_vk  TYPE tvkbt-bezei,
-        lv_on  TYPE c.
+        lv_on  TYPE c,
+        lv_tabix TYPE sy-tabix.
+
+  DEFINE add_kept.
+    IF &1 <> 0.
+      IF &2 = space OR &1 <> &3.
+        &4 = &4 + &1.
+        &3 = &1.
+        &2 = 'X'.
+      ENDIF.
+    ENDIF.
+  END-OF-DEFINITION.
 
   IF gt_data[] IS INITIAL.
     RETURN.
@@ -1660,29 +2322,39 @@ FORM fill_sum_rows.
       ls_tot-plan_qty = ls_tot-plan_qty + gs_data-plan_qty.
     ENDIF.
 
-    ls_gr-matnr = gs_data-matnr.
-    ls_gr-werks = gs_data-werks.
-    ls_gr-lgort = gs_data-lgort.
-    READ TABLE lt_gr WITH KEY matnr = ls_gr-matnr
-                              werks = ls_gr-werks
-                              lgort = ls_gr-lgort
-      TRANSPORTING NO FIELDS.
+    READ TABLE lt_gr INTO ls_gr
+      WITH KEY matnr = gs_data-matnr
+               werks = gs_data-werks
+               lgort = gs_data-lgort.
     IF sy-subrc <> 0.
+      CLEAR ls_gr.
+      ls_gr-matnr = gs_data-matnr.
+      ls_gr-werks = gs_data-werks.
+      ls_gr-lgort = gs_data-lgort.
       INSERT ls_gr INTO TABLE lt_gr.
-      ls_sub-gr_qty   = ls_sub-gr_qty + gs_data-gr_qty.
-      ls_sub-open_stk = ls_sub-open_stk + gs_data-open_stk.
-      ls_sub-end_stk  = ls_sub-end_stk + gs_data-end_stk.
     ENDIF.
-    READ TABLE lt_all WITH KEY matnr = ls_gr-matnr
-                               werks = ls_gr-werks
-                               lgort = ls_gr-lgort
-      TRANSPORTING NO FIELDS.
+    lv_tabix = sy-tabix.
+    add_kept gs_data-gr_qty   ls_gr-gr_set ls_gr-gr_qty   ls_sub-gr_qty.
+    add_kept gs_data-open_stk ls_gr-op_set ls_gr-open_stk ls_sub-open_stk.
+    add_kept gs_data-end_stk  ls_gr-en_set ls_gr-end_stk  ls_sub-end_stk.
+    MODIFY lt_gr FROM ls_gr INDEX lv_tabix.
+
+    READ TABLE lt_all INTO ls_all
+      WITH KEY matnr = gs_data-matnr
+               werks = gs_data-werks
+               lgort = gs_data-lgort.
     IF sy-subrc <> 0.
-      INSERT ls_gr INTO TABLE lt_all.
-      ls_tot-gr_qty   = ls_tot-gr_qty + gs_data-gr_qty.
-      ls_tot-open_stk = ls_tot-open_stk + gs_data-open_stk.
-      ls_tot-end_stk  = ls_tot-end_stk + gs_data-end_stk.
+      CLEAR ls_all.
+      ls_all-matnr = gs_data-matnr.
+      ls_all-werks = gs_data-werks.
+      ls_all-lgort = gs_data-lgort.
+      INSERT ls_all INTO TABLE lt_all.
     ENDIF.
+    lv_tabix = sy-tabix.
+    add_kept gs_data-gr_qty   ls_all-gr_set ls_all-gr_qty   ls_tot-gr_qty.
+    add_kept gs_data-open_stk ls_all-op_set ls_all-open_stk ls_tot-open_stk.
+    add_kept gs_data-end_stk  ls_all-en_set ls_all-end_stk  ls_tot-end_stk.
+    MODIFY lt_all FROM ls_all INDEX lv_tabix.
   ENDLOOP.
 
   ls_sub-maktx = '소계'.
@@ -1736,6 +2408,7 @@ FORM call_screen_0100.
   PERFORM set_attribute_grid_0100.
   PERFORM refresh_grid USING gv_grid_0100
                              gs_layout.
+  PERFORM show_office_hide_customer USING gv_grid_0100.
   CALL SCREEN '0100'.
 ENDFORM.
 
@@ -1832,6 +2505,8 @@ FORM set_fcat_grid_0100.
     'E' 'COLTEXT'     '사무소',
 
     'S' 'FIELDNAME'   'PERTX',
+    ' ' 'NO_OUT'      'X',
+    ' ' 'TECH'        'X',
     'E' 'COLTEXT'     '영업사원명',
 
     'S' 'FIELDNAME'   'KUNTX',
@@ -1979,6 +2654,47 @@ FORM display_grid USING p_grid   TYPE REF TO cl_gui_alv_grid
     MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno
       WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
   ENDIF.
+ENDFORM.
+
+*& 저장된 레이아웃과 관계없이 사무소는 보이게, 거래처명은 숨긴다.
+FORM show_office_hide_customer USING p_grid TYPE REF TO cl_gui_alv_grid.
+  DATA: lt_fcat TYPE lvc_t_fcat,
+        ls_fcat TYPE lvc_s_fcat,
+        lv_pos  TYPE i,
+        lv_tabix TYPE sy-tabix.
+
+  CHECK p_grid IS NOT INITIAL.
+
+  CALL METHOD p_grid->get_frontend_fieldcatalog
+    IMPORTING
+      et_fieldcatalog = lt_fcat.
+
+  READ TABLE lt_fcat INTO ls_fcat WITH KEY fieldname = 'KUNTX'.
+  IF sy-subrc = 0.
+    lv_pos = ls_fcat-col_pos.
+  ENDIF.
+
+  LOOP AT lt_fcat INTO ls_fcat.
+    lv_tabix = sy-tabix.
+    CASE ls_fcat-fieldname.
+      WHEN 'KUNTX'.
+        ls_fcat-no_out = 'X'.
+        ls_fcat-tech   = 'X'.
+        MODIFY lt_fcat FROM ls_fcat INDEX lv_tabix.
+      WHEN 'VKBTX'.
+        CLEAR: ls_fcat-no_out, ls_fcat-tech.
+        IF lv_pos IS NOT INITIAL.
+          ls_fcat-col_pos = lv_pos.
+        ENDIF.
+        MODIFY lt_fcat FROM ls_fcat INDEX lv_tabix.
+    ENDCASE.
+  ENDLOOP.
+
+  CALL METHOD p_grid->set_frontend_fieldcatalog
+    EXPORTING
+      it_fieldcatalog = lt_fcat.
+
+  CALL METHOD p_grid->refresh_table_display.
 ENDFORM.
 
 *&---------------------------------------------------------------------*

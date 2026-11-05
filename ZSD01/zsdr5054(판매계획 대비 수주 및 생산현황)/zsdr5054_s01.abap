@@ -4,10 +4,12 @@
 *& 기준월 : ZSDR0410 PA_SPMON
 *& 플랜트/저장위치/자재그룹/자재유형 : 조회조건
 *& 거래처/MRP관리자 : ZSDR0410. 사무소는 ZSDT0400-VKBUR
+*& 출하지점/입고지점 : ZSDR1100 S_VSTEL. VBAP-VSTEL, MEMORY ID M01
 *&---------------------------------------------------------------------*
 
 DATA: gv_werks TYPE werks_d,
       gv_lgort TYPE lgort_d,
+      gv_vstel TYPE vbap-vstel,
       gv_mtart TYPE mtart,
       gv_matkl TYPE matkl,
       gv_matnr TYPE matnr,
@@ -18,6 +20,7 @@ SELECTION-SCREEN BEGIN OF BLOCK b01 WITH FRAME TITLE text-b01.
 PARAMETERS p_spmon TYPE zsdt0400-spmon OBLIGATORY.
 SELECT-OPTIONS so_werks FOR gv_werks OBLIGATORY DEFAULT '1010'.
 SELECT-OPTIONS so_lgort FOR gv_lgort.
+SELECT-OPTIONS so_vstel FOR gv_vstel MEMORY ID m01.
 SELECT-OPTIONS so_mtart FOR gv_mtart DEFAULT 'FERT'.
 SELECT-OPTIONS so_matkl FOR gv_matkl.
 SELECT-OPTIONS so_matnr FOR gv_matnr.

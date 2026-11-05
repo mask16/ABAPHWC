@@ -2721,7 +2721,25 @@ FORM check_iv_canc_doc  USING    p_belnr_iv<br />
 &nbsp;&nbsp;TYPE-POOLS&nbsp;:&nbsp;mmcr,<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mrm.<br />
 <br />
-&nbsp;&nbsp;DATA&nbsp;:&nbsp;rbkpv&nbsp;TYPE&nbsp;&nbsp;mrm_rbkpv.<br />
+&nbsp;&nbsp;DATA&nbsp;:&nbsp;rbkpv&nbsp;TYPE&nbsp;&nbsp;mrm_rbkpv,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lv_vgart&nbsp;TYPE&nbsp;rbkp-vgart.<br />
+<br />
+   </div>
+   <div class="codeComment">
+*&nbsp;MR11&nbsp;계정유지보수(KP),&nbsp;취소(KS)는&nbsp;MRM_INVOICE_READ&nbsp;에서&nbsp;M8415로&nbsp;조회가&nbsp;끊긴다.<br />
+*&nbsp;EKBE에&nbsp;잡힌&nbsp;수량으로&nbsp;행은&nbsp;그대로&nbsp;출력한다.<br />
+   </div>
+   <div class="code">
+&nbsp;&nbsp;IF&nbsp;p_belnr_iv&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;vgart&nbsp;INTO&nbsp;lv_vgart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;rbkp<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;belnr&nbsp;=&nbsp;p_belnr_iv<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;gjahr&nbsp;=&nbsp;p_gjahr.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;lv_vgart&nbsp;=&nbsp;'KP'&nbsp;OR&nbsp;lv_vgart&nbsp;=&nbsp;'KS'.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
+&nbsp;&nbsp;ENDIF.<br />
+<br />
    </div>
    <div class="codeComment">
 **&nbsp;IV에&nbsp;대한&nbsp;전표를&nbsp;가져온다<br />
@@ -2737,7 +2755,11 @@ FORM check_iv_canc_doc  USING    p_belnr_iv<br />
 &nbsp;&nbsp;&nbsp;&nbsp;EXCEPTIONS<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry_not_found&nbsp;=&nbsp;1<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lock_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;3.<br />
+&nbsp;&nbsp;IF&nbsp;sy-subrc&nbsp;&lt;&gt;&nbsp;0.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;RETURN.<br />
+&nbsp;&nbsp;ENDIF.<br />
 <br />
    </div>
    <div class="codeComment">
@@ -2752,6 +2774,7 @@ FORM check_iv_canc_doc  USING    p_belnr_iv<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;invoice_cancelled_yet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;2<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;transfer_price_not_allowed&nbsp;=&nbsp;3<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nota_fiscal_error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;4<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;error_message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;6<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OTHERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;5.<br />
 <br />
 <br />
