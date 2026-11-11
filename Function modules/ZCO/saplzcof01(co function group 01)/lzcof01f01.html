@@ -493,7 +493,6 @@ FORM mseg_bkpf_bseg  USING    p_u1 p_u2 p_u3.<br />
 &nbsp;&nbsp;SELECT&nbsp;blart&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;awkey&nbsp;waers&nbsp;FROM&nbsp;bkpf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bkpfs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs&nbsp;&nbsp;&nbsp;&nbsp;"UP01.----------------------------<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;awtyp&nbsp;IN&nbsp;r_awtyp<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;awkey&nbsp;EQ&nbsp;p_u1<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;blart&nbsp;IN&nbsp;('PR',&nbsp;'RE',&nbsp;'SA',&nbsp;'ML',&nbsp;'WE',&nbsp;'WL',&nbsp;'WA',&nbsp;'WI'<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;,&nbsp;'WX')<br />
@@ -2082,23 +2081,18 @@ FORM bkpf_bseg_pr  USING    p_u1.<br />
 &nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;it_bkpfs&nbsp;LINES&nbsp;max_cnt.<br />
 &nbsp;&nbsp;IF&nbsp;max_cnt&nbsp;&lt&nbsp;0.<br />
 &nbsp;&nbsp;ELSE.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bkpfs.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_bkpfs[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;matnr&nbsp;werks&nbsp;pswsl<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwtar&nbsp;ebeln&nbsp;ebelp&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bseg<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bsegs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;it_bkpfs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfs-bukrs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;belnr&nbsp;EQ&nbsp;it_bkpfs-belnr<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr.<br />
-   </div>
-   <div class="codeComment">
-**hjgwon<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;s_matnr<br />
-**-----------------------------------<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;s_werks.&nbsp;&nbsp;"&nbsp;&nbsp;p_werks&nbsp;"UP01.&nbsp;-------------<br />
-   </div>
-   <div class="code">
-&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;gr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;gr_werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
 &nbsp;&nbsp;ENDIF.<br />
 ENDFORM.                    " BKPF_BSEG_PR<br />
 <br />
@@ -2140,7 +2134,6 @@ FORM bkpf_bseg_pr_ml_two  USING    p_u1.<br />
 &nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;blart&nbsp;awkey&nbsp;waers&nbsp;FROM&nbsp;bkpf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bkpfml<br />
 &nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs&nbsp;&nbsp;&nbsp;&nbsp;"UP01.-------------------------<br />
-&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;awtyp&nbsp;IN&nbsp;r_awtyp<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;awkey&nbsp;IN&nbsp;(&nbsp;SELECT&nbsp;awkey&nbsp;FROM&nbsp;bkpf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs&nbsp;&nbsp;"UP01.-----------------<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;blart&nbsp;IN&nbsp;('PR',&nbsp;'ML')<br />
@@ -2149,24 +2142,17 @@ FORM bkpf_bseg_pr_ml_two  USING    p_u1.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;budat&nbsp;BETWEEN&nbsp;g_from&nbsp;AND&nbsp;g_till<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;awtyp&nbsp;&lt&gt&nbsp;'AUAK'<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;awtyp&nbsp;&lt&gt&nbsp;'MLHD'.<br />
-&nbsp;&nbsp;IF&nbsp;max_cnt&nbsp;&gt&nbsp;0.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bkpfml.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;werks&nbsp;matnr&nbsp;pswsl<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebeln&nbsp;ebelp&nbsp;bwtar&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
+&nbsp;&nbsp;IF&nbsp;it_bkpfml[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;werks&nbsp;matnr&nbsp;pswsl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebeln&nbsp;ebelp&nbsp;bwtar&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bseg<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bsegml<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;it_bkpfml<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfml-bukrs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;belnr&nbsp;EQ&nbsp;it_bkpfml-belnr<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfml-gjahr.<br />
-   </div>
-   <div class="codeComment">
-**hjgwon<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;s_matnr<br />
-**-----------------------------------<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;s_werks.&nbsp;&nbsp;"&nbsp;&nbsp;p_werks&nbsp;"UP01.&nbsp;-------------<br />
-   </div>
-   <div class="code">
-&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfml-gjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;gr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;gr_werks.<br />
 &nbsp;&nbsp;ENDIF.<br />
    </div>
    <div class="codeComment">
@@ -2423,23 +2409,18 @@ FORM bkpf_bseg_re  USING    p_u1.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;budat&nbsp;BETWEEN&nbsp;g_from&nbsp;AND&nbsp;g_till.<br />
 <br />
 <br />
-&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bkpfs.<br />
+&nbsp;&nbsp;IF&nbsp;it_bkpfs[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;werks&nbsp;matnr&nbsp;pswsl<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebeln&nbsp;ebelp&nbsp;bwtar&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bseg<br />
 &nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bsegs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;it_bkpfs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfs-bukrs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;belnr&nbsp;EQ&nbsp;it_bkpfs-belnr<br />
-&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr.<br />
-   </div>
-   <div class="codeComment">
-**hjgwon<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;s_matnr<br />
-**-----------------------------------<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;s_werks.&nbsp;&nbsp;"&nbsp;&nbsp;p_werks&nbsp;"UP01.&nbsp;-------------.<br />
-   </div>
-   <div class="code">
-&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;gr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;gr_werks.<br />
+&nbsp;&nbsp;ENDIF.<br />
 <br />
 ENDFORM.                    " BKPF_BSEG_RE<br />
 <br />
@@ -2483,7 +2464,6 @@ FORM bkpf_bseg_pr_ml  USING    p_u1.<br />
 &nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;blart&nbsp;awkey&nbsp;waers&nbsp;FROM&nbsp;bkpf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bkpfml<br />
 &nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs&nbsp;&nbsp;"UP01.-------------------------------<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;awtyp&nbsp;IN&nbsp;r_awtyp<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;awkey&nbsp;IN&nbsp;(&nbsp;SELECT&nbsp;awkey&nbsp;FROM&nbsp;bkpf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs&nbsp;&nbsp;"UP01.----------------<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;blart&nbsp;IN&nbsp;('RE',&nbsp;'KP',&nbsp;'RA',&nbsp;'RX'&nbsp;)<br />
@@ -2908,7 +2888,6 @@ FORM bkpf_bseg_pr_kp_tow  USING    p_u1.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;belnr&nbsp;NOT&nbsp;IN<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;SELECT&nbsp;belnr&nbsp;FROM&nbsp;bkpf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs&nbsp;"UP01.-----------------------<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;awtyp&nbsp;IN&nbsp;r_awtyp<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;awkey&nbsp;IN&nbsp;(&nbsp;SELECT&nbsp;awkey&nbsp;FROM&nbsp;bkpf<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs&nbsp;"UP01.---------<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;blart&nbsp;IN&nbsp;('RE',&nbsp;'KP')<br />
@@ -2925,8 +2904,7 @@ FORM bkpf_bseg_pr_kp_tow  USING    p_u1.<br />
 &nbsp;&nbsp;ELSE.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bkpfml2.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;SINGLE&nbsp;*&nbsp;FROM&nbsp;bkpf<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;awtyp&nbsp;IN&nbsp;r_awtyp<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;awkey&nbsp;EQ&nbsp;it_bkpfml2-awkey<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;awkey&nbsp;EQ&nbsp;it_bkpfml2-awkey<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfml2-bukrs<br />
    </div>
    <div class="codeComment">
@@ -3210,23 +3188,18 @@ FORM bkpf_bseg_sa  USING    p_u1.<br />
 &nbsp;&nbsp;DESCRIBE&nbsp;TABLE&nbsp;it_bkpfs&nbsp;LINES&nbsp;max_cnt.<br />
 &nbsp;&nbsp;IF&nbsp;max_cnt&nbsp;&lt&nbsp;0.<br />
 &nbsp;&nbsp;ELSE.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bkpfs.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;it_bkpfs[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;werks&nbsp;matnr&nbsp;pswsl<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwtar&nbsp;ebeln&nbsp;ebelp&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bseg<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bsegs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;it_bkpfs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfs-bukrs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;belnr&nbsp;EQ&nbsp;it_bkpfs-belnr<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr.<br />
-   </div>
-   <div class="codeComment">
-**hjgwon<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;s_matnr<br />
-**-----------------------------------<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;s_werks.&nbsp;&nbsp;"&nbsp;&nbsp;p_werks&nbsp;"UP01.&nbsp;-------------<br />
-   </div>
-   <div class="code">
-&nbsp;&nbsp;&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;gr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;gr_werks.<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ENDIF.<br />
 &nbsp;&nbsp;ENDIF.<br />
 ENDFORM.                    " BKPF_BSEG_SA<br />
 <br />
@@ -3334,21 +3307,19 @@ FORM bkpf_bseg_ml  USING    p_u1<br />
 <br />
    </div>
    <div class="code">
-&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bkpfs.<br />
+&nbsp;&nbsp;IF&nbsp;it_bkpfs[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;werks&nbsp;matnr&nbsp;pswsl<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwtar&nbsp;ebeln&nbsp;ebelp&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bseg<br />
 &nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bsegs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;it_bkpfs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfs-bukrs<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;belnr&nbsp;EQ&nbsp;it_bkpfs-belnr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr<br />
-   </div>
-   <div class="codeComment">
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;s_werks&nbsp;&nbsp;"&nbsp;&nbsp;p_werks&nbsp;"UP01.&nbsp;-------------<br />
-   </div>
-   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;IN&nbsp;gr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;werks&nbsp;IN&nbsp;gr_werks<br />
 &nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;&nbsp;&nbsp;matnr&nbsp;NE&nbsp;space.<br />
-&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;ENDIF.<br />
 <br />
 ENDFORM.                    " BKPF_BSEG_ML<br />
 <br />
@@ -3394,7 +3365,11 @@ FORM read_data_0002.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ON&nbsp;b~ebeln&nbsp;=&nbsp;d~ebeln&nbsp;AND<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b~ebelp&nbsp;=&nbsp;d~ebelp<br />
 &nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;a~budat&nbsp;BETWEEN&nbsp;g_from&nbsp;AND&nbsp;g_till<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bukrs&nbsp;EQ&nbsp;g_bukrs.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Ãß°¡&nbsp;-&nbsp;UP01....<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bukrs&nbsp;EQ&nbsp;g_bukrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bwart&nbsp;IN&nbsp;gr_bwart<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~matnr&nbsp;IN&nbsp;gr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~werks&nbsp;IN&nbsp;gr_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~mblnr&nbsp;IN&nbsp;gr_mblnr.<br />
    </div>
    <div class="codeComment">
 *&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;b~bwart&nbsp;IN&nbsp;s_bwart<br />
@@ -3404,21 +3379,6 @@ FORM read_data_0002.<br />
 <br />
    </div>
    <div class="code">
-&nbsp;&nbsp;IF&nbsp;gr_bwart[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;it_mseg&nbsp;WHERE&nbsp;bwart&nbsp;NOT&nbsp;IN&nbsp;gr_bwart.<br />
-&nbsp;&nbsp;ENDIF.<br />
-<br />
-&nbsp;&nbsp;IF&nbsp;gr_matnr[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;it_mseg&nbsp;WHERE&nbsp;matnr&nbsp;NOT&nbsp;IN&nbsp;gr_matnr.<br />
-&nbsp;&nbsp;ENDIF.<br />
-<br />
-&nbsp;&nbsp;IF&nbsp;gr_werks[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;it_mseg&nbsp;WHERE&nbsp;werks&nbsp;NOT&nbsp;IN&nbsp;gr_werks.<br />
-&nbsp;&nbsp;ENDIF.<br />
-<br />
-&nbsp;&nbsp;IF&nbsp;gr_mblnr[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;DELETE&nbsp;it_mseg&nbsp;WHERE&nbsp;mblnr&nbsp;NOT&nbsp;IN&nbsp;gr_mblnr.<br />
-&nbsp;&nbsp;ENDIF.<br />
 ENDFORM.                    " READ_DATA_0002<br />
 <br />
    </div>
@@ -3459,12 +3419,8 @@ FORM wzubb_th .<br />
 &nbsp;&nbsp;&nbsp;&nbsp;INTO&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;lt_ekpo<br />
 &nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;ekpo<br />
 &nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;g_bukrs<br />
-   </div>
-   <div class="codeComment">
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;IN&nbsp;s_werks<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;IN&nbsp;s_matnr<br />
-   </div>
-   <div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;IN&nbsp;gr_werks<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;IN&nbsp;gr_matnr<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;pstyp&nbsp;EQ&nbsp;'5'<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;knttp&nbsp;EQ&nbsp;'1'.<br />
 <br />
@@ -3486,22 +3442,17 @@ FORM wzubb_th .<br />
    </div>
    <div class="code">
 &nbsp;&nbsp;CHECK&nbsp;it_bkpfs[]&nbsp;IS&nbsp;NOT&nbsp;INITIAL.<br />
-&nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bkpfs.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;werks&nbsp;matnr&nbsp;pswsl<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwtar&nbsp;menge&nbsp;ebeln&nbsp;ebelp&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bsegs<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bseg<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfs-bukrs<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;belnr&nbsp;EQ&nbsp;it_bkpfs-belnr<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr<br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;hkont&nbsp;IN&nbsp;lr_hkont.<br />
-   </div>
-   <div class="codeComment">
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;IN&nbsp;s_matnr<br />
-*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;IN&nbsp;s_werks.&nbsp;&nbsp;"&nbsp;&nbsp;p_werks&nbsp;"UP01.&nbsp;-------------<br />
-   </div>
-   <div class="code">
-&nbsp;&nbsp;ENDLOOP.<br />
+&nbsp;&nbsp;SELECT&nbsp;bukrs&nbsp;belnr&nbsp;gjahr&nbsp;buzei&nbsp;hkont&nbsp;shkzg&nbsp;dmbtr&nbsp;werks&nbsp;matnr&nbsp;pswsl<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bwtar&nbsp;menge&nbsp;ebeln&nbsp;ebelp&nbsp;vbel2&nbsp;posn2&nbsp;prctr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;APPENDING&nbsp;CORRESPONDING&nbsp;FIELDS&nbsp;OF&nbsp;TABLE&nbsp;it_bsegs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FROM&nbsp;bseg<br />
+&nbsp;&nbsp;&nbsp;&nbsp;FOR&nbsp;ALL&nbsp;ENTRIES&nbsp;IN&nbsp;it_bkpfs<br />
+&nbsp;&nbsp;&nbsp;WHERE&nbsp;bukrs&nbsp;EQ&nbsp;it_bkpfs-bukrs<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;belnr&nbsp;EQ&nbsp;it_bkpfs-belnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;gjahr&nbsp;EQ&nbsp;it_bkpfs-gjahr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;hkont&nbsp;IN&nbsp;lr_hkont<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;matnr&nbsp;IN&nbsp;gr_matnr<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND&nbsp;werks&nbsp;IN&nbsp;gr_werks.<br />
 <br />
 <br />
 &nbsp;&nbsp;LOOP&nbsp;AT&nbsp;it_bsegs.<br />
